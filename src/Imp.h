@@ -469,10 +469,11 @@ public:
     int channel;
     int volume;
     int pan[2];
-    Sound() {
+    Sound(const std::string& path = "") {
         pan[0] = 255;
         pan[1] = 255;
         volume = MIX_MAX_VOLUME / 2;
+        if (path != "") set(path);
     }
     ~Sound() {
         Mix_FreeChunk(sound);
@@ -498,6 +499,26 @@ public:
         Mix_VolumeChunk(sound, volume);
         channel = Mix_PlayChannel(-1, sound, 0);
         Mix_SetPanning(channel, pan[0], pan[1]);
+    }
+    void stop() {
+        if (channel == -1) return;
+        Mix_HaltChannel(channel);
+    }
+    void mute() {
+        Mix_Volume(channel, 0);
+    }
+    void unmute() {
+        Mix_Volume(channel, volume);
+    }
+    void volDown(int amount = 1, int min = 0){
+        volume -= amount;
+        if (volume < min) volume = min;
+        Mix_VolumeChunk(sound, volume);
+    }
+    void volUp(int amount = 1, int max = MIX_MAX_VOLUME){
+        volume += amount;
+        if (volume > max) volume = max;
+        Mix_VolumeChunk(sound, volume);
     }
     bool isPlaying() {
         return Mix_Playing(channel);

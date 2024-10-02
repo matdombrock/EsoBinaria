@@ -112,6 +112,13 @@ public:
     }
 };
 
+namespace Sounds {
+    Sound menuTrack = Sound("menu.ogg");
+    Sound changeTile = Sound("2.wav");
+    Sound toggleMenu = Sound("3.wav");
+    Sound toggleTests = Sound("4.wav");
+};
+
 class Globals {
 public:
     const int fontSize = WINDOW_SIZE.x / 32;
@@ -120,12 +127,21 @@ public:
     std::string codeString = "";
     HelpItem* helpItem = nullptr;
     bool hasCodeErr = false;
+    bool showMenu = false;
     int tick = 0;
     CellType activeTile = CT_EMPTY;
     //
     Vec2i bottomBarSize = Vec2i(WINDOW_SIZE.x, cellSize * 3);
     Vec2i bottomBarPos = Vec2i(0, WINDOW_SIZE.y - bottomBarSize.y);
     //
+    void setActiveTile(CellType type) {
+        Sounds::changeTile.play();
+        activeTile = type;
+    }
+    void toggleMenu() {
+        Sounds::toggleMenu.play();
+        showMenu = !showMenu;
+    }
 };
 Globals _g;
 
@@ -273,6 +289,7 @@ public:
     }
     ~TestScreen() {}
     void process() {
+        if (_g.showMenu) return;
         std::string cs = Util::strReplace(Util::strReplace(_g.codeString, " ", ""), "_", "");
         std::string cso = Util::strReplace(Util::strReplace(codeStringOld, " ", ""), "_", "");
         if (cs != cso) {
@@ -286,9 +303,11 @@ public:
         }
         if(input.keyDown(SDLK_SPACE)) {
             show = !show;
+            Sounds::toggleTests.play();
         }
     }
     void render(Graphics* graph) {
+        if (_g.showMenu) return;
         int testWinWidth = _g.fontSize * 8;
         int testWinX = WINDOW_SIZE.x - (show ? testWinWidth : _g.cellSize / 4);
         //graph->setColor(colors["BG3"]);
@@ -379,10 +398,15 @@ public:
     Input input;
     CellType type;
     Uint8 state;
+    Uint8 oldState;
+    Sound sndTick;
     TileBtn() : Entity() {
+        state = 99; // 99 prevents play on start
+        oldState = 99;
         tag = "tileBtn";
         type = CT_EMPTY;
         setCollider(Vec2i(_g.cellSize, _g.cellSize));
+        sndTick.set("1.wav");
     }
     ~TileBtn() {}
     void render(Graphics* graph) override {
@@ -400,11 +424,16 @@ public:
         CellSprites::cellMap[type]->render(graph, post);
     }
     void onMouse(bool over) override {
+        oldState = state;
         if (over) {
             state = 1;
             if (input.mouseKeyDown(SDL_BUTTON_LEFT)) {
                 state = 2;
-                _g.activeTile = type;
+                _g.setActiveTile(type);
+            }
+            if (state == 1 && oldState == 0) {
+                DBG("play ");
+                sndTick.play();
             }
             return;
         }
@@ -471,10 +500,10 @@ public:
         em.addEntity(&btnNand);
         em.addEntity(&btnNor);
         em.addEntity(&btnXnor);
-
     }
     ~BottomBar() {}
     void process() override {
+        if (_g.showMenu) return;
         em.checkMouse();
         em.process();
         if (btnClear.state >= 1){
@@ -521,30 +550,35 @@ public:
         }
     }
     void render(Graphics* graph) override {
+        if (_g.showMenu) return;
         graph->setColor(colors["BG3"]);
         graph->rect(_g.bottomBarPos, _g.bottomBarSize);
         em.render(graph);
 
+        int padX = _g.cellSize;
+        int padY = _g.cellSize / 4;
+        graph->setColor(colors["BG"]);
+        graph->rect(Vec2i(0, _g.bottomBarPos.y + _g.cellSize), Vec2i(WINDOW_SIZE.x, _g.bottomBarSize.y - _g.cellSize), true);
         if (_g.helpItem != nullptr) {
             graph->setColor(colors["GREEN"]);
-            graph->text("Name: ", Vec2i(10, _g.bottomBarPos.y + _g.cellSize + 8), _g.fontSize);
+            graph->text("Name: ", Vec2i(padX, _g.bottomBarPos.y + _g.cellSize + padY), _g.fontSize);
             int w = graph->textWidth("Name: ", _g.fontSize);
             graph->setColor(200, 200, 200);
-            graph->text(_g.helpItem->title, Vec2i(10 + w, _g.bottomBarPos.y + _g.cellSize + 8), _g.fontSize);
+            graph->text(_g.helpItem->title, Vec2i(padX + w, _g.bottomBarPos.y + _g.cellSize + padY), _g.fontSize);
             w += graph->textWidth(_g.helpItem->title, _g.fontSize);
             graph->setColor(colors["GRAY"]);
-            graph->text(" (" + _g.helpItem->key + ")", Vec2i(10 + w, _g.bottomBarPos.y + _g.cellSize + 8), _g.fontSize);
+            graph->text(" (" + _g.helpItem->key + ")", Vec2i(padX + w, _g.bottomBarPos.y + _g.cellSize + padY), _g.fontSize);
 
             graph->setColor(colors["GREEN"]);
-            graph->text("Info: ", Vec2i(10, _g.bottomBarPos.y + _g.cellSize + _g.fontSize + 8), _g.fontSize);
+            graph->text("Info: ", Vec2i(padX, _g.bottomBarPos.y + _g.cellSize + _g.fontSize + padY), _g.fontSize);
             w = graph->textWidth("Info: ", _g.fontSize);
             graph->setColor(200, 200, 200);
-            graph->text(_g.helpItem->desc, Vec2i(10 + w, _g.bottomBarPos.y + _g.cellSize + _g.fontSize + 8), _g.fontSize);
+            graph->text(_g.helpItem->desc, Vec2i(padX + w, _g.bottomBarPos.y + _g.cellSize + _g.fontSize + padY), _g.fontSize);
         }
         else if (_g.codeString.length() > 0) {
             std::string codePre = _g.hasCodeErr ? "!!" :">> ";
             graph->setColor(_g.hasCodeErr ? colors["YELLOW"] : colors["GREEN"]);
-            graph->text(codePre, Vec2i(10, _g.bottomBarPos.y + _g.cellSize + 8), _g.fontSize);
+            graph->text(codePre, Vec2i(padX, _g.bottomBarPos.y + _g.cellSize + padY), _g.fontSize);
             int w = graph->textWidth(codePre, _g.fontSize);
             // Split the string by _
             std::vector<std::string> split = Util::splitString(_g.codeString, "_");
@@ -560,15 +594,15 @@ public:
             int p2w = graph->textWidth(p2, _g.fontSize);
             if (p1.length() > 0) {
                 graph->setColor(colors["GRAY"]);
-                graph->text(p1, Vec2i(10 + w, _g.bottomBarPos.y + _g.cellSize + 8), _g.fontSize);
+                graph->text(p1, Vec2i(padX + w, _g.bottomBarPos.y + _g.cellSize + padY), _g.fontSize);
             }
             if (p2.length() > 0) {
                 graph->setColor(colors["GREEN"]);
-                graph->text(p2, Vec2i(10 + w + p1w, _g.bottomBarPos.y + _g.cellSize + 8), _g.fontSize);
+                graph->text(p2, Vec2i(padX + w + p1w, _g.bottomBarPos.y + _g.cellSize + padY), _g.fontSize);
             }
             if (p3.length() > 0) {
                 graph->setColor(colors["GRAY"]);
-                graph->text(p3, Vec2i(10 + w + p1w + p2w, _g.bottomBarPos.y + _g.cellSize + 8), _g.fontSize);
+                graph->text(p3, Vec2i(padX + w + p1w + p2w, _g.bottomBarPos.y + _g.cellSize + padY), _g.fontSize);
             }
         }
     }
@@ -577,7 +611,6 @@ public:
 class Grid : public Entity {
 public:
     Input input;
-    bool paused;
     Vec2i mousePos;
     Vec2i mousePosCell;
     Uint32 mouseBtn;
@@ -606,7 +639,7 @@ public:
         }
 
         sndTick.set("1.wav");
-        sndTick.volume = 32;
+        // sndTick.volume = 32;
         sndAdd.set("14.wav");
         sndRemove.set("rock.ogg");
         sndParen.set("5.wav");  
@@ -626,12 +659,11 @@ public:
 
         highlightCellTypeStr = "EMPTY";
         helpString = "";
-        paused = false;
         DBG("Grid started");
     }
     ~Grid() {}
     void process() override {
-        if (paused) return;
+        if (_g.showMenu) return;
         mousePos = input.mousePos();
         mouseBtn = input.getMouseBtn();
         mousePosCell = mousePos / _g.cellSize;
@@ -642,33 +674,35 @@ public:
             }
             lastMouse[0] = mousePosCell;
         }
-        if (lastMouse[0] != lastMouse[1]) {
-            int relMouse = ((float)mousePosCell.x / gridSize.x) * 255;
-            sndTick.setPan(255 - relMouse, relMouse);
-            sndTick.play(true);
-        }
         int x = mousePosCell.x;
         int y = mousePosCell.y;
         CellType cellType = cells[x][y].get();
         bool isTile = cellType != CT_VOID && cellType != CT_EMPTY;
         highlightCellTypeStr = Cell::typeToString(cellType);
         
-        if (input.keyDown(SDLK_q)) _g.activeTile = CT_EMPTY;
-        if (input.keyDown(SDLK_BACKSPACE)) _g.activeTile = CT_EMPTY;
-        if (input.keyDown(SDLK_w)) _g.activeTile = CT_BLANK;
-        if (input.keyDown(SDLK_e)) _g.activeTile = CT_AND;
-        if (input.keyDown(SDLK_r)) _g.activeTile = CT_OR;
-        if (input.keyDown(SDLK_t)) _g.activeTile = CT_NOT;
-        if (input.keyDown(SDLK_a)) _g.activeTile = CT_INA;
-        if (input.keyDown(SDLK_s)) _g.activeTile = CT_INB;
-        if (input.keyDown(SDLK_d)) _g.activeTile = CT_INC;
-        if (input.keyDown(SDLK_f)) _g.activeTile = CT_IND;
-        if (input.keyDown(SDLK_y)) _g.activeTile = CT_XOR;
-        if (input.keyDown(SDLK_u)) _g.activeTile = CT_NAND;
-        if (input.keyDown(SDLK_i)) _g.activeTile = CT_NOR;
-        if (input.keyDown(SDLK_o)) _g.activeTile = CT_XNOR;
+        if (input.keyDown(SDLK_q)) _g.setActiveTile(CT_EMPTY);
+        if (input.keyDown(SDLK_BACKSPACE)) _g.setActiveTile(CT_EMPTY);
+        if (input.keyDown(SDLK_w)) _g.setActiveTile(CT_BLANK);
+        if (input.keyDown(SDLK_e)) _g.setActiveTile(CT_AND);
+        if (input.keyDown(SDLK_r)) _g.setActiveTile(CT_OR);
+        if (input.keyDown(SDLK_t)) _g.setActiveTile(CT_NOT);
+        if (input.keyDown(SDLK_a)) _g.setActiveTile(CT_INA);
+        if (input.keyDown(SDLK_s)) _g.setActiveTile(CT_INB);
+        if (input.keyDown(SDLK_d)) _g.setActiveTile(CT_INC);
+        if (input.keyDown(SDLK_f)) _g.setActiveTile(CT_IND);
+        if (input.keyDown(SDLK_y)) _g.setActiveTile(CT_XOR);
+        if (input.keyDown(SDLK_u)) _g.setActiveTile(CT_NAND);
+        if (input.keyDown(SDLK_i)) _g.setActiveTile(CT_NOR);
+        if (input.keyDown(SDLK_o)) _g.setActiveTile(CT_XNOR);
 
         if (input.mousePos().y < _g.bottomBarPos.y) {
+            if (lastMouse[0] != lastMouse[1]) {
+                int relMouse = ((float)mousePosCell.x / gridSize.x) * 255;
+                sndTick.setPan(255 - relMouse, relMouse);
+                sndTick.play();
+                DBG("TICK");
+            }
+
             CellType newCell = CT_VOID;
             if (input.mouseKeyDown(SDL_BUTTON_LEFT)) {
                 newCell = _g.activeTile;
@@ -707,7 +741,7 @@ public:
         }
     }
     void render(Graphics* graph) override {
-        if (paused) return;
+        if (_g.showMenu) return;
         // Drag grid bg
         graph->setColor(colors["BG2"]);
         for (int x = 0; x < WINDOW_SIZE.x; x += _g.cellSize) {
@@ -763,45 +797,6 @@ public:
         graph->setColor(colors["WHITE"]);
         graph->rect(cell, Vec2i(_g.cellSize, _g.cellSize), false);
 
-
-        // if (helpString.length() > 0) {
-        //     graph->setColor(colors["GREEN"]);
-        //     graph->text("Info: ", Vec2i(10, _g.bottomBarPos.y + _g.cellSize + 8), _g.fontSize);
-        //     int w = graph->textWidth("Info: ", _g.fontSize);
-        //     graph->setColor(200, 200, 200);
-        //     graph->text(helpString, Vec2i(10 + w, _g.bottomBarPos.y + _g.cellSize + 8), _g.fontSize);
-        // }
-        // else if (_g.codeString.length() > 0) {
-        //     std::string codePre = _g.hasCodeErr ? "!!" :">> ";
-        //     graph->setColor(_g.hasCodeErr ? colors["YELLOW"] : colors["GREEN"]);
-        //     graph->text(codePre, Vec2i(10, _g.bottomBarPos.y + _g.cellSize + 8), _g.fontSize);
-        //     int w = graph->textWidth(codePre, _g.fontSize);
-        //     // Split the string by _
-        //     std::vector<std::string> split = Util::splitString(_g.codeString, "_");
-        //     std::string p1 = split[0];
-        //     std::string p2 = "";
-        //     std::string p3 = "";
-        //     if (split.size() == 3) {
-        //         p2 = split[1] + " ";
-        //         p3 = split[2];
-        //     }
-        //     // 
-        //     int p1w = graph->textWidth(p1, _g.fontSize);
-        //     int p2w = graph->textWidth(p2, _g.fontSize);
-        //     if (p1.length() > 0) {
-        //         graph->setColor(colors["GRAY"]);
-        //         graph->text(p1, Vec2i(10 + w, _g.bottomBarPos.y + _g.cellSize + 8), _g.fontSize);
-        //     }
-        //     if (p2.length() > 0) {
-        //         graph->setColor(colors["GREEN"]);
-        //         graph->text(p2, Vec2i(10 + w + p1w, _g.bottomBarPos.y + _g.cellSize + 8), _g.fontSize);
-        //     }
-        //     if (p3.length() > 0) {
-        //         graph->setColor(colors["GRAY"]);
-        //         graph->text(p3, Vec2i(10 + w + p1w + p2w, _g.bottomBarPos.y + _g.cellSize + 8), _g.fontSize);
-        //     }
-        // }
-
         // Draw static noise
         if (_g.tick % 2 == 0) {
             int staticSize = _g.cellSize / 32;
@@ -831,7 +826,6 @@ public:
 
 class Menu : public Entity {
 public:
-    bool show;
     EntityManager em;
     Btn btnResume;
     Btn btnRestart;
@@ -841,7 +835,6 @@ public:
     Sprite sprBg;
     Menu() : Entity() {
         tag = "menu";
-        show = false;
 
         btnResume.pos = Vec2i(20, 60);
         btnResume.text = "Resume";
@@ -868,19 +861,27 @@ public:
     }
     ~Menu() {}
     void process() override {
-        if (!show) return;
+        if (!_g.showMenu) {
+            Sounds::menuTrack.volDown(4, 8);
+            // Sounds::menuTrack.stop();
+            return;
+        }
+        // Sounds::menuTrack.volume = 255;
+        if (!Sounds::menuTrack.isPlaying()) Sounds::menuTrack.volume = 0;
+        Sounds::menuTrack.volUp(4, 128);
+        Sounds::menuTrack.play(true);
         em.process();
         em.checkMouse();
         if (btnResume.isClicked()) {
-            show = false;
+            _g.toggleMenu();
         }
         if (btnRestart.isClicked()) {
-            show = false;
+            _g.showMenu = false;
         }
     }
     void render(Graphics* graph) override {
-        if (!show) return;
-        graph->setColor(colors["BG1"], 128);
+        if (!_g.showMenu) return;
+        graph->setColor(colors["BG"]);
         graph->rect(Vec2i(0, 0), WINDOW_SIZE);
         graph->setColor(colors["WHITE"]);
         graph->text("ESOMachina", Vec2i(20, 20), _g.fontSize);
@@ -928,12 +929,8 @@ public:
     void process() override {
         // Pause
         if (input.keyDown(SDLK_ESCAPE)) {
-            menu.show = !menu.show;
-            DBG("Toggle menu " + std::to_string(grid.paused));
+            _g.toggleMenu();
         }
-        // Pause the grid when menu is showing
-        // Outside of cond because can be triggered other ways
-        grid.paused = menu.show;
 
         _g.tick++;
     }
