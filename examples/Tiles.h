@@ -8,10 +8,33 @@ using namespace Imp;
 
 #define WINDOW_SIZE Vec2i(1024, 768)
 
+class HelpItem {
+public:
+    std::string title;
+    std::string desc;
+    std::string key;
+};
+
+std::map<std::string, HelpItem> helpItems = {
+    {"A", {"IN_A", "Input A", "A"}},
+    {"B", {"IN_B", "Input B", "S"}},
+    {"C", {"IN_C", "Input C", "D"}},
+    {"D", {"IN_D", "Input D", "F"}},
+    {"VOID", {"CLEAR", "Clear the cell", "q"}},
+    {"BLANK", {"BLANK", "Blank cell", "w"}},
+    {"AND", {"AND", "Outputs true if both inputs are true", "e"}},
+    {"OR", {"OR", "Outputs true if either input is true", "r"}},
+    {"NOT", {"NOT", "Outputs true if input is false", "t"}},
+    {"XOR", {"XOR", "Outputs true if inputs are different", "y"}},
+    {"NAND", {"NAND", "Outputs false if both inputs are true", "u"}},
+    {"NOR", {"NOR", "Outputs false if either input is true", "i"}},
+    {"XNOR", {"XNOR", "Outputs false if inputs are different", "o"}},
+};
+
 std::map<std::string, Color> colors = {
-    {"BG", Color(20,20,20)},
-    {"BG2", Color(45,45,45)},
-    {"BG3", Color(55,55,55)},
+    {"BG", Color(20,25,20)},
+    {"BG2", Color(45,50,45)},
+    {"BG3", Color(55,55,60)},
     {"GREEN", Color(94,180,93)},
     {"YELLOW", Color(238,198,75)},
     {"RED", Color(255,128,128)},
@@ -34,54 +57,6 @@ enum CellType {
     CT_NAND = 10,
     CT_NOR = 11,
     CT_XNOR = 12
-};
-
-class Globals {
-public:
-    const int fontSize = WINDOW_SIZE.x / 32;
-    const int cellSize = WINDOW_SIZE.x / 16;
-    //
-    std::string codeString = "";
-    bool hasCodeErr = false;
-    int tick = 0;
-    //
-    Vec2i bottomBarSize = Vec2i(WINDOW_SIZE.x, cellSize * 3);
-    Vec2i bottomBarPos = Vec2i(0, WINDOW_SIZE.y - bottomBarSize.y);
-    //
-};
-Globals _g;
-
-namespace CellSprites {
-    Sprite baseTile = Sprite(Vec2i(0, 0), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
-    Sprite blankTile = Sprite(Vec2i(0, 32), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
-    Sprite andTile  = Sprite(Vec2i(0, 16), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
-    Sprite orTile = Sprite(Vec2i(16, 16), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
-    Sprite notTile = Sprite(Vec2i(32, 16), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
-    Sprite xorTile = Sprite(Vec2i(48, 16), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
-    Sprite nandTile = Sprite(Vec2i(64, 16), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
-    Sprite norTile = Sprite(Vec2i(80, 16), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
-    Sprite xnorTile = Sprite(Vec2i(96, 16), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
-    Sprite parenR = Sprite(Vec2i(32, 0), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
-    Sprite inATile = Sprite(Vec2i(0, 48), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
-    Sprite inBTile = Sprite(Vec2i(16, 48), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
-    Sprite inCTile = Sprite(Vec2i(32, 48), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
-    Sprite inDTile = Sprite(Vec2i(48, 48), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
-    Sprite clear = Sprite(Vec2i(16, 32), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
-    std::map <CellType, Sprite*> cellMap = {
-        {CT_EMPTY, &clear},
-        {CT_AND, &andTile},
-        {CT_OR, &orTile},
-        {CT_NOT, &notTile},
-        {CT_XOR, &xorTile},
-        {CT_NAND, &nandTile},
-        {CT_NOR, &norTile},
-        {CT_XNOR, &xnorTile},
-        {CT_BLANK, &blankTile},
-        {CT_INA, &inATile},
-        {CT_INB, &inBTile},
-        {CT_INC, &inCTile},
-        {CT_IND, &inDTile},
-    };
 };
 
 class Cell {
@@ -132,8 +107,59 @@ public:
             case CT_NOR: return "NOR";
             case CT_XNOR: return "XNOR";
         }
+        DBG("CellType not found " + std::to_string(type));
         return "????";
     }
+};
+
+class Globals {
+public:
+    const int fontSize = WINDOW_SIZE.x / 32;
+    const int cellSize = WINDOW_SIZE.x / 16;
+    //
+    std::string codeString = "";
+    HelpItem* helpItem = nullptr;
+    bool hasCodeErr = false;
+    int tick = 0;
+    CellType activeTile = CT_EMPTY;
+    //
+    Vec2i bottomBarSize = Vec2i(WINDOW_SIZE.x, cellSize * 3);
+    Vec2i bottomBarPos = Vec2i(0, WINDOW_SIZE.y - bottomBarSize.y);
+    //
+};
+Globals _g;
+
+namespace CellSprites {
+    Sprite baseTile = Sprite(Vec2i(0, 0), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
+    Sprite blankTile = Sprite(Vec2i(0, 32), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
+    Sprite andTile  = Sprite(Vec2i(0, 16), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
+    Sprite orTile = Sprite(Vec2i(16, 16), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
+    Sprite notTile = Sprite(Vec2i(32, 16), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
+    Sprite xorTile = Sprite(Vec2i(48, 16), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
+    Sprite nandTile = Sprite(Vec2i(64, 16), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
+    Sprite norTile = Sprite(Vec2i(80, 16), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
+    Sprite xnorTile = Sprite(Vec2i(96, 16), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
+    Sprite parenR = Sprite(Vec2i(32, 0), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
+    Sprite inATile = Sprite(Vec2i(0, 48), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
+    Sprite inBTile = Sprite(Vec2i(16, 48), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
+    Sprite inCTile = Sprite(Vec2i(32, 48), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
+    Sprite inDTile = Sprite(Vec2i(48, 48), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
+    Sprite clear = Sprite(Vec2i(16, 32), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
+    std::map <CellType, Sprite*> cellMap = {
+        {CT_EMPTY, &clear},
+        {CT_AND, &andTile},
+        {CT_OR, &orTile},
+        {CT_NOT, &notTile},
+        {CT_XOR, &xorTile},
+        {CT_NAND, &nandTile},
+        {CT_NOR, &norTile},
+        {CT_XNOR, &xnorTile},
+        {CT_BLANK, &blankTile},
+        {CT_INA, &inATile},
+        {CT_INB, &inBTile},
+        {CT_INC, &inCTile},
+        {CT_IND, &inDTile},
+    };
 };
 
 class TestCase {
@@ -211,6 +237,7 @@ private:
 
 class TestScreen : public Entity {
 public:
+    Input input;
     bool show;
     std::vector<TestCase> tests;
     std::string codeStringOld;
@@ -249,6 +276,7 @@ public:
         std::string cs = Util::strReplace(Util::strReplace(_g.codeString, " ", ""), "_", "");
         std::string cso = Util::strReplace(Util::strReplace(codeStringOld, " ", ""), "_", "");
         if (cs != cso) {
+            _g.hasCodeErr = false;
             DBG("Retesting code");
             DBG(cs);
             for (TestCase& test : tests) {
@@ -256,7 +284,7 @@ public:
             }
             codeStringOld = _g.codeString;
         }
-        if(Input::keyDown(SDLK_SPACE)) {
+        if(input.keyDown(SDLK_SPACE)) {
             show = !show;
         }
     }
@@ -298,6 +326,7 @@ public:
 
 class Btn : public Entity {
 public:
+    Input input;
     Vec2i size;
     std::string text;
     Uint8 state;
@@ -336,7 +365,7 @@ public:
     void onMouse(bool over) override {
         if (over) {
             state = 1;
-            if (Input::mouseKey(SDL_BUTTON_LEFT)) {
+            if (input.mouseKey(SDL_BUTTON_LEFT)) {
                 state = 2;
             }
             return;
@@ -345,8 +374,209 @@ public:
     }
 };
 
+class TileBtn : public Entity {
+public:
+    Input input;
+    CellType type;
+    Uint8 state;
+    TileBtn() : Entity() {
+        tag = "tileBtn";
+        type = CT_EMPTY;
+        setCollider(Vec2i(_g.cellSize, _g.cellSize));
+    }
+    ~TileBtn() {}
+    void render(Graphics* graph) override {
+        Vec2i post = pos.copy();
+         
+        if (_g.activeTile == type) {
+            post += Vec2i(0, -_g.cellSize / 4);
+        }
+        else if (state > 0) {
+            post += Vec2i(0, -_g.cellSize / 8);
+        }
+        graph->setColor(colors["GREEN"]);
+        graph->rect(pos + Vec2i(_g.cellSize / 4, _g.cellSize / 8), Vec2i(_g.cellSize - (_g.cellSize / 2), _g.cellSize - _g.cellSize / 4));
+        CellSprites::baseTile.render(graph, post);
+        CellSprites::cellMap[type]->render(graph, post);
+    }
+    void onMouse(bool over) override {
+        if (over) {
+            state = 1;
+            if (input.mouseKeyDown(SDL_BUTTON_LEFT)) {
+                state = 2;
+                _g.activeTile = type;
+            }
+            return;
+        }
+        state = 0;
+    }
+};
+
+class BottomBar : public Entity {
+public:
+    EntityManager em;
+    TileBtn btnInA;
+    TileBtn btnInB;
+    TileBtn btnInC;
+    TileBtn btnInD;
+    TileBtn btnClear;
+    TileBtn btnBlank;
+    TileBtn btnAnd;
+    TileBtn btnOr;
+    TileBtn btnNot;
+    TileBtn btnXor;
+    TileBtn btnNand;
+    TileBtn btnNor;
+    TileBtn btnXnor;
+    BottomBar() : Entity() {
+        tag = "bottomBar";
+        btnClear.type = CT_EMPTY;
+        btnBlank.type = CT_BLANK;
+        btnInA.type = CT_INA;
+        btnInB.type = CT_INB;
+        btnInC.type = CT_INC;
+        btnInD.type = CT_IND;
+        btnAnd.type = CT_AND;
+        btnOr.type = CT_OR;
+        btnNot.type = CT_NOT;
+        btnXor.type = CT_XOR;
+        btnNand.type = CT_NAND;
+        btnNor.type = CT_NOR;
+        btnXnor.type = CT_XNOR;
+        
+        btnClear.pos = Vec2i(1.5f * _g.cellSize, _g.bottomBarPos.y);
+        btnInA.pos = Vec2i(2.5f * _g.cellSize, _g.bottomBarPos.y);
+        btnInB.pos = Vec2i(3.5f * _g.cellSize, _g.bottomBarPos.y);
+        btnInC.pos = Vec2i(4.5f * _g.cellSize, _g.bottomBarPos.y);
+        btnInD.pos = Vec2i(5.5f * _g.cellSize, _g.bottomBarPos.y);
+        btnBlank.pos = Vec2i(6.5f * _g.cellSize, _g.bottomBarPos.y);
+        btnAnd.pos = Vec2i(7.5f * _g.cellSize, _g.bottomBarPos.y);
+        btnOr.pos = Vec2i(8.5f * _g.cellSize, _g.bottomBarPos.y);
+        btnNot.pos = Vec2i(9.5f * _g.cellSize, _g.bottomBarPos.y);
+        btnXor.pos = Vec2i(10.5f * _g.cellSize, _g.bottomBarPos.y);
+        btnNand.pos = Vec2i(11.5f * _g.cellSize, _g.bottomBarPos.y);
+        btnNor.pos = Vec2i(12.5f * _g.cellSize, _g.bottomBarPos.y);
+        btnXnor.pos = Vec2i(13.5f * _g.cellSize, _g.bottomBarPos.y);
+
+        em.addEntity(&btnClear);
+        em.addEntity(&btnInA);
+        em.addEntity(&btnInB);
+        em.addEntity(&btnInC);
+        em.addEntity(&btnInD);
+        em.addEntity(&btnBlank);
+        em.addEntity(&btnAnd);
+        em.addEntity(&btnOr);
+        em.addEntity(&btnNot);
+        em.addEntity(&btnXor);
+        em.addEntity(&btnNand);
+        em.addEntity(&btnNor);
+        em.addEntity(&btnXnor);
+
+    }
+    ~BottomBar() {}
+    void process() override {
+        em.checkMouse();
+        em.process();
+        if (btnClear.state >= 1){
+            _g.helpItem = &helpItems["VOID"];
+        }
+        else if (btnInA.state >= 1){
+            _g.helpItem = &helpItems["A"];
+        }
+        else if (btnInB.state >= 1){
+            _g.helpItem = &helpItems["B"];
+        }
+        else if (btnInC.state >= 1){
+            _g.helpItem = &helpItems["C"];
+        }
+        else if (btnInD.state >= 1){
+            _g.helpItem = &helpItems["D"];
+        }
+        else if (btnBlank.state >= 1){
+            _g.helpItem = &helpItems["BLANK"];
+        }
+        else if (btnAnd.state >= 1){
+            _g.helpItem = &helpItems["AND"];
+        }
+        else if (btnOr.state >= 1){
+            _g.helpItem = &helpItems["OR"];
+        }
+        else if (btnNot.state >= 1){
+            _g.helpItem = &helpItems["NOT"];
+        }
+        else if (btnXor.state >= 1){
+            _g.helpItem = &helpItems["XOR"];
+        }
+        else if (btnNand.state >= 1){
+            _g.helpItem = &helpItems["NAND"];
+        }
+        else if (btnNor.state >= 1){
+            _g.helpItem = &helpItems["NOR"];
+        }
+        else if (btnXnor.state >= 1){
+            _g.helpItem = &helpItems["XNOR"];
+        }
+        else {
+            _g.helpItem = nullptr;
+        }
+    }
+    void render(Graphics* graph) override {
+        graph->setColor(colors["BG3"]);
+        graph->rect(_g.bottomBarPos, _g.bottomBarSize);
+        em.render(graph);
+
+        if (_g.helpItem != nullptr) {
+            graph->setColor(colors["GREEN"]);
+            graph->text("Name: ", Vec2i(10, _g.bottomBarPos.y + _g.cellSize + 8), _g.fontSize);
+            int w = graph->textWidth("Name: ", _g.fontSize);
+            graph->setColor(200, 200, 200);
+            graph->text(_g.helpItem->title, Vec2i(10 + w, _g.bottomBarPos.y + _g.cellSize + 8), _g.fontSize);
+            w += graph->textWidth(_g.helpItem->title, _g.fontSize);
+            graph->setColor(colors["GRAY"]);
+            graph->text(" (" + _g.helpItem->key + ")", Vec2i(10 + w, _g.bottomBarPos.y + _g.cellSize + 8), _g.fontSize);
+
+            graph->setColor(colors["GREEN"]);
+            graph->text("Info: ", Vec2i(10, _g.bottomBarPos.y + _g.cellSize + _g.fontSize + 8), _g.fontSize);
+            w = graph->textWidth("Info: ", _g.fontSize);
+            graph->setColor(200, 200, 200);
+            graph->text(_g.helpItem->desc, Vec2i(10 + w, _g.bottomBarPos.y + _g.cellSize + _g.fontSize + 8), _g.fontSize);
+        }
+        else if (_g.codeString.length() > 0) {
+            std::string codePre = _g.hasCodeErr ? "!!" :">> ";
+            graph->setColor(_g.hasCodeErr ? colors["YELLOW"] : colors["GREEN"]);
+            graph->text(codePre, Vec2i(10, _g.bottomBarPos.y + _g.cellSize + 8), _g.fontSize);
+            int w = graph->textWidth(codePre, _g.fontSize);
+            // Split the string by _
+            std::vector<std::string> split = Util::splitString(_g.codeString, "_");
+            std::string p1 = split[0];
+            std::string p2 = "";
+            std::string p3 = "";
+            if (split.size() == 3) {
+                p2 = split[1] + " ";
+                p3 = split[2];
+            }
+            // 
+            int p1w = graph->textWidth(p1, _g.fontSize);
+            int p2w = graph->textWidth(p2, _g.fontSize);
+            if (p1.length() > 0) {
+                graph->setColor(colors["GRAY"]);
+                graph->text(p1, Vec2i(10 + w, _g.bottomBarPos.y + _g.cellSize + 8), _g.fontSize);
+            }
+            if (p2.length() > 0) {
+                graph->setColor(colors["GREEN"]);
+                graph->text(p2, Vec2i(10 + w + p1w, _g.bottomBarPos.y + _g.cellSize + 8), _g.fontSize);
+            }
+            if (p3.length() > 0) {
+                graph->setColor(colors["GRAY"]);
+                graph->text(p3, Vec2i(10 + w + p1w + p2w, _g.bottomBarPos.y + _g.cellSize + 8), _g.fontSize);
+            }
+        }
+    }
+};
+
 class Grid : public Entity {
 public:
+    Input input;
     bool paused;
     Vec2i mousePos;
     Vec2i mousePosCell;
@@ -354,10 +584,8 @@ public:
     Vec2i gridSize;
     std::string highlightCellTypeStr;
     std::string helpString;
-    std::map<CellType, std::string> helpStrings;
     std::vector<std::vector<Cell>> cells;
     Vec2i lastMouse[8];
-    Vec2i bottomTilePos[13];
     Sound sndTick;
     Sound sndAdd;
     Sound sndRemove;
@@ -365,7 +593,8 @@ public:
     Grid() : Entity() {
         DBG("Starting grid");
         tag = "grid";
-        gridSize = WINDOW_SIZE / _g.cellSize;
+        Vec2i gridBounds = Vec2i(WINDOW_SIZE.x, WINDOW_SIZE.y - _g.bottomBarSize.y);
+        gridSize = gridBounds / _g.cellSize;
         // Resize the 2d array to the grid size
         cells.resize(gridSize.x);
         // Fill cells with 0
@@ -376,29 +605,11 @@ public:
             }
         }
 
-        helpStrings[CT_EMPTY] = "VOID (Q) - Clear cell";
-        helpStrings[CT_INA] = "A (A) - Input A";
-        helpStrings[CT_INB] = "B (S) - Input B";
-        helpStrings[CT_INC] = "C (D) - Input C";
-        helpStrings[CT_IND] = "D (F) - Input D";
-        helpStrings[CT_BLANK] = "BLANK (Q) - Blank cell";
-        helpStrings[CT_AND] = "AND (E) - AND gate";
-        helpStrings[CT_OR] = "OR (R) - OR gate";
-        helpStrings[CT_NOT] = "NOT (T) - NOT gate";
-        helpStrings[CT_XOR] = "XOR (Y) - XOR gate";
-        helpStrings[CT_NAND] = "NAND (U) - NAND gate";
-        helpStrings[CT_NOR] = "NOR (I) - NOR gate";
-        helpStrings[CT_XNOR] = "XNOR (O) - XNOR gate";
-
         sndTick.set("1.wav");
         sndTick.volume = 32;
         sndAdd.set("14.wav");
         sndRemove.set("rock.ogg");
-        sndParen.set("5.wav");
-
-        for (int i = 0; i < 13; i++) {
-            bottomTilePos[i] = Vec2i(i * _g.cellSize, _g.bottomBarPos.y);
-        }        
+        sndParen.set("5.wav");  
 
         // DBG basic test
         cells[2][2].set(CT_AND);
@@ -421,8 +632,8 @@ public:
     ~Grid() {}
     void process() override {
         if (paused) return;
-        mousePos = Input::mousePos();
-        mouseBtn = Input::getMouseBtn();
+        mousePos = input.mousePos();
+        mouseBtn = input.getMouseBtn();
         mousePosCell = mousePos / _g.cellSize;
         // Update lastMouse array with the most recent mousePosCell value
         if (_g.tick % 2 == 0) {
@@ -441,43 +652,40 @@ public:
         CellType cellType = cells[x][y].get();
         bool isTile = cellType != CT_VOID && cellType != CT_EMPTY;
         highlightCellTypeStr = Cell::typeToString(cellType);
-        // Overwrite highlightCellTypeStr if mouse is over bottom area
-        helpString = "";
-        for (int i = 0; i < 13; i++) {
-            Vec2i btp = bottomTilePos[i];
-            btp = btp / _g.cellSize;
-            if (btp.x == x && btp.y == y) {
-                highlightCellTypeStr = Cell::typeToString((CellType)i);
-                helpString = helpStrings[(CellType)i];
+        
+        if (input.keyDown(SDLK_q)) _g.activeTile = CT_EMPTY;
+        if (input.keyDown(SDLK_BACKSPACE)) _g.activeTile = CT_EMPTY;
+        if (input.keyDown(SDLK_w)) _g.activeTile = CT_BLANK;
+        if (input.keyDown(SDLK_e)) _g.activeTile = CT_AND;
+        if (input.keyDown(SDLK_r)) _g.activeTile = CT_OR;
+        if (input.keyDown(SDLK_t)) _g.activeTile = CT_NOT;
+        if (input.keyDown(SDLK_a)) _g.activeTile = CT_INA;
+        if (input.keyDown(SDLK_s)) _g.activeTile = CT_INB;
+        if (input.keyDown(SDLK_d)) _g.activeTile = CT_INC;
+        if (input.keyDown(SDLK_f)) _g.activeTile = CT_IND;
+        if (input.keyDown(SDLK_y)) _g.activeTile = CT_XOR;
+        if (input.keyDown(SDLK_u)) _g.activeTile = CT_NAND;
+        if (input.keyDown(SDLK_i)) _g.activeTile = CT_NOR;
+        if (input.keyDown(SDLK_o)) _g.activeTile = CT_XNOR;
+
+        if (input.mousePos().y < _g.bottomBarPos.y) {
+            CellType newCell = CT_VOID;
+            if (input.mouseKeyDown(SDL_BUTTON_LEFT)) {
+                newCell = _g.activeTile;
             }
-        }
-        // Modify cells
-        CellType newCell = CT_VOID;
-        if (Input::keyDown(SDLK_q)) newCell = CT_EMPTY;
-        if (Input::keyDown(SDLK_w)) newCell = CT_BLANK;
-        if (Input::keyDown(SDLK_e)) newCell = CT_AND;
-        if (Input::keyDown(SDLK_r)) newCell = CT_OR;
-        if (Input::keyDown(SDLK_t)) newCell = CT_NOT;
-        if (Input::keyDown(SDLK_a)) newCell = CT_INA;
-        if (Input::keyDown(SDLK_s)) newCell = CT_INB;
-        if (Input::keyDown(SDLK_d)) newCell = CT_INC;
-        if (Input::keyDown(SDLK_f)) newCell = CT_IND;
-        if (Input::keyDown(SDLK_y)) newCell = CT_XOR;
-        if (Input::keyDown(SDLK_u)) newCell = CT_NAND;
-        if (Input::keyDown(SDLK_i)) newCell = CT_NOR;
-        if (Input::keyDown(SDLK_o)) newCell = CT_XNOR;
-        if (newCell != CT_VOID) {
-            DBG("New Cell: " + std::to_string(newCell));
-            if (newCell == CT_EMPTY) {
-                if (isTile) sndRemove.play();
+            if (newCell != CT_VOID) {
+                DBG("New Cell: " + std::to_string(newCell));
+                if (newCell == CT_EMPTY) {
+                    if (isTile) sndRemove.play();
+                }
+                else sndAdd.play();
+                cells[x][y].set(newCell);
             }
-            else sndAdd.play();
-            cells[x][y].set(newCell);
-        }
-        // Toggle connectors
-        if (Input::keyDown(SDLK_TAB)) {
-            cells[x][y].cycleParens();
-            if (isTile) sndParen.play();
+            // Toggle connectors
+            if (input.keyDown(SDLK_TAB) || input.mouseKeyDown(SDL_BUTTON_RIGHT)) {
+                cells[x][y].cycleParens();
+                if (isTile) sndParen.play();
+            }
         }
 
         // Generate code string
@@ -555,79 +763,44 @@ public:
         graph->setColor(colors["WHITE"]);
         graph->rect(cell, Vec2i(_g.cellSize, _g.cellSize), false);
 
-        // Draw bottom area
-        graph->setColor(colors["BG2"]);
-        graph->rect(Vec2i(0, _g.bottomBarPos.y), Vec2i(WINDOW_SIZE.x, _g.bottomBarSize.y));
 
-        CellSprites::baseTile.render(graph, bottomTilePos[CT_EMPTY]);
-        CellSprites::clear.render(graph, bottomTilePos[CT_EMPTY]);
-        CellSprites::baseTile.render(graph, bottomTilePos[CT_INA]);
-        CellSprites::cellMap[CT_INA]->render(graph, bottomTilePos[CT_INA]);
-        CellSprites::baseTile.render(graph, bottomTilePos[CT_INB]); 
-        CellSprites::cellMap[CT_INB]->render(graph, bottomTilePos[CT_INB]);
-        CellSprites::baseTile.render(graph, bottomTilePos[CT_INC]); 
-        CellSprites::cellMap[CT_INC]->render(graph, bottomTilePos[CT_INC]);
-        CellSprites::baseTile.render(graph, bottomTilePos[CT_IND]); 
-        CellSprites::cellMap[CT_IND]->render(graph, bottomTilePos[CT_IND]);
-        CellSprites::baseTile.render(graph, bottomTilePos[CT_BLANK]); 
-        CellSprites::cellMap[CT_BLANK]->render(graph, bottomTilePos[CT_BLANK]);
-        CellSprites::baseTile.render(graph, bottomTilePos[CT_AND]); 
-        CellSprites::cellMap[CT_AND]->render(graph, bottomTilePos[CT_AND]);
-        CellSprites::baseTile.render(graph, bottomTilePos[CT_OR]); 
-        CellSprites::cellMap[CT_OR]->render(graph, bottomTilePos[CT_OR]);
-        CellSprites::baseTile.render(graph, bottomTilePos[CT_NOT]);
-        CellSprites::cellMap[CT_NOT]->render(graph, bottomTilePos[CT_NOT]);
-        CellSprites::baseTile.render(graph, bottomTilePos[CT_XOR]);
-        CellSprites::cellMap[CT_XOR]->render(graph, bottomTilePos[CT_XOR]);
-        CellSprites::baseTile.render(graph, bottomTilePos[CT_NAND]);
-        CellSprites::cellMap[CT_NAND]->render(graph, bottomTilePos[CT_NAND]);
-        CellSprites::baseTile.render(graph, bottomTilePos[CT_NOR]);
-        CellSprites::cellMap[CT_NOR]->render(graph, bottomTilePos[CT_NOR]);
-        CellSprites::baseTile.render(graph, bottomTilePos[CT_XNOR]);
-        CellSprites::cellMap[CT_XNOR]->render(graph, bottomTilePos[CT_XNOR]);
-
-        graph->setColor(colors["YELLOW"]);
-        graph->text(mousePosCell.toString(), Vec2i(WINDOW_SIZE.x - _g.cellSize * 2, _g.bottomBarPos.y + 4), _g.fontSize);
-        // graph->text(highlightCellTypeStr, Vec2i(WINDOW_SIZE.x - _g.cellSize * 2, _g.bottomBarPos.y + 4), _g.fontSize);
-        // graph->text(highlightCellTypeStr, mousePos + Vec2i(-_g.cellSize/2, _g.cellSize));
-
-        if (helpString.length() > 0) {
-            graph->setColor(colors["GREEN"]);
-            graph->text("Info: ", Vec2i(10, _g.bottomBarPos.y + _g.cellSize + 8), _g.fontSize);
-            int w = graph->textWidth("Info: ", _g.fontSize);
-            graph->setColor(200, 200, 200);
-            graph->text(helpString, Vec2i(10 + w, _g.bottomBarPos.y + _g.cellSize + 8), _g.fontSize);
-        }
-        else if (_g.codeString.length() > 0) {
-            std::string codePre = _g.hasCodeErr ? "!!" :">> ";
-            graph->setColor(_g.hasCodeErr ? colors["YELLOW"] : colors["GREEN"]);
-            graph->text(codePre, Vec2i(10, _g.bottomBarPos.y + _g.cellSize + 8), _g.fontSize);
-            int w = graph->textWidth(codePre, _g.fontSize);
-            // Split the string by _
-            std::vector<std::string> split = Util::splitString(_g.codeString, "_");
-            std::string p1 = split[0];
-            std::string p2 = "";
-            std::string p3 = "";
-            if (split.size() == 3) {
-                p2 = split[1] + " ";
-                p3 = split[2];
-            }
-            // 
-            int p1w = graph->textWidth(p1, _g.fontSize);
-            int p2w = graph->textWidth(p2, _g.fontSize);
-            if (p1.length() > 0) {
-                graph->setColor(colors["GRAY"]);
-                graph->text(p1, Vec2i(10 + w, _g.bottomBarPos.y + _g.cellSize + 8), _g.fontSize);
-            }
-            if (p2.length() > 0) {
-                graph->setColor(colors["GREEN"]);
-                graph->text(p2, Vec2i(10 + w + p1w, _g.bottomBarPos.y + _g.cellSize + 8), _g.fontSize);
-            }
-            if (p3.length() > 0) {
-                graph->setColor(colors["GRAY"]);
-                graph->text(p3, Vec2i(10 + w + p1w + p2w, _g.bottomBarPos.y + _g.cellSize + 8), _g.fontSize);
-            }
-        }
+        // if (helpString.length() > 0) {
+        //     graph->setColor(colors["GREEN"]);
+        //     graph->text("Info: ", Vec2i(10, _g.bottomBarPos.y + _g.cellSize + 8), _g.fontSize);
+        //     int w = graph->textWidth("Info: ", _g.fontSize);
+        //     graph->setColor(200, 200, 200);
+        //     graph->text(helpString, Vec2i(10 + w, _g.bottomBarPos.y + _g.cellSize + 8), _g.fontSize);
+        // }
+        // else if (_g.codeString.length() > 0) {
+        //     std::string codePre = _g.hasCodeErr ? "!!" :">> ";
+        //     graph->setColor(_g.hasCodeErr ? colors["YELLOW"] : colors["GREEN"]);
+        //     graph->text(codePre, Vec2i(10, _g.bottomBarPos.y + _g.cellSize + 8), _g.fontSize);
+        //     int w = graph->textWidth(codePre, _g.fontSize);
+        //     // Split the string by _
+        //     std::vector<std::string> split = Util::splitString(_g.codeString, "_");
+        //     std::string p1 = split[0];
+        //     std::string p2 = "";
+        //     std::string p3 = "";
+        //     if (split.size() == 3) {
+        //         p2 = split[1] + " ";
+        //         p3 = split[2];
+        //     }
+        //     // 
+        //     int p1w = graph->textWidth(p1, _g.fontSize);
+        //     int p2w = graph->textWidth(p2, _g.fontSize);
+        //     if (p1.length() > 0) {
+        //         graph->setColor(colors["GRAY"]);
+        //         graph->text(p1, Vec2i(10 + w, _g.bottomBarPos.y + _g.cellSize + 8), _g.fontSize);
+        //     }
+        //     if (p2.length() > 0) {
+        //         graph->setColor(colors["GREEN"]);
+        //         graph->text(p2, Vec2i(10 + w + p1w, _g.bottomBarPos.y + _g.cellSize + 8), _g.fontSize);
+        //     }
+        //     if (p3.length() > 0) {
+        //         graph->setColor(colors["GRAY"]);
+        //         graph->text(p3, Vec2i(10 + w + p1w + p2w, _g.bottomBarPos.y + _g.cellSize + 8), _g.fontSize);
+        //     }
+        // }
 
         // Draw static noise
         if (_g.tick % 2 == 0) {
@@ -718,6 +891,7 @@ public:
 
 class Cursor : public Entity {
 public:
+    Input input;
     Sprite spr;
     Cursor() : Entity() {
         tag = "cursor";
@@ -727,7 +901,7 @@ public:
     }
     ~Cursor() {}
     void process() override {
-        pos = Input::mousePos();
+        pos = input.mousePos();
     }
     void render(Graphics* graph) override {
         spr.render(graph, pos);
@@ -736,13 +910,16 @@ public:
 
 class App : public Imp::Main { 
 public:
+    Input input;
     Grid grid;
     TestScreen testScreen;
     Cursor cursor;
     Menu menu;
+    BottomBar bottomBar;
     App() : Imp::Main("EsoMachina (v0.1-alpha)", WINDOW_SIZE, 60, "tiles.png") { 
         clearColor = Color(colors["BG"]);
         entityMan.addEntity(&grid);
+        entityMan.addEntity(&bottomBar);
         entityMan.addEntity(&testScreen);
         entityMan.addEntity(&menu);
         entityMan.addEntity(&cursor);
@@ -750,7 +927,7 @@ public:
     ~App() {}
     void process() override {
         // Pause
-        if (Input::keyDown(SDLK_ESCAPE)) {
+        if (input.keyDown(SDLK_ESCAPE)) {
             menu.show = !menu.show;
             DBG("Toggle menu " + std::to_string(grid.paused));
         }

@@ -14,16 +14,20 @@ namespace Imp {
 //
 // DEBUG
 //
-void DBG(const std::string& mgraph) {
-    std::cout << mgraph << std::endl;
+void DBG(const std::string& value) {
+    std::cout << value << std::endl;
 }
-
+void DBG(const char* value) {
+    std::cout << value << std::endl;
+}
 void DBG(int value) {
     std::cout << value << std::endl;
 }
-
 void DBG(float value) {
     std::cout << value << std::endl;
+}
+void DBG(bool value) {
+    std::cout << (value ? "true" : "false") << std::endl;
 }
 
 //
@@ -112,67 +116,78 @@ public:
 //
 class Input {
 public:
-    static Vec2i mousePos() {
+    Input() : previousMouseState(8, 0), previousKeyStates(512, 0) {}
+
+    Vec2i mousePos() const {
         int x, y;
         SDL_GetMouseState(&x, &y);
         return Vec2i(x, y);
     }
-    static Uint32 getMouseBtn() {
+
+    Uint32 getMouseBtn() const {
         return SDL_GetMouseState(NULL, NULL);
     }
-    static bool mouseKey(Uint32 key) {
-        return SDL_GetMouseState(NULL, NULL) & key;
+
+    bool mouseKey(Uint32 key) const {
+        return SDL_GetMouseState(NULL, NULL) == key;
     }
-    static bool mouseKeyDown(Uint32 key) {
-        static Uint32 previousState = 0;
-        Uint32 currentState = SDL_GetMouseState(NULL, NULL);
-        bool keyDown = currentState & key && !(previousState & key);
-        previousState = currentState;
-        return keyDown;
+
+    bool mouseKeyDown(Uint32 key) {
+        bool currentState = SDL_GetMouseState(NULL, NULL) == SDL_BUTTON(key);
+        bool mouseDown = currentState && !(previousMouseState[key]);
+        previousMouseState[key] = currentState;
+        return mouseDown;
     }
-    static bool key(SDL_Keycode key) {
+
+    bool key(SDL_Keycode key) const {
         SDL_Scancode scancode = SDL_GetScancodeFromKey(key);
         const Uint8* state = SDL_GetKeyboardState(NULL);
         return state[scancode];
     }
-    static bool keyDown(SDL_Keycode key) {
-        static Uint8 previousState[512] = {0};
-        const Uint8* currentState = SDL_GetKeyboardState(NULL);
+
+    bool keyDown(SDL_Keycode key) {
         SDL_Scancode scancode = SDL_GetScancodeFromKey(key);
-        bool keyDown = currentState[scancode] && !previousState[scancode];
-        previousState[scancode] = currentState[scancode];
+        const Uint8* currentState = SDL_GetKeyboardState(NULL);
+        bool keyDown = currentState[scancode] && !previousKeyStates[scancode];
+        previousKeyStates[scancode] = currentState[scancode];
         return keyDown;
     }
-    static bool anyKey() {
+
+    bool anyKey() const {
         const Uint8* state = SDL_GetKeyboardState(NULL);
         for (int i = 0; i < 512; i++) {
             if (state[i]) return true;
         }
         return false;
     }
-    static bool anyKeyDown() {
-        static Uint8 previousState[512];
+
+    bool anyKeyDown() {
         const Uint8* currentState = SDL_GetKeyboardState(NULL);
         bool keyDown = false;
 
         for (int i = 0; i < 512; i++) {
-            if (currentState[i] && !previousState[i]) {
+            if (currentState[i] && !previousKeyStates[i]) {
                 keyDown = true;
                 break;
             }
         }
         // Copy current state to previous state
-        memcpy(previousState, currentState, 512);
+        previousKeyStates = std::vector<Uint8>(currentState, currentState + 512);
         return keyDown;
     }
-    static Vec2i wasd() {
+
+    Vec2i wasd() const {
         Vec2i out;
-        if (Input::key(SDLK_w)) out.y -= 1;
-        if (Input::key(SDLK_s)) out.y += 1;
-        if (Input::key(SDLK_a)) out.x -= 1;
-        if (Input::key(SDLK_d)) out.x += 1;
+        if (key(SDLK_w)) out.y -= 1;
+        if (key(SDLK_s)) out.y += 1;
+        if (key(SDLK_a)) out.x -= 1;
+        if (key(SDLK_d)) out.x += 1;
         return out;
     }
+
+private:
+    std::vector<Uint32> previousMouseState;
+    std::vector<Uint8> previousKeyStates;
 };
 
 //
@@ -563,8 +578,8 @@ public:
     }
     bool isInside(Vec2i point) {
         Vec2i thisPos = pos + positionOffset;
-        return point.x > thisPos.x && point.x < thisPos.x + size.x &&
-               point.y > thisPos.y && point.y < thisPos.y + size.y;
+        return point.x >= thisPos.x && point.x <= thisPos.x + size.x &&
+               point.y >= thisPos.y && point.y <= thisPos.y + size.y;
     }
 };
 
@@ -621,6 +636,7 @@ private:
 typedef std::vector<std::pair<int, int>> CollisionPair;
 class EntityManager {
 public:
+    Input input;
     std::vector<Entity*> entities;
     EntityManager() {}
     ~EntityManager() {}
@@ -667,7 +683,7 @@ public:
         return collisions;
     }
     void checkMouse() {
-        Vec2i mousePos = Input::mousePos();
+        Vec2i mousePos = input.mousePos();
         for (Entity* entity : entities) {
             if (entity->colliderEnabled) {
                 bool over = entity->collider->isInside(mousePos);
