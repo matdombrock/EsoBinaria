@@ -757,6 +757,17 @@ public:
     static bool stringContains(const std::string& str, const std::string& find) {
         return str.find(find) != std::string::npos;
     }
+    static std::vector<bool> intToBits(int n, int bits) {
+        std::vector<bool> out;
+        for (int i = 0; i < bits; i++) {
+            out.push_back(n & 1);
+            n >>= 1;
+        }
+        return out;
+    }
+    static int maxUnsignedInt(int bits) {
+        return (1 << bits);
+    }
 };
 
 

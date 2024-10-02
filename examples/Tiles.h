@@ -128,13 +128,19 @@ public:
     HelpItem* helpItem = nullptr;
     bool hasCodeErr = false;
     bool showMenu = false;
+    bool reset = false;
     int tick = 0;
     CellType activeTile = CT_EMPTY;
+    int puzzleBits = 3;
+    int puzzleNum = 1;
     //
     Vec2i bottomBarSize = Vec2i(WINDOW_SIZE.x, cellSize * 3);
     Vec2i bottomBarPos = Vec2i(0, WINDOW_SIZE.y - bottomBarSize.y);
     //
     void setActiveTile(CellType type) {
+        if (type == CT_IND && puzzleBits < 4) {
+            return;
+        }
         Sounds::changeTile.play();
         activeTile = type;
     }
@@ -190,15 +196,16 @@ public:
         hasError = false;
         lastCheck = false;
         //dbg
-        randomize();
+        // randomize();
         s7 = s7_init();
     }
     ~TestCase() {}
-    void addInput(bool input) {
-        inputs.push_back(input);
-    }
-    void setOutput(bool output) {
-        this->output = output;
+    void set(int index, int bits, int puzzleNum) {
+        inputs.resize(bits);
+        for (int i = 0; i < bits; i++) {
+            inputs[i] = Util::intToBits(index, bits)[i];
+        }
+        output = Util::intToBits(puzzleNum, Util::maxUnsignedInt(bits))[index];
     }
     void randomize() {
         for (int i = 0; i < 4; i++) {
@@ -255,6 +262,7 @@ class TestScreen : public Entity {
 public:
     Input input;
     bool show;
+    int testFails;
     std::vector<TestCase> tests;
     std::string codeStringOld;
     Sprite sprTrue;
@@ -264,7 +272,8 @@ public:
     TestScreen() : Entity() {
         tag = "testScreen";
         show = true;
-        tests.resize(8);
+        tests.resize(Util::maxUnsignedInt(_g.puzzleBits));
+        DBG("Max unsigned int: " + std::to_string(Util::maxUnsignedInt(_g.puzzleBits)));
 
         sprTrue = Sprite(Vec2i(0, 80), Vec2i(16, 16), Vec2i(_g.cellSize/2, _g.cellSize/2));
         std::vector<Vec2i> trueFrames = {
@@ -286,8 +295,18 @@ public:
         sprFalse.setAnimation(falseFrames, 4, true);
         sprPass = Sprite(Vec2i(0, 112), Vec2i(16, 16), Vec2i(_g.cellSize/2, _g.cellSize/2));
         sprFail = Sprite(Vec2i(16, 112), Vec2i(16, 16), Vec2i(_g.cellSize/2, _g.cellSize/2));
+
+        // not dry - reset
+        for (int i = 0; i < tests.size(); i++) {
+            tests[i].set(i, _g.puzzleBits, _g.puzzleNum);
+        }
     }
     ~TestScreen() {}
+    void reset() {
+        for (int i = 0; i < tests.size(); i++) {
+           tests[i].set(i, _g.puzzleBits, _g.puzzleNum); 
+        }
+    }
     void process() {
         if (_g.showMenu) return;
         std::string cs = Util::strReplace(Util::strReplace(_g.codeString, " ", ""), "_", "");
@@ -296,8 +315,11 @@ public:
             _g.hasCodeErr = false;
             DBG("Retesting code");
             DBG(cs);
+            testFails = 0;
             for (TestCase& test : tests) {
-                test.check(_g.codeString);
+                if (!test.check(_g.codeString)){
+                    testFails++;
+                }
             }
             codeStringOld = _g.codeString;
         }
@@ -339,6 +361,10 @@ public:
         else {
             graph->setColor(colors["GRAY"]);
             graph->text("// TESTS", Vec2i(testWinX + 16, _g.cellSize), _g.fontSize);
+        }
+        if (testFails == 0) {
+            graph->setColor(colors["GREEN"]);
+            graph->text("PASSED", Vec2i(_g.cellSize/4,_g.cellSize/4), _g.fontSize * 4);
         }
     }
 };
@@ -410,6 +436,9 @@ public:
     }
     ~TileBtn() {}
     void render(Graphics* graph) override {
+        if (type == CT_IND && _g.puzzleBits < 4) {
+            return;
+        }
         Vec2i post = pos.copy();
          
         if (_g.activeTile == type) {
@@ -644,24 +673,30 @@ public:
         sndRemove.set("rock.ogg");
         sndParen.set("5.wav");  
 
-        // DBG basic test
-        cells[2][2].set(CT_AND);
-        cells[2][2].parenLeft = true;
-        cells[3][2].set(CT_INA);
-        cells[4][2].set(CT_INB);
-        cells[4][2].parenRight = true;
-        
-        cells[3][4].set(CT_OR);
-        cells[3][4].parenLeft = true;
-        cells[4][4].set(CT_INC);
-        cells[5][4].set(CT_IND);
-        cells[5][4].parenRight = true;
-
         highlightCellTypeStr = "EMPTY";
         helpString = "";
         DBG("Grid started");
+
+        // DBG basic test
+        cells[3][3].set(CT_NOT);
+        cells[3][3].parenLeft = true;
+        cells[4][3].set(CT_OR);
+        cells[4][3].parenLeft = true;
+        cells[5][3].set(CT_INA);
+        cells[6][3].set(CT_INB);
+        cells[7][3].set(CT_INC);
+        cells[7][3].parenRight = true;
+        cells[8][3].set(CT_BLANK);
+        cells[8][3].parenRight = true;
     }
     ~Grid() {}
+    void reset() {
+        for (int x = 0; x < gridSize.x; x++) {
+            for (int y = 0; y < gridSize.y; y++) {
+                cells[x][y].set(CT_EMPTY);
+            }
+        }
+    }
     void process() override {
         if (_g.showMenu) return;
         mousePos = input.mousePos();
@@ -700,7 +735,6 @@ public:
                 int relMouse = ((float)mousePosCell.x / gridSize.x) * 255;
                 sndTick.setPan(255 - relMouse, relMouse);
                 sndTick.play();
-                DBG("TICK");
             }
 
             CellType newCell = CT_VOID;
@@ -876,7 +910,16 @@ public:
             _g.toggleMenu();
         }
         if (btnRestart.isClicked()) {
+            _g.reset = true;
             _g.showMenu = false;
+        }
+        if (btnNew.isClicked()) {
+            int puzMax = Util::maxUnsignedInt(Util::maxUnsignedInt(_g.puzzleBits)); 
+            DBG("Puzzle max: " + std::to_string(puzMax));
+            _g.puzzleNum = rand() % puzMax; 
+            DBG("New puzzle: " + std::to_string(_g.puzzleNum));
+            _g.reset = true;
+            _g.toggleMenu();
         }
     }
     void render(Graphics* graph) override {
@@ -930,6 +973,12 @@ public:
         // Pause
         if (input.keyDown(SDLK_ESCAPE)) {
             _g.toggleMenu();
+        }
+
+        if (_g.reset) {
+            _g.reset = false;
+            grid.reset();
+            testScreen.reset();
         }
 
         _g.tick++;
