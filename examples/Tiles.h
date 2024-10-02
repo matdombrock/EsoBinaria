@@ -220,6 +220,7 @@ public:
     Btn btnNew;
     Btn btnSettings;
     Btn btnExit;
+    Sprite sprBg;
     Menu() : Entity() {
         tag = "menu";
         show = false;
@@ -243,6 +244,8 @@ public:
         btnExit.pos = Vec2i(20, 60 + FONT_SIZE * 1.1f * 4);
         btnExit.text = "Exit";
         em.addEntity(&btnExit);
+
+        sprBg = Sprite(Vec2i(176, 176), Vec2i(96, 96), Vec2i(256, 256));
         
     }
     ~Menu() {}
@@ -264,6 +267,7 @@ public:
         graph->setColor(colors["WHITE"]);
         graph->text("ESOMachina", Vec2i(20, 20), FONT_SIZE);
         em.render(graph);
+        sprBg.render(graph, Vec2i(20, 60));
     }
 };
 
