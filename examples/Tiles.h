@@ -8,17 +8,6 @@ using namespace Imp;
 
 #define WINDOW_SIZE Vec2i(1024, 768)
 
-class Globals {
-public:
-    std::string codeString = "";
-    bool hasCodeErr = false;
-    int tick = 0;
-    //
-    int fontSize = WINDOW_SIZE.x / 32;
-    int cellSize = WINDOW_SIZE.x / 16;
-};
-Globals _g;
-
 std::map<std::string, Color> colors = {
     {"BG", Color(20,20,20)},
     {"BG2", Color(45,45,45)},
@@ -28,40 +17,6 @@ std::map<std::string, Color> colors = {
     {"RED", Color(255,128,128)},
     {"GRAY", Color(155,155,155)},
     {"WHITE", Color(255,255,255)},
-};
-
-namespace cellSprites {
-    Sprite baseTile = Sprite(Vec2i(0, 0), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
-    Sprite blankTile = Sprite(Vec2i(0, 32), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
-    Sprite andTile  = Sprite(Vec2i(0, 16), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
-    Sprite orTile = Sprite(Vec2i(16, 16), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
-    Sprite notTile = Sprite(Vec2i(32, 16), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
-    Sprite xorTile = Sprite(Vec2i(48, 16), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
-    Sprite nandTile = Sprite(Vec2i(64, 16), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
-    Sprite norTile = Sprite(Vec2i(80, 16), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
-    Sprite xnorTile = Sprite(Vec2i(96, 16), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
-    Sprite parenR = Sprite(Vec2i(32, 0), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
-    Sprite inATile = Sprite(Vec2i(0, 48), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
-    Sprite inBTile = Sprite(Vec2i(16, 48), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
-    Sprite inCTile = Sprite(Vec2i(32, 48), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
-    Sprite inDTile = Sprite(Vec2i(48, 48), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
-    Sprite Void = Sprite(Vec2i(16, 32), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
-    std::map <CellType, Sprite*> cellMap = {
-        {CT_EMPTY, &blankTile},
-        {CT_AND, &andTile},
-        {CT_OR, &orTile},
-        {CT_NOT, &notTile},
-        {CT_XOR, &xorTile},
-        {CT_NAND, &nandTile},
-        {CT_NOR, &norTile},
-        {CT_XNOR, &xnorTile},
-        {CT_BLANK, &blankTile},
-        {CT_INA, &inATile},
-        {CT_INB, &inBTile},
-        {CT_INC, &inCTile},
-        {CT_IND, &inDTile},
-        {CT_VOID, &Void}
-    };
 };
 
 enum CellType {
@@ -79,6 +34,54 @@ enum CellType {
     CT_NAND = 10,
     CT_NOR = 11,
     CT_XNOR = 12
+};
+
+class Globals {
+public:
+    const int fontSize = WINDOW_SIZE.x / 32;
+    const int cellSize = WINDOW_SIZE.x / 16;
+    //
+    std::string codeString = "";
+    bool hasCodeErr = false;
+    int tick = 0;
+    //
+    Vec2i bottomBarSize = Vec2i(WINDOW_SIZE.x, cellSize * 3);
+    Vec2i bottomBarPos = Vec2i(0, WINDOW_SIZE.y - bottomBarSize.y);
+    //
+};
+Globals _g;
+
+namespace CellSprites {
+    Sprite baseTile = Sprite(Vec2i(0, 0), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
+    Sprite blankTile = Sprite(Vec2i(0, 32), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
+    Sprite andTile  = Sprite(Vec2i(0, 16), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
+    Sprite orTile = Sprite(Vec2i(16, 16), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
+    Sprite notTile = Sprite(Vec2i(32, 16), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
+    Sprite xorTile = Sprite(Vec2i(48, 16), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
+    Sprite nandTile = Sprite(Vec2i(64, 16), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
+    Sprite norTile = Sprite(Vec2i(80, 16), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
+    Sprite xnorTile = Sprite(Vec2i(96, 16), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
+    Sprite parenR = Sprite(Vec2i(32, 0), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
+    Sprite inATile = Sprite(Vec2i(0, 48), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
+    Sprite inBTile = Sprite(Vec2i(16, 48), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
+    Sprite inCTile = Sprite(Vec2i(32, 48), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
+    Sprite inDTile = Sprite(Vec2i(48, 48), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
+    Sprite clear = Sprite(Vec2i(16, 32), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
+    std::map <CellType, Sprite*> cellMap = {
+        {CT_EMPTY, &clear},
+        {CT_AND, &andTile},
+        {CT_OR, &orTile},
+        {CT_NOT, &notTile},
+        {CT_XOR, &xorTile},
+        {CT_NAND, &nandTile},
+        {CT_NOR, &norTile},
+        {CT_XNOR, &xnorTile},
+        {CT_BLANK, &blankTile},
+        {CT_INA, &inATile},
+        {CT_INB, &inBTile},
+        {CT_INC, &inCTile},
+        {CT_IND, &inDTile},
+    };
 };
 
 class Cell {
@@ -261,7 +264,7 @@ public:
         int testWinWidth = _g.fontSize * 8;
         int testWinX = WINDOW_SIZE.x - (show ? testWinWidth : _g.cellSize / 4);
         //graph->setColor(colors["BG3"]);
-        //graph->rect(Vec2i(testWinX, 0), Vec2i(testWinWidth, bottomY - _g.cellSize), true);
+        //graph->rect(Vec2i(testWinX, 0), Vec2i(testWinWidth, _g.bottomBarPos.y - _g.cellSize), true);
         int y = _g.cellSize * 2;
         int ce = _g.cellSize / 2;
         for (TestCase test : tests) {
@@ -355,24 +358,6 @@ public:
     std::vector<std::vector<Cell>> cells;
     Vec2i lastMouse[8];
     Vec2i bottomTilePos[13];
-    int bottomSize;
-    int bottomY;
-    std::map<CellType, Sprite*> cellSprites;
-    Sprite sprBaseTile;
-    Sprite sprBlankTile;
-    Sprite sprAndTile;
-    Sprite sprOrTile;
-    Sprite sprNotTile;
-    Sprite sprXOrTile;
-    Sprite sprNAndTile;
-    Sprite sprNOrTile;
-    Sprite sprXNorTile;
-    Sprite sprParenR;
-    Sprite sprInputA;
-    Sprite sprInputB;
-    Sprite sprInputC;
-    Sprite sprInputD;
-    Sprite sprVoid;
     Sound sndTick;
     Sound sndAdd;
     Sound sndRemove;
@@ -390,35 +375,6 @@ public:
                 cells[x][y].set(CT_EMPTY);
             }
         }
-        // Sprite tiles
-        sprBaseTile = Sprite(Vec2i(0, 0), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
-        sprBlankTile = Sprite(Vec2i(0, 32), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
-        sprAndTile  = Sprite(Vec2i(0, 16), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
-        sprOrTile = Sprite(Vec2i(16, 16), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
-        sprNotTile = Sprite(Vec2i(32, 16), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
-        sprXOrTile = Sprite(Vec2i(48, 16), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
-        sprNAndTile = Sprite(Vec2i(64, 16), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
-        sprNOrTile = Sprite(Vec2i(80, 16), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
-        sprXNorTile = Sprite(Vec2i(96, 16), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
-        sprParenR = Sprite(Vec2i(32, 0), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
-        sprInputA = Sprite(Vec2i(0, 48), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
-        sprInputB = Sprite(Vec2i(16, 48), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
-        sprInputC = Sprite(Vec2i(32, 48), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
-        sprInputD = Sprite(Vec2i(48, 48), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
-        sprVoid = Sprite(Vec2i(16, 32), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
-
-        cellSprites[CT_INA] = &sprInputA;
-        cellSprites[CT_INB] = &sprInputB;
-        cellSprites[CT_INC] = &sprInputC;
-        cellSprites[CT_IND] = &sprInputD;
-        cellSprites[CT_BLANK] = &sprBlankTile;
-        cellSprites[CT_AND] = &sprAndTile;
-        cellSprites[CT_OR] = &sprOrTile;
-        cellSprites[CT_NOT] = &sprNotTile;
-        cellSprites[CT_XOR] = &sprXOrTile;
-        cellSprites[CT_NAND] = &sprNAndTile;
-        cellSprites[CT_NOR] = &sprNOrTile;
-        cellSprites[CT_XNOR] = &sprXNorTile;
 
         helpStrings[CT_EMPTY] = "VOID (Q) - Clear cell";
         helpStrings[CT_INA] = "A (A) - Input A";
@@ -440,10 +396,8 @@ public:
         sndRemove.set("rock.ogg");
         sndParen.set("5.wav");
 
-        bottomSize = _g.cellSize * 3;
-        bottomY = WINDOW_SIZE.y - bottomSize;
         for (int i = 0; i < 13; i++) {
-            bottomTilePos[i] = Vec2i(i * _g.cellSize, bottomY);
+            bottomTilePos[i] = Vec2i(i * _g.cellSize, _g.bottomBarPos.y);
         }        
 
         // DBG basic test
@@ -558,7 +512,7 @@ public:
         int borderWidth = _g.hasCodeErr ? _g.cellSize/16 : _g.cellSize/4;
         graph->setColor(_g.hasCodeErr ? colors["YELLOW"] : colors["BG2"], _g.hasCodeErr ? 128 : 255);
         graph->rect(Vec2i(0, 0), Vec2i(WINDOW_SIZE.x, borderWidth));
-        graph->rect(Vec2i(0, bottomY - borderWidth), Vec2i(WINDOW_SIZE.x, borderWidth));
+        graph->rect(Vec2i(0, _g.bottomBarPos.y - borderWidth), Vec2i(WINDOW_SIZE.x, borderWidth));
         graph->rect(Vec2i(0, 0), Vec2i(borderWidth, WINDOW_SIZE.y));
         graph->rect(Vec2i(WINDOW_SIZE.x - borderWidth, 0), Vec2i(borderWidth, WINDOW_SIZE.y));
         
@@ -576,9 +530,9 @@ public:
             for (int y = 0; y < gridSize.y; y++) {
                 CellType cellType = cells[x][y].get();
                 if (cellType != CT_VOID && cellType != CT_EMPTY) {
-                    sprBaseTile.render(graph, Vec2i(_g.cellSize * x, _g.cellSize * y));
+                    CellSprites::baseTile.render(graph, Vec2i(_g.cellSize * x, _g.cellSize * y));
                     Sprite* spr = nullptr;
-                    spr = cellSprites[cellType];
+                    spr = CellSprites::cellMap[cellType];
                     if (spr != nullptr) {
                         spr->render(graph, Vec2i(_g.cellSize * x, _g.cellSize * y));
                     }
@@ -587,10 +541,10 @@ public:
                     }
                     // Draw parenthesis
                     if (cells[x][y].parenLeft) {
-                        sprParenR.render(graph, Vec2i(_g.cellSize * x, _g.cellSize * y), true);
+                        CellSprites::parenR.render(graph, Vec2i(_g.cellSize * x, _g.cellSize * y), true);
                     }
                     if (cells[x][y].parenRight) {
-                        sprParenR.render(graph, Vec2i(_g.cellSize * x, _g.cellSize * y));
+                        CellSprites::parenR.render(graph, Vec2i(_g.cellSize * x, _g.cellSize * y));
                     }
                 }
             }
@@ -603,51 +557,51 @@ public:
 
         // Draw bottom area
         graph->setColor(colors["BG2"]);
-        graph->rect(Vec2i(0, bottomY), Vec2i(WINDOW_SIZE.x, bottomSize));
+        graph->rect(Vec2i(0, _g.bottomBarPos.y), Vec2i(WINDOW_SIZE.x, _g.bottomBarSize.y));
 
-        sprBaseTile.render(graph, bottomTilePos[CT_EMPTY]);
-        sprVoid.render(graph, bottomTilePos[CT_EMPTY]);
-        sprBaseTile.render(graph, bottomTilePos[CT_INA]);
-        cellSprites[CT_INA]->render(graph, bottomTilePos[CT_INA]);
-        sprBaseTile.render(graph, bottomTilePos[CT_INB]); 
-        cellSprites[CT_INB]->render(graph, bottomTilePos[CT_INB]);
-        sprBaseTile.render(graph, bottomTilePos[CT_INC]); 
-        cellSprites[CT_INC]->render(graph, bottomTilePos[CT_INC]);
-        sprBaseTile.render(graph, bottomTilePos[CT_IND]); 
-        cellSprites[CT_IND]->render(graph, bottomTilePos[CT_IND]);
-        sprBaseTile.render(graph, bottomTilePos[CT_BLANK]); 
-        cellSprites[CT_BLANK]->render(graph, bottomTilePos[CT_BLANK]);
-        sprBaseTile.render(graph, bottomTilePos[CT_AND]); 
-        cellSprites[CT_AND]->render(graph, bottomTilePos[CT_AND]);
-        sprBaseTile.render(graph, bottomTilePos[CT_OR]); 
-        cellSprites[CT_OR]->render(graph, bottomTilePos[CT_OR]);
-        sprBaseTile.render(graph, bottomTilePos[CT_NOT]);
-        cellSprites[CT_NOT]->render(graph, bottomTilePos[CT_NOT]);
-        sprBaseTile.render(graph, bottomTilePos[CT_XOR]);
-        cellSprites[CT_XOR]->render(graph, bottomTilePos[CT_XOR]);
-        sprBaseTile.render(graph, bottomTilePos[CT_NAND]);
-        cellSprites[CT_NAND]->render(graph, bottomTilePos[CT_NAND]);
-        sprBaseTile.render(graph, bottomTilePos[CT_NOR]);
-        cellSprites[CT_NOR]->render(graph, bottomTilePos[CT_NOR]);
-        sprBaseTile.render(graph, bottomTilePos[CT_XNOR]);
-        cellSprites[CT_XNOR]->render(graph, bottomTilePos[CT_XNOR]);
+        CellSprites::baseTile.render(graph, bottomTilePos[CT_EMPTY]);
+        CellSprites::clear.render(graph, bottomTilePos[CT_EMPTY]);
+        CellSprites::baseTile.render(graph, bottomTilePos[CT_INA]);
+        CellSprites::cellMap[CT_INA]->render(graph, bottomTilePos[CT_INA]);
+        CellSprites::baseTile.render(graph, bottomTilePos[CT_INB]); 
+        CellSprites::cellMap[CT_INB]->render(graph, bottomTilePos[CT_INB]);
+        CellSprites::baseTile.render(graph, bottomTilePos[CT_INC]); 
+        CellSprites::cellMap[CT_INC]->render(graph, bottomTilePos[CT_INC]);
+        CellSprites::baseTile.render(graph, bottomTilePos[CT_IND]); 
+        CellSprites::cellMap[CT_IND]->render(graph, bottomTilePos[CT_IND]);
+        CellSprites::baseTile.render(graph, bottomTilePos[CT_BLANK]); 
+        CellSprites::cellMap[CT_BLANK]->render(graph, bottomTilePos[CT_BLANK]);
+        CellSprites::baseTile.render(graph, bottomTilePos[CT_AND]); 
+        CellSprites::cellMap[CT_AND]->render(graph, bottomTilePos[CT_AND]);
+        CellSprites::baseTile.render(graph, bottomTilePos[CT_OR]); 
+        CellSprites::cellMap[CT_OR]->render(graph, bottomTilePos[CT_OR]);
+        CellSprites::baseTile.render(graph, bottomTilePos[CT_NOT]);
+        CellSprites::cellMap[CT_NOT]->render(graph, bottomTilePos[CT_NOT]);
+        CellSprites::baseTile.render(graph, bottomTilePos[CT_XOR]);
+        CellSprites::cellMap[CT_XOR]->render(graph, bottomTilePos[CT_XOR]);
+        CellSprites::baseTile.render(graph, bottomTilePos[CT_NAND]);
+        CellSprites::cellMap[CT_NAND]->render(graph, bottomTilePos[CT_NAND]);
+        CellSprites::baseTile.render(graph, bottomTilePos[CT_NOR]);
+        CellSprites::cellMap[CT_NOR]->render(graph, bottomTilePos[CT_NOR]);
+        CellSprites::baseTile.render(graph, bottomTilePos[CT_XNOR]);
+        CellSprites::cellMap[CT_XNOR]->render(graph, bottomTilePos[CT_XNOR]);
 
         graph->setColor(colors["YELLOW"]);
-        graph->text(mousePosCell.toString(), Vec2i(WINDOW_SIZE.x - _g.cellSize * 2, bottomY + 4), _g.fontSize);
-        // graph->text(highlightCellTypeStr, Vec2i(WINDOW_SIZE.x - _g.cellSize * 2, bottomY + 4), _g.fontSize);
+        graph->text(mousePosCell.toString(), Vec2i(WINDOW_SIZE.x - _g.cellSize * 2, _g.bottomBarPos.y + 4), _g.fontSize);
+        // graph->text(highlightCellTypeStr, Vec2i(WINDOW_SIZE.x - _g.cellSize * 2, _g.bottomBarPos.y + 4), _g.fontSize);
         // graph->text(highlightCellTypeStr, mousePos + Vec2i(-_g.cellSize/2, _g.cellSize));
 
         if (helpString.length() > 0) {
             graph->setColor(colors["GREEN"]);
-            graph->text("Info: ", Vec2i(10, bottomY + _g.cellSize + 8), _g.fontSize);
+            graph->text("Info: ", Vec2i(10, _g.bottomBarPos.y + _g.cellSize + 8), _g.fontSize);
             int w = graph->textWidth("Info: ", _g.fontSize);
             graph->setColor(200, 200, 200);
-            graph->text(helpString, Vec2i(10 + w, bottomY + _g.cellSize + 8), _g.fontSize);
+            graph->text(helpString, Vec2i(10 + w, _g.bottomBarPos.y + _g.cellSize + 8), _g.fontSize);
         }
         else if (_g.codeString.length() > 0) {
             std::string codePre = _g.hasCodeErr ? "!!" :">> ";
             graph->setColor(_g.hasCodeErr ? colors["YELLOW"] : colors["GREEN"]);
-            graph->text(codePre, Vec2i(10, bottomY + _g.cellSize + 8), _g.fontSize);
+            graph->text(codePre, Vec2i(10, _g.bottomBarPos.y + _g.cellSize + 8), _g.fontSize);
             int w = graph->textWidth(codePre, _g.fontSize);
             // Split the string by _
             std::vector<std::string> split = Util::splitString(_g.codeString, "_");
@@ -663,15 +617,15 @@ public:
             int p2w = graph->textWidth(p2, _g.fontSize);
             if (p1.length() > 0) {
                 graph->setColor(colors["GRAY"]);
-                graph->text(p1, Vec2i(10 + w, bottomY + _g.cellSize + 8), _g.fontSize);
+                graph->text(p1, Vec2i(10 + w, _g.bottomBarPos.y + _g.cellSize + 8), _g.fontSize);
             }
             if (p2.length() > 0) {
                 graph->setColor(colors["GREEN"]);
-                graph->text(p2, Vec2i(10 + w + p1w, bottomY + _g.cellSize + 8), _g.fontSize);
+                graph->text(p2, Vec2i(10 + w + p1w, _g.bottomBarPos.y + _g.cellSize + 8), _g.fontSize);
             }
             if (p3.length() > 0) {
                 graph->setColor(colors["GRAY"]);
-                graph->text(p3, Vec2i(10 + w + p1w + p2w, bottomY + _g.cellSize + 8), _g.fontSize);
+                graph->text(p3, Vec2i(10 + w + p1w + p2w, _g.bottomBarPos.y + _g.cellSize + 8), _g.fontSize);
             }
         }
 
