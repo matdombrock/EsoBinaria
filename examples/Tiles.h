@@ -124,11 +124,13 @@ public:
     const int fontSize = WINDOW_SIZE.x / 32;
     const int cellSize = WINDOW_SIZE.x / 16;
     //
+    bool reset = false;
+    bool quit = false;
+    //
     std::string codeString = "";
     HelpItem* helpItem = nullptr;
     bool hasCodeErr = false;
     bool showMenu = false;
-    bool reset = false;
     int tick = 0;
     CellType activeTile = CT_EMPTY;
     int puzzleBits = 3;
@@ -436,15 +438,15 @@ public:
     }
     ~TileBtn() {}
     void render(Graphics* graph) override {
-        if (type == CT_IND && _g.puzzleBits < 4) {
-            return;
-        }
-        Vec2i post = pos.copy();
-         
-        if (_g.activeTile == type) {
-            post += Vec2i(0, -_g.cellSize / 4);
-        }
-        else if (state > 0) {
+            if (type == CT_IND && _g.puzzleBits < 4) {
+                return;
+            }
+            Vec2i post = pos.copy();
+            
+            if (_g.activeTile == type) {
+                post += Vec2i(0, -_g.cellSize / 4);
+            }
+            else if (state > 0) {
             post += Vec2i(0, -_g.cellSize / 8);
         }
         graph->setColor(colors["GREEN"]);
@@ -921,6 +923,9 @@ public:
             _g.reset = true;
             _g.toggleMenu();
         }
+        if (btnExit.isClicked()) {
+            _g.quit = true;
+        }
     }
     void render(Graphics* graph) override {
         if (!_g.showMenu) return;
@@ -979,6 +984,9 @@ public:
             _g.reset = false;
             grid.reset();
             testScreen.reset();
+        }
+        if (_g.quit) {
+            exit(0);
         }
 
         _g.tick++;
