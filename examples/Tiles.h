@@ -119,6 +119,15 @@ namespace Sounds {
     Sound toggleTests = Sound("4.wav");
 };
 
+class TestData {
+public:
+    int index;
+    std::vector<bool> inputs;
+    bool output;
+    bool hasError;
+    bool lastCheck;
+};
+
 class Globals {
 public:
     const int fontSize = WINDOW_SIZE.x / 32;
@@ -133,6 +142,7 @@ public:
     bool showMenu = false;
     int tick = 0;
     CellType activeTile = CT_EMPTY;
+    TestData* activeTestData = nullptr;
     int puzzleBits = 3;
     int puzzleNum = 1;
     //
@@ -169,6 +179,15 @@ namespace CellSprites {
     Sprite inCTile = Sprite(Vec2i(32, 48), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
     Sprite inDTile = Sprite(Vec2i(48, 48), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
     Sprite clear = Sprite(Vec2i(16, 32), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
+    // Special
+    Sprite inATrueTile = Sprite(Vec2i(64, 48), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
+    Sprite inBTrueTile = Sprite(Vec2i(80, 48), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
+    Sprite inCTrueTile = Sprite(Vec2i(96, 48), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
+    Sprite inDTrueTile = Sprite(Vec2i(112, 48), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
+    Sprite inAFalseTile = Sprite(Vec2i(128, 48), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
+    Sprite inBFalseTile = Sprite(Vec2i(144, 48), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
+    Sprite inCFalseTile = Sprite(Vec2i(160, 48), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
+    Sprite inDFalseTile = Sprite(Vec2i(176, 48), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
     std::map <CellType, Sprite*> cellMap = {
         {CT_EMPTY, &clear},
         {CT_AND, &andTile},
@@ -186,96 +205,24 @@ namespace CellSprites {
     };
 };
 
-class TestCase {
+class TestCase : public Entity {
 public:
-    std::vector<bool> inputs;
-    bool output;
-    bool hasError;
-    bool lastCheck;
-    TestCase() {
-        inputs.resize(4);
-        output = false;
-        hasError = false;
-        lastCheck = false;
-        //dbg
-        // randomize();
-        s7 = s7_init();
-    }
-    ~TestCase() {}
-    void set(int index, int bits, int puzzleNum) {
-        inputs.resize(bits);
-        for (int i = 0; i < bits; i++) {
-            inputs[i] = Util::intToBits(index, bits)[i];
-        }
-        output = Util::intToBits(puzzleNum, Util::maxUnsignedInt(bits))[index];
-    }
-    void randomize() {
-        for (int i = 0; i < 4; i++) {
-            inputs[i] = rand() % 2;
-        }
-        output = rand() % 2;
-    }
-    bool check(std::string code) {
-        if (code == "") {
-            lastCheck = false;
-            hasError = false;
-            return lastCheck;
-        };
-        hasError = false;
-        code = Util::toLowercase(code);
-        code = Util::strReplace(code, "_", " ");
-        // code = "(display \"hello\"  )";
-        std::string pre = "";
-        pre += "(define (xor a b) (or (and a (not b)) (and (not a) b)))";
-        pre += "(define (nand a b) (not (and a b)))";
-        pre += "(define (nor a b) (not (or a b)))";
-        pre += "(define (xnor a b) (not (xor a b)))";
-        pre += "(define a " + boolScheme(inputs[0]) + ")";
-        pre += "(define b " + boolScheme(inputs[1]) + ")";
-        pre += "(define c " + boolScheme(inputs[2]) + ")";
-        pre += "(define d " + boolScheme(inputs[3]) + ")";
-        // pre += "(define output " + boolScheme(output) + ")";
-        code = "(begin " + pre + code + ")";
-        std::string eval = evalScheme(code);
-        if (eval != "#t" && eval != "#f") {
-            hasError = true;
-            lastCheck = false;
-            return lastCheck;
-        }
-        if (eval == boolScheme(output)) lastCheck = true;
-        else lastCheck = false;
-        return lastCheck;
-    }
-private:
-    s7_scheme* s7;
-    std::string evalScheme(const std::string& expr) {
-        s7_pointer result = s7_eval_c_string(s7, expr.c_str());
-        return s7_object_to_c_string(s7, result);
-    }
-    bool schemeBool(std::string sb) {
-        return sb == "#t";
-    }
-    std::string boolScheme(bool b) {
-        return b ? "#t" : "#f";
-    }
-};
-
-class TestScreen : public Entity {
-public:
-    Input input;
-    bool show;
-    int testFails;
-    std::vector<TestCase> tests;
-    std::string codeStringOld;
+    TestData data;
+    bool isHovered;
+    int ce;
     Sprite sprTrue;
     Sprite sprFalse;
     Sprite sprPass;
     Sprite sprFail;
-    TestScreen() : Entity() {
-        tag = "testScreen";
-        show = true;
-        tests.resize(Util::maxUnsignedInt(_g.puzzleBits));
-        DBG("Max unsigned int: " + std::to_string(Util::maxUnsignedInt(_g.puzzleBits)));
+    TestCase() : Entity() {
+        data.inputs.resize(4);
+        data.output = false;
+        data.hasError = false;
+        data.lastCheck = false;
+        isHovered = false;
+        ce = _g.cellSize / 2;
+        setCollider(Vec2i(_g.cellSize * 2, _g.cellSize / 2));
+        s7 = s7_init();
 
         sprTrue = Sprite(Vec2i(0, 80), Vec2i(16, 16), Vec2i(_g.cellSize/2, _g.cellSize/2));
         std::vector<Vec2i> trueFrames = {
@@ -297,10 +244,125 @@ public:
         sprFalse.setAnimation(falseFrames, 4, true);
         sprPass = Sprite(Vec2i(0, 112), Vec2i(16, 16), Vec2i(_g.cellSize/2, _g.cellSize/2));
         sprFail = Sprite(Vec2i(16, 112), Vec2i(16, 16), Vec2i(_g.cellSize/2, _g.cellSize/2));
+    }
+    ~TestCase() {}
+    void set(int index, int bits, int puzzleNum) {
+        this->data.index = index;
+        data.inputs.resize(bits);
+        for (int i = 0; i < bits; i++) {
+            data.inputs[i] = Util::intToBits(index, bits)[i];
+        }
+        data.output = Util::intToBits(puzzleNum, Util::maxUnsignedInt(bits))[index];
+    }
+    void randomize() {
+        for (int i = 0; i < 4; i++) {
+            data.inputs[i] = rand() % 2;
+        }
+        data.output = rand() % 2;
+    }
+    bool check(std::string code) {
+        if (code == "") {
+            data.lastCheck = false;
+            data.hasError = false;
+            return data.lastCheck;
+        };
+        data.hasError = false;
+        code = Util::toLowercase(code);
+        code = Util::strReplace(code, "_", " ");
+        // code = "(display \"hello\"  )";
+        std::string pre = "";
+        pre += "(define (xor a b) (or (and a (not b)) (and (not a) b)))";
+        pre += "(define (nand a b) (not (and a b)))";
+        pre += "(define (nor a b) (not (or a b)))";
+        pre += "(define (xnor a b) (not (xor a b)))";
+        pre += "(define a " + boolScheme(data.inputs[0]) + ")";
+        pre += "(define b " + boolScheme(data.inputs[1]) + ")";
+        pre += "(define c " + boolScheme(data.inputs[2]) + ")";
+        pre += "(define d " + boolScheme(data.inputs[3]) + ")";
+        // pre += "(define output " + boolScheme(output) + ")";
+        code = "(begin " + pre + code + ")";
+        std::string eval = evalScheme(code);
+        if (eval != "#t" && eval != "#f") {
+            data.hasError = true;
+            data.lastCheck = false;
+            return data.lastCheck;
+        }
+        if (eval == boolScheme(data.output)) data.lastCheck = true;
+        else data.lastCheck = false;
+        return data.lastCheck;
+    }
+    void process() override {
+
+    }
+    void render(Graphics* graph) override {
+        int hoverMod = isHovered ? 4 : 0;
+        if (data.lastCheck) sprPass.render(graph, pos + Vec2i(hoverMod, 0));
+        else sprFail.render(graph, Vec2i(pos.x - 4 - (_g.tick/8 % 6) + hoverMod, pos.y));
+        int x = ce;
+        for (bool input : data.inputs) {
+            if (input) sprTrue.render(graph, Vec2i(pos.x + x, pos.y));
+            else sprFalse.render(graph, Vec2i(pos.x + x, pos.y));
+            x += ce;
+        }
+        if (data.output) {
+            sprTrue.render(graph, Vec2i(pos.x + ce + x + hoverMod, pos.y));
+        }
+        else {
+            sprFalse.render(graph, Vec2i(pos.x + ce + x + hoverMod, pos.y));
+        }
+        if (data.hasError) _g.hasCodeErr = true;
+    }
+    void onMouse(bool over) override {
+        if (over) {
+            DBG("Over test case " + std::to_string(data.index));
+            isHovered = true;
+            _g.activeTestData = &data;
+            return;
+        }
+        if (_g.activeTestData == &data) {
+            _g.activeTestData = nullptr;
+        }
+        isHovered = false;
+    }
+private:
+    s7_scheme* s7;
+    std::string evalScheme(const std::string& expr) {
+        s7_pointer result = s7_eval_c_string(s7, expr.c_str());
+        return s7_object_to_c_string(s7, result);
+    }
+    bool schemeBool(std::string sb) {
+        return sb == "#t";
+    }
+    std::string boolScheme(bool b) {
+        return b ? "#t" : "#f";
+    }
+};
+
+class TestScreen : public Entity {
+public:
+    Input input;
+    EntityManager em;
+    bool show;
+    int testFails;
+    int testWinX;
+    int testWinWidth;
+    std::vector<TestCase> tests;
+    std::string codeStringOld;
+    TestScreen() : Entity() {
+        tag = "testScreen";
+        show = true;
+        tests.resize(Util::maxUnsignedInt(_g.puzzleBits));
+        DBG("Max unsigned int: " + std::to_string(Util::maxUnsignedInt(_g.puzzleBits)));
 
         // not dry - reset
         for (int i = 0; i < tests.size(); i++) {
             tests[i].set(i, _g.puzzleBits, _g.puzzleNum);
+        }
+        testWinWidth = _g.fontSize * 8;
+        testWinX = WINDOW_SIZE.x - (show ? testWinWidth : _g.cellSize / 4);
+        for (int i = 0; i < tests.size(); i++) {
+            tests[i].pos = Vec2i(testWinX + 16, _g.cellSize + (i * _g.cellSize /2 ));
+            em.addEntity(&tests[i]);
         }
     }
     ~TestScreen() {}
@@ -311,6 +373,8 @@ public:
     }
     void process() {
         if (_g.showMenu) return;
+        em.checkMouse();
+        em.process();
         std::string cs = Util::strReplace(Util::strReplace(_g.codeString, " ", ""), "_", "");
         std::string cso = Util::strReplace(Util::strReplace(codeStringOld, " ", ""), "_", "");
         if (cs != cso) {
@@ -332,37 +396,16 @@ public:
     }
     void render(Graphics* graph) {
         if (_g.showMenu) return;
-        int testWinWidth = _g.fontSize * 8;
-        int testWinX = WINDOW_SIZE.x - (show ? testWinWidth : _g.cellSize / 4);
+        em.render(graph);
         //graph->setColor(colors["BG3"]);
         //graph->rect(Vec2i(testWinX, 0), Vec2i(testWinWidth, _g.bottomBarPos.y - _g.cellSize), true);
-        int y = _g.cellSize * 2;
-        int ce = _g.cellSize / 2;
-        for (TestCase test : tests) {
-            if (test.lastCheck) sprPass.render(graph, Vec2i(testWinX - 4, y));
-            else sprFail.render(graph, Vec2i(testWinX - 4 - (_g.tick/8 % 6), y));
-            int x = ce;
-            for (bool input : test.inputs) {
-                if (input) sprTrue.render(graph, Vec2i(testWinX + x, y));
-                else sprFalse.render(graph, Vec2i(testWinX + x, y));
-                x += ce;
-            }
-            if (test.output) {
-                sprTrue.render(graph, Vec2i(testWinX + ce + x, y));
-            }
-            else {
-                sprFalse.render(graph, Vec2i(testWinX + ce + x, y));
-            }
-            if (test.hasError) _g.hasCodeErr = true;
-            y += ce + (ce/2);
-        }
         if (_g.hasCodeErr) {
             graph->setColor(colors["YELLOW"]);
-            graph->text("!! ERROR", Vec2i(testWinX + 16, _g.cellSize - (_g.tick/4 % 8)), _g.fontSize);
+            graph->text("!! ERROR", Vec2i(testWinX + 16, _g.cellSize/4 - (_g.tick/4 % 8)), _g.fontSize);
         }
         else {
             graph->setColor(colors["GRAY"]);
-            graph->text("TEST #" + std::to_string(_g.puzzleNum), Vec2i(testWinX + 16, _g.cellSize), _g.fontSize);
+            graph->text("#P3-" + std::to_string(_g.puzzleNum), Vec2i(testWinX + 16, _g.cellSize/4), _g.fontSize);
         }
         if (testFails == 0) {
             graph->setColor(colors["GREEN"]);
@@ -611,8 +654,18 @@ public:
             graph->setColor(_g.hasCodeErr ? colors["YELLOW"] : colors["GREEN"]);
             graph->text(codePre, Vec2i(padX, _g.bottomBarPos.y + _g.cellSize + padY), _g.fontSize);
             int w = graph->textWidth(codePre, _g.fontSize);
+            //
+            std::string csMod = _g.codeString;
+            if (_g.activeTestData != nullptr) {
+                std::string targets[4] = {"A", "B", "C", "D"}; 
+                for (int i = 0; i < _g.activeTestData->inputs.size(); i++) {
+                    DBG("Active test data replace");
+                    std::string rep = _g.activeTestData->inputs[i] ? "1" : "0";
+                    csMod = Util::strReplace(csMod, targets[i], rep);
+                }
+            }
             // Split the string by _
-            std::vector<std::string> split = Util::splitString(_g.codeString, "_");
+            std::vector<std::string> split = Util::splitString(csMod, "_");
             std::string p1 = split[0];
             std::string p2 = "";
             std::string p3 = "";
@@ -811,6 +864,20 @@ public:
                     CellSprites::baseTile.render(graph, Vec2i(_g.cellSize * x, _g.cellSize * y));
                     Sprite* spr = nullptr;
                     spr = CellSprites::cellMap[cellType];
+                    if (_g.activeTestData != nullptr) {
+                        if (cellType == CT_INA) {
+                            spr = _g.activeTestData->inputs[0] ? &CellSprites::inATrueTile : &CellSprites::inAFalseTile;
+                        }
+                        if (cellType == CT_INB) {
+                            spr = _g.activeTestData->inputs[1] ? &CellSprites::inBTrueTile : &CellSprites::inBFalseTile;
+                        }
+                        if (cellType == CT_INC) {
+                            spr = _g.activeTestData->inputs[2] ? &CellSprites::inCTrueTile : &CellSprites::inCFalseTile;
+                        }
+                        if (cellType == CT_IND) {
+                            spr = _g.activeTestData->inputs[3] ? &CellSprites::inDTrueTile : &CellSprites::inDFalseTile;
+                        }
+                    }
                     if (spr != nullptr) {
                         spr->render(graph, Vec2i(_g.cellSize * x, _g.cellSize * y));
                     }
@@ -829,9 +896,11 @@ public:
         }
 
         // Highlight cell on mouse hover
-        Vec2i cell = mousePos / _g.cellSize * _g.cellSize;
-        graph->setColor(colors["WHITE"]);
-        graph->rect(cell, Vec2i(_g.cellSize, _g.cellSize), false);
+        if (_g.activeTestData == nullptr) {
+            Vec2i cell = mousePos / _g.cellSize * _g.cellSize;
+            graph->setColor(colors["WHITE"]);
+            graph->rect(cell, Vec2i(_g.cellSize, _g.cellSize), false);
+        }
 
         // Draw static noise
         if (_g.tick % 2 == 0) {

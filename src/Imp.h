@@ -626,6 +626,10 @@ public:
     int getId() {
         return id;
     }
+    void setPos(Vec2i pos) {
+        this->pos = pos;
+        updateCollider();
+    }
     void setCollider(Vec2i size, Vec2i offset = Vec2i(0, 0)) {
         colliderEnabled = true;
         collider->size = size;
