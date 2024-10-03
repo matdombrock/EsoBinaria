@@ -362,7 +362,7 @@ public:
         }
         else {
             graph->setColor(colors["GRAY"]);
-            graph->text("// TESTS", Vec2i(testWinX + 16, _g.cellSize), _g.fontSize);
+            graph->text("TEST #" + std::to_string(_g.puzzleNum), Vec2i(testWinX + 16, _g.cellSize), _g.fontSize);
         }
         if (testFails == 0) {
             graph->setColor(colors["GREEN"]);
