@@ -555,6 +555,7 @@ public:
     Uint8 state;
     bool center;
     bool show;
+    std::function<void()> onClick;
     BtnTopMenu() : Entity() {
         tag = "btn";
         state = 0;
@@ -599,6 +600,9 @@ public:
             state = 1;
             if (input.mouseKey(SDL_BUTTON_LEFT)) {
                 state = 2;
+                if (onClick != nullptr) {
+                    onClick();
+                }
             }
             return;
         }
@@ -1181,6 +1185,12 @@ public:
         tag = "topBar";
         height = _g.cellSize / 2;
 
+        btnFile.onClick = [this]() {
+            activeTopMenu = "btnFile";
+            btnReset.show = true;
+            btnSave.show = true;
+            btnLoad.show = true;
+        };
         btnFile.tag = "btnFile";
         btnFile.show = true;
         btnFile.text = "FILE";
@@ -1201,16 +1211,19 @@ public:
 
         //
 
+        btnReset.onClick = []() { _g.setReset(true); };
         btnReset.show = false;
         btnReset.text = "RESET";
         btnReset.pos = Vec2i(btnFile.pos.x, btnFile.pos.y + _g.fontSize * 1.1f);
         em.addEntity(&btnReset);
 
+        btnSave.onClick = []() { DBG("Save"); };
         btnSave.show = false;
         btnSave.text = "SAVE";
         btnSave.pos = Vec2i(btnFile.pos.x, btnFile.pos.y + _g.fontSize * 2.1f);
         em.addEntity(&btnSave);
 
+        btnLoad.onClick = []() { DBG("Load"); };
         btnLoad.show = false;
         btnLoad.text = "LOAD";
         btnLoad.pos = Vec2i(btnFile.pos.x, btnFile.pos.y + _g.fontSize * 3.1f);
@@ -1219,9 +1232,6 @@ public:
     }
     ~TopBar() {}
     void process() override {
-        em.checkMouse();
-        em.process();
-
         // Clear if nothing is clicked
         if (input.mouseKey(SDL_BUTTON_LEFT)) {
             activeTopMenu = "";
@@ -1229,24 +1239,8 @@ public:
             btnSave.show = false;
             btnLoad.show = false;
         }
-        if (btnFile.isClicked()) {
-            activeTopMenu = "btnFile";
-            btnReset.show = true;
-            btnSave.show = true;
-            btnLoad.show = true;
-        }
-        if (btnTools.isClicked()) {
-            activeTopMenu = "btnTools";
-        }
-        if (btnHelp.isClicked()) {
-            activeTopMenu = "btnHelp";
-        }
-
-        //
-
-        if (btnReset.isClicked()) {
-            _g.setReset(true);
-        }
+        em.checkMouse();
+        em.process();
     }
     void render(Graphics* graph) override {
         graph->setColor(colors["BG3"]);
