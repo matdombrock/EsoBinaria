@@ -144,7 +144,7 @@ public:
     CellType activeTile = CT_EMPTY;
     TestData* activeTestData = nullptr;
     int puzzleBits = 3;
-    int puzzleNum = 1;
+    int puzzleNum = 255;
     //
     Vec2i bottomBarSize = Vec2i(WINDOW_SIZE.x, cellSize * 3);
     Vec2i bottomBarPos = Vec2i(0, WINDOW_SIZE.y - bottomBarSize.y);
@@ -260,15 +260,23 @@ public:
         }
         data.output = rand() % 2;
     }
-    bool check(std::string code) {
-        if (code == "") {
-            data.lastCheck = false;
-            data.hasError = false;
-            return data.lastCheck;
-        };
+    bool check(std::string code) { 
         data.hasError = false;
         code = Util::toLowercase(code);
         code = Util::strReplace(code, "_", " ");
+        DBG("Code Check:");
+        DBG(code);
+        if ((!Util::stringContains(code, "a") 
+            && !Util::stringContains(code, "b") 
+            && !Util::stringContains(code, "c") 
+            && !Util::stringContains(code, "d"))
+            || code == "")
+        {
+            data.lastCheck = false;
+            data.hasError = false;
+            DBG("Ignoring empty code");
+            return data.lastCheck;
+        }
         // code = "(display \"hello\"  )";
         std::string pre = "";
         pre += "(define (xor a b) (or (and a (not b)) (and (not a) b)))";
@@ -287,7 +295,10 @@ public:
             data.lastCheck = false;
             return data.lastCheck;
         }
-        if (eval == boolScheme(data.output)) data.lastCheck = true;
+        std::string evalTarget = boolScheme(data.output);
+        DBG("Eval: " + eval);
+        DBG("Target: " + evalTarget);
+        if (eval == evalTarget) data.lastCheck = true;
         else data.lastCheck = false;
         return data.lastCheck;
     }
@@ -657,12 +668,14 @@ public:
             //
             std::string csMod = _g.codeString;
             if (_g.activeTestData != nullptr) {
+                DBG("Active test data replace");
+                csMod = Util::strReplace(csMod, "AND", "XXX");// Protect AND from replacement
                 std::string targets[4] = {"A", "B", "C", "D"}; 
                 for (int i = 0; i < _g.activeTestData->inputs.size(); i++) {
-                    DBG("Active test data replace");
                     std::string rep = _g.activeTestData->inputs[i] ? "1" : "0";
                     csMod = Util::strReplace(csMod, targets[i], rep);
                 }
+                csMod = Util::strReplace(csMod, "XXX", "AND");// Restore AND
             }
             // Split the string by _
             std::vector<std::string> split = Util::splitString(csMod, "_");
@@ -788,8 +801,10 @@ public:
         if (input.mousePos().y < _g.bottomBarPos.y) {
             if (lastMouse[0] != lastMouse[1]) {
                 int relMouse = ((float)mousePosCell.x / gridSize.x) * 255;
-                sndTick.setPan(255 - relMouse, relMouse);
-                sndTick.play();
+                if(_g.activeTestData == nullptr) {
+                    sndTick.setPan(255 - relMouse, relMouse);
+                    sndTick.play();
+                }
             }
 
             CellType newCell = CT_VOID;
@@ -845,7 +860,7 @@ public:
         graph->rect(Vec2i(0, 0), Vec2i(WINDOW_SIZE.x, borderWidth));
         graph->rect(Vec2i(0, _g.bottomBarPos.y - borderWidth), Vec2i(WINDOW_SIZE.x, borderWidth));
         graph->rect(Vec2i(0, 0), Vec2i(borderWidth, WINDOW_SIZE.y));
-        graph->rect(Vec2i(WINDOW_SIZE.x - borderWidth, 0), Vec2i(borderWidth, WINDOW_SIZE.y));
+        graph->rect(Vec2i(WINDOW_SIZE.x - borderWidth, pos.y), Vec2i(borderWidth, WINDOW_SIZE.y));
         
         // Draw mouse trail
         for (int i = 0; i < 8; i++) {
@@ -1004,6 +1019,21 @@ public:
         graph->text("ESOMachina", Vec2i(20, 20), _g.fontSize);
         em.render(graph);
         sprBg.render(graph, WINDOW_SIZE - Vec2i(WINDOW_SIZE.x/2, WINDOW_SIZE.x/2));
+    }
+};
+
+class TopBar : public Entity {
+public:
+    EntityManager em;
+    TopBar() : Entity() {
+        tag = "topBar";
+    }
+    ~TopBar() {}
+    void render(Graphics* graph) override {
+        graph->setColor(colors["BG3"]);
+        graph->rect(Vec2i(0, 0), Vec2i(WINDOW_SIZE.x, _g.cellSize / 2));
+        graph->setColor(colors["GREEN"]);
+        graph->text("ESOMachina", Vec2i(20, 0), _g.fontSize * 0.75f);
     }
 };
 
