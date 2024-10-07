@@ -949,8 +949,10 @@ public:
                 }
                 else sndAdd.play();
                 cells[x][y].set(newCell);
-                _g.setActiveTile(CT_VOID, false);
-                // _g.activeTile = CT_VOID;
+                // clear actie Tile
+                if (newCell != CT_CLEAR) {
+                    _g.setActiveTile(CT_VOID, false);   
+                }
             }
             // Toggle connectors
             if (input.keyDown(SDLK_TAB) || input.mouseKeyDown(SDL_BUTTON_RIGHT)) {
@@ -1239,6 +1241,12 @@ public:
         if (btnHelp.isClicked()) {
             activeTopMenu = "btnHelp";
         }
+
+        //
+
+        if (btnReset.isClicked()) {
+            _g.setReset(true);
+        }
     }
     void render(Graphics* graph) override {
         graph->setColor(colors["BG3"]);
@@ -1250,8 +1258,6 @@ public:
         }
         
         em.render(graph);
-        // graph->setColor(colors["GRAY"]);
-        // graph->text("FILE  TOOLS  HELP", Vec2i(20, 4), _g.fontSize * 0.75f);
     }
 };
 
