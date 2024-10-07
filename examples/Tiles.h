@@ -536,9 +536,10 @@ public:
     void onMouse(bool over) override {
         if (over) {
             state = 1;
-            if (input.mouseKey(SDL_BUTTON_LEFT)) {
-                state = 2;
-            }
+            return;
+        }
+        if (input.mouseKeyDown(SDL_BUTTON_LEFT) && over) {
+            state = 2;
             return;
         }
         state = 0;
@@ -1187,10 +1188,12 @@ public:
     BtnTopMenu btnFile;
     BtnTopMenu btnTools;
     BtnTopMenu btnHelp;
-    //
+    // File menu
     BtnTopMenu btnReset;
     BtnTopMenu btnSave;
     BtnTopMenu btnLoad;
+    // Tools menu
+    BtnTopMenu btnMainMenu;
     //
     EntityManager em;
     int height;
@@ -1211,6 +1214,10 @@ public:
         btnFile.pos = Vec2i(20, 4);
         em.addEntity(&btnFile);
 
+        btnTools.onClick = [this]() {
+            activeTopMenu = "btnTools";
+            btnMainMenu.show = true;
+        };
         btnTools.tag = "btnTools";
         btnTools.show = true;
         btnTools.text = "TOOLS";
@@ -1223,8 +1230,7 @@ public:
         btnHelp.pos = Vec2i(20 + 200, 4);
         em.addEntity(&btnHelp);
 
-        //
-
+        // File menu
         btnReset.onClick = []() { _g.setReset(true); };
         btnReset.show = false;
         btnReset.text = "RESET";
@@ -1243,18 +1249,30 @@ public:
         btnLoad.pos = Vec2i(btnFile.pos.x, btnFile.pos.y + _g.fontSize * 3.1f);
         em.addEntity(&btnLoad);
 
+        // Tools menu
+        btnMainMenu.onClick = []() { DBG("MENU"); _g.toggleMainMenu(); };
+        btnMainMenu.show = false;
+        btnMainMenu.text = "MENU";
+        btnMainMenu.pos = Vec2i(btnTools.pos.x, btnTools.pos.y + _g.fontSize * 1.1f);
+        em.addEntity(&btnMainMenu);
+
     }
     ~TopBar() {}
     void process() override {
         // Clear if nothing is clicked
         if (input.mouseKey(SDL_BUTTON_LEFT)) {
             activeTopMenu = "";
-            btnReset.show = false;
-            btnSave.show = false;
-            btnLoad.show = false;
         }
         em.checkMouse();
         em.process();
+        if (activeTopMenu == "") {
+             // File menu
+            btnReset.show = false;
+            btnSave.show = false;
+            btnLoad.show = false;
+            // Tools menu
+            btnMainMenu.show = false;
+        }
     }
     void render(Graphics* graph) override {
         graph->setColor(colors["BG3"]);
@@ -1262,7 +1280,10 @@ public:
         
         graph->setColor(colors["BG3"]);
         if (activeTopMenu == "btnFile") {
-            graph->rect(Vec2i(btnFile.pos.x, height), Vec2i(120, 120));
+            graph->rect(Vec2i(btnFile.pos.x, height), Vec2i(129, 120));
+        }
+        if (activeTopMenu == "btnTools") {
+            graph->rect(Vec2i(btnTools.pos.x, height), Vec2i(120, 120));
         }
         
         em.render(graph);
