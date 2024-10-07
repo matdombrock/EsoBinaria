@@ -141,7 +141,7 @@ public:
     bool hasCodeErr = false;
     bool showMenu = false;
     int tick = 0;
-    CellType activeTile = CT_CLEAR;
+    CellType activeTile = CT_VOID;
     TestData* activeTestData = nullptr;
     int puzzleBits = 3;
     int puzzleNum = 255;
@@ -360,7 +360,6 @@ public:
     EntityManager em;
     bool show;
     int testFails;
-    int testWinX;
     int testWinWidth;
     std::vector<TestCase> tests;
     std::string codeStringOld;
@@ -375,9 +374,8 @@ public:
             tests[i].set(i, _g.puzzleBits, _g.puzzleNum);
         }
         testWinWidth = _g.fontSize * 8;
-        testWinX = WINDOW_SIZE.x - (show ? testWinWidth : _g.cellSize / 4);
+        pos.y = _g.cellSize;
         for (int i = 0; i < tests.size(); i++) {
-            tests[i].pos = Vec2i(testWinX + 16, _g.cellSize + (i * _g.cellSize /2 ));
             em.addEntity(&tests[i]);
         }
     }
@@ -409,19 +407,26 @@ public:
             show = !show;
             Sounds::toggleTests.play();
         }
+        // Update positions
+        // XXX - Maybe slow
+        for (int i = 0; i < tests.size(); i++) {
+            tests[i].pos = Vec2i(16, _g.cellSize + (i * _g.cellSize /2 ));
+            tests[i].pos += pos;
+        }
+        pos.x = WINDOW_SIZE.x - (show ? testWinWidth : _g.cellSize / 2);
     }
     void render(Graphics* graph) {
         if (_g.showMenu) return;
         em.render(graph);
         //graph->setColor(colors["BG3"]);
-        //graph->rect(Vec2i(testWinX, 0), Vec2i(testWinWidth, _g.bottomBarPos.y - _g.cellSize), true);
+        //graph->rect(Vec2i(pos.x, 0), Vec2i(testWinWidth, _g.bottomBarPos.y - _g.cellSize), true);
         if (_g.hasCodeErr) {
             graph->setColor(colors["YELLOW"]);
-            graph->text("!! ERROR", Vec2i(testWinX + 16, _g.cellSize/4 - (_g.tick/4 % 8)), _g.fontSize);
+            graph->text("!! ERROR", Vec2i(pos.x + 16, pos.y - (_g.tick/4 % 8)), _g.fontSize);
         }
         else {
             graph->setColor(colors["GRAY"]);
-            graph->text("#P3-" + std::to_string(_g.puzzleNum), Vec2i(testWinX + 16, _g.cellSize/4), _g.fontSize);
+            graph->text("#P3-" + std::to_string(_g.puzzleNum), Vec2i(pos.x + 16, pos.y), _g.fontSize);
         }
         if (testFails == 0) {
             graph->setColor(colors["GREEN"]);
