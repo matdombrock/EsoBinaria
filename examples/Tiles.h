@@ -225,6 +225,7 @@ private:
     HelpItem* helpItem = nullptr;
 };
 Globals _g;
+Input _input;
 
 namespace CellSprites {
     Sprite baseTile = Sprite(Vec2i(0, 0), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
@@ -416,7 +417,6 @@ private:
 
 class TestScreen : public Entity {
 public:
-    Input input;
     EntityManager em;
     bool show;
     int testFails;
@@ -463,7 +463,7 @@ public:
             }
             codeStringOld = _g.getCodeString();
         }
-        if(input.keyDown(SDLK_SPACE)) {
+        if(_input.keyDown(SDLK_SPACE)) {
             show = !show;
             Sounds::toggleTests.play();
         }
@@ -497,7 +497,6 @@ public:
 
 class BtnMainMenu : public Entity {
 public:
-    Input input;
     Vec2i size;
     std::string text;
     Uint8 state;
@@ -534,22 +533,19 @@ public:
         }
     }
     void onMouse(bool over) override {
-        if (over) {
-            state = 1;
-            return;
-        }
-        if (input.mouseKeyDown(SDL_BUTTON_LEFT) && over) {
+        if (_input.mouseKeyDown(SDL_BUTTON_LEFT) && over) {
             state = 2;
-            return;
         }
-        state = 0;
+        else if (over) {
+            state = 1;
+        }
+        else state = 0;
     }
 };
 
 
 class BtnTopMenu : public Entity {
 public:
-    Input input;
     Vec2i size;
     int fontSize;
     std::string text;
@@ -599,7 +595,7 @@ public:
         if (!show) return;
         if (over) {
             state = 1;
-            if (input.mouseKey(SDL_BUTTON_LEFT)) {
+            if (_input.mouseKey(SDL_BUTTON_LEFT)) {
                 state = 2;
                 if (onClick != nullptr) {
                     onClick();
@@ -613,7 +609,6 @@ public:
 
 class BtnTile : public Entity {
 public:
-    Input input;
     CellType type;
     Uint8 state;
     Uint8 oldState;
@@ -650,7 +645,7 @@ public:
         oldState = state;
         if (over) {
             state = 1;
-            if (input.mouseKeyDown(SDL_BUTTON_LEFT)) {
+            if (_input.mouseKeyDown(SDL_BUTTON_LEFT)) {
                 state = 2;
                 _g.setActiveTile(type);
             }
@@ -857,7 +852,6 @@ public:
 
 class Grid : public Entity {
 public:
-    Input input;
     Vec2i mousePos;
     Vec2i mousePosCell;
     Uint32 mouseBtn;
@@ -917,8 +911,8 @@ public:
     }
     void process() override {
         if (_g.getShowMainMenu()) return;
-        mousePos = input.mousePos();
-        mouseBtn = input.getMouseBtn();
+        mousePos = _input.mousePos();
+        mouseBtn = _input.getMouseBtn();
         mousePosCell = mousePos / _g.cellSize;
         // Update lastMouse array with the most recent mousePosCell value
         if (_g.getTick() % 2 == 0) {
@@ -933,22 +927,22 @@ public:
         bool isTile = cellType != CT_VOID && cellType != CT_CLEAR;
         highlightCellTypeStr = Cell::typeToString(cellType);
         
-        if (input.keyDown(SDLK_q)) _g.setActiveTile(CT_CLEAR);
-        if (input.keyDown(SDLK_BACKSPACE)) _g.setActiveTile(CT_CLEAR);
-        if (input.keyDown(SDLK_w)) _g.setActiveTile(CT_BLANK);
-        if (input.keyDown(SDLK_e)) _g.setActiveTile(CT_AND);
-        if (input.keyDown(SDLK_r)) _g.setActiveTile(CT_OR);
-        if (input.keyDown(SDLK_t)) _g.setActiveTile(CT_NOT);
-        if (input.keyDown(SDLK_a)) _g.setActiveTile(CT_INA);
-        if (input.keyDown(SDLK_s)) _g.setActiveTile(CT_INB);
-        if (input.keyDown(SDLK_d)) _g.setActiveTile(CT_INC);
-        if (input.keyDown(SDLK_f)) _g.setActiveTile(CT_IND);
-        if (input.keyDown(SDLK_y)) _g.setActiveTile(CT_XOR);
-        if (input.keyDown(SDLK_u)) _g.setActiveTile(CT_NAND);
-        if (input.keyDown(SDLK_i)) _g.setActiveTile(CT_NOR);
-        if (input.keyDown(SDLK_o)) _g.setActiveTile(CT_XNOR);
+        if (_input.keyDown(SDLK_q)) _g.setActiveTile(CT_CLEAR);
+        if (_input.keyDown(SDLK_BACKSPACE)) _g.setActiveTile(CT_CLEAR);
+        if (_input.keyDown(SDLK_w)) _g.setActiveTile(CT_BLANK);
+        if (_input.keyDown(SDLK_e)) _g.setActiveTile(CT_AND);
+        if (_input.keyDown(SDLK_r)) _g.setActiveTile(CT_OR);
+        if (_input.keyDown(SDLK_t)) _g.setActiveTile(CT_NOT);
+        if (_input.keyDown(SDLK_a)) _g.setActiveTile(CT_INA);
+        if (_input.keyDown(SDLK_s)) _g.setActiveTile(CT_INB);
+        if (_input.keyDown(SDLK_d)) _g.setActiveTile(CT_INC);
+        if (_input.keyDown(SDLK_f)) _g.setActiveTile(CT_IND);
+        if (_input.keyDown(SDLK_y)) _g.setActiveTile(CT_XOR);
+        if (_input.keyDown(SDLK_u)) _g.setActiveTile(CT_NAND);
+        if (_input.keyDown(SDLK_i)) _g.setActiveTile(CT_NOR);
+        if (_input.keyDown(SDLK_o)) _g.setActiveTile(CT_XNOR);
 
-        if (input.mousePos().y < _g.bottomBarPos.y) {
+        if (_input.mousePos().y < _g.bottomBarPos.y) {
             if (lastMouse[0] != lastMouse[1]) {
                 int relMouse = ((float)mousePosCell.x / gridSize.x) * 255;
                 if(_g.getActiveTestData() == nullptr) {
@@ -958,7 +952,7 @@ public:
             }
 
             CellType newCell = CT_VOID;
-            if (input.mouseKeyDown(SDL_BUTTON_LEFT)) {
+            if (_input.mouseKeyDown(SDL_BUTTON_LEFT)) {
                 newCell = _g.getActiveTile();
             }
             if (newCell != CT_VOID) {
@@ -974,7 +968,7 @@ public:
                 }
             }
             // Toggle connectors
-            if (input.keyDown(SDLK_TAB) || input.mouseKeyDown(SDL_BUTTON_RIGHT)) {
+            if (_input.keyDown(SDLK_TAB) || _input.mouseKeyDown(SDL_BUTTON_RIGHT)) {
                 cells[x][y].cycleParens();
                 if (isTile) sndParen.play();
             }
@@ -1184,7 +1178,6 @@ public:
 
 class TopBar : public Entity {
 public:
-    Input input;
     BtnTopMenu btnFile;
     BtnTopMenu btnTools;
     BtnTopMenu btnHelp;
@@ -1260,17 +1253,17 @@ public:
     ~TopBar() {}
     void process() override {
         // Clear if nothing is clicked
-        if (input.mouseKey(SDL_BUTTON_LEFT)) {
+        if (_input.mouseKey(SDL_BUTTON_LEFT)) {
             activeTopMenu = "";
         }
         em.checkMouse();
         em.process();
-        if (activeTopMenu == "") {
-             // File menu
+        if (activeTopMenu != "btnFile") {
             btnReset.show = false;
             btnSave.show = false;
             btnLoad.show = false;
-            // Tools menu
+        }
+        if (activeTopMenu != "btnTools") {
             btnMainMenu.show = false;
         }
     }
@@ -1292,7 +1285,6 @@ public:
 
 class Cursor : public Entity {
 public:
-    Input input;
     Sprite spr;
     Cursor() : Entity() {
         tag = "cursor";
@@ -1302,7 +1294,7 @@ public:
     }
     ~Cursor() {}
     void process() override {
-        pos = input.mousePos();
+        pos = _input.mousePos();
     }
     void render(Graphics* graph) override {
         spr.render(graph, pos);
@@ -1311,7 +1303,6 @@ public:
 
 class App : public Imp::Main { 
 public:
-    Input input;
     Grid grid;
     TestScreen testScreen;
     Cursor cursor;
@@ -1330,7 +1321,7 @@ public:
     ~App() {}
     void process() override {
         // Pause
-        if (input.keyDown(SDLK_ESCAPE)) {
+        if (_input.keyDown(SDLK_ESCAPE)) {
             _g.toggleMainMenu();
         }
 
