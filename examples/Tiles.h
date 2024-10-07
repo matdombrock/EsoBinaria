@@ -409,11 +409,11 @@ public:
         }
         // Update positions
         // XXX - Maybe slow
+        pos.x = WINDOW_SIZE.x - (show ? testWinWidth : _g.cellSize / 2);
         for (int i = 0; i < tests.size(); i++) {
             tests[i].pos = Vec2i(16, _g.cellSize + (i * _g.cellSize /2 ));
             tests[i].pos += pos;
         }
-        pos.x = WINDOW_SIZE.x - (show ? testWinWidth : _g.cellSize / 2);
     }
     void render(Graphics* graph) {
         if (_g.showMenu) return;
