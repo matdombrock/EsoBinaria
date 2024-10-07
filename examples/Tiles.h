@@ -37,14 +37,14 @@ std::map<std::string, Color> colors = {
     {"BG3", Color(55,55,60)},
     {"GREEN", Color(94,180,93)},
     {"YELLOW", Color(238,198,75)},
-    {"RED", Color(255,128,128)},
+    {"RED", Color(186,89,90)},
     {"GRAY", Color(155,155,155)},
     {"WHITE", Color(255,255,255)},
 };
 
 enum CellType {
-    CT_VOID = -1,
-    CT_EMPTY = 0,
+    CT_VOID = 999,
+    CT_CLEAR = 0,
     CT_INA = 1,
     CT_INB = 2,
     CT_INC = 3,
@@ -65,7 +65,7 @@ public:
     bool parenLeft;
     bool parenRight;
     Cell() {
-        type = CT_EMPTY;
+        type = CT_CLEAR;
         parenLeft = false;
         parenRight = false;
     }
@@ -93,7 +93,7 @@ public:
     static std::string typeToString(CellType type) {
         switch (type) {
             case CT_VOID: return "VOID";
-            case CT_EMPTY: return "VOID";
+            case CT_CLEAR: return "VOID";
             case CT_INA: return "A";
             case CT_INB: return "B";
             case CT_INC: return "C";
@@ -141,7 +141,7 @@ public:
     bool hasCodeErr = false;
     bool showMenu = false;
     int tick = 0;
-    CellType activeTile = CT_EMPTY;
+    CellType activeTile = CT_CLEAR;
     TestData* activeTestData = nullptr;
     int puzzleBits = 3;
     int puzzleNum = 255;
@@ -149,11 +149,14 @@ public:
     Vec2i bottomBarSize = Vec2i(WINDOW_SIZE.x, cellSize * 3);
     Vec2i bottomBarPos = Vec2i(0, WINDOW_SIZE.y - bottomBarSize.y);
     //
-    void setActiveTile(CellType type) {
+    void setActiveTile(CellType type, bool playSound = true, bool autoVoid = true) {
         if (type == CT_IND && puzzleBits < 4) {
             return;
         }
-        Sounds::changeTile.play();
+        if (autoVoid && type == activeTile) {
+            type = CT_VOID;
+        }
+        if (playSound) Sounds::changeTile.play();
         activeTile = type;
     }
     void toggleMenu() {
@@ -179,6 +182,7 @@ namespace CellSprites {
     Sprite inCTile = Sprite(Vec2i(32, 48), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
     Sprite inDTile = Sprite(Vec2i(48, 48), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
     Sprite clear = Sprite(Vec2i(16, 32), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
+    Sprite specVoid = Sprite(Vec2i(256,256), Vec2i(0,0), Vec2i(0,0)); 
     // Special
     Sprite inATrueTile = Sprite(Vec2i(64, 48), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
     Sprite inBTrueTile = Sprite(Vec2i(80, 48), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
@@ -189,7 +193,8 @@ namespace CellSprites {
     Sprite inCFalseTile = Sprite(Vec2i(160, 48), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
     Sprite inDFalseTile = Sprite(Vec2i(176, 48), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
     std::map <CellType, Sprite*> cellMap = {
-        {CT_EMPTY, &clear},
+        {CT_VOID, &specVoid},
+        {CT_CLEAR, &clear},
         {CT_AND, &andTile},
         {CT_OR, &orTile},
         {CT_NOT, &notTile},
@@ -486,7 +491,7 @@ public:
         state = 99; // 99 prevents play on start
         oldState = 99;
         tag = "tileBtn";
-        type = CT_EMPTY;
+        type = CT_CLEAR;
         setCollider(Vec2i(_g.cellSize, _g.cellSize));
         sndTick.set("1.wav");
     }
@@ -544,7 +549,7 @@ public:
     TileBtn btnXnor;
     BottomBar() : Entity() {
         tag = "bottomBar";
-        btnClear.type = CT_EMPTY;
+        btnClear.type = CT_CLEAR;
         btnBlank.type = CT_BLANK;
         btnInA.type = CT_INA;
         btnInB.type = CT_INB;
@@ -731,7 +736,7 @@ public:
         for (int x = 0; x < gridSize.x; x++) {
             cells[x].resize(gridSize.y);
             for (int y = 0; y < gridSize.y; y++) {
-                cells[x][y].set(CT_EMPTY);
+                cells[x][y].set(CT_CLEAR);
             }
         }
 
@@ -741,7 +746,7 @@ public:
         sndRemove.set("rock.ogg");
         sndParen.set("5.wav");  
 
-        highlightCellTypeStr = "EMPTY";
+        highlightCellTypeStr = "CLEAR";
         helpString = "";
         DBG("Grid started");
 
@@ -761,7 +766,7 @@ public:
     void reset() {
         for (int x = 0; x < gridSize.x; x++) {
             for (int y = 0; y < gridSize.y; y++) {
-                cells[x][y].set(CT_EMPTY);
+                cells[x][y].set(CT_CLEAR);
             }
         }
     }
@@ -780,11 +785,11 @@ public:
         int x = mousePosCell.x;
         int y = mousePosCell.y;
         CellType cellType = cells[x][y].get();
-        bool isTile = cellType != CT_VOID && cellType != CT_EMPTY;
+        bool isTile = cellType != CT_VOID && cellType != CT_CLEAR;
         highlightCellTypeStr = Cell::typeToString(cellType);
         
-        if (input.keyDown(SDLK_q)) _g.setActiveTile(CT_EMPTY);
-        if (input.keyDown(SDLK_BACKSPACE)) _g.setActiveTile(CT_EMPTY);
+        if (input.keyDown(SDLK_q)) _g.setActiveTile(CT_CLEAR);
+        if (input.keyDown(SDLK_BACKSPACE)) _g.setActiveTile(CT_CLEAR);
         if (input.keyDown(SDLK_w)) _g.setActiveTile(CT_BLANK);
         if (input.keyDown(SDLK_e)) _g.setActiveTile(CT_AND);
         if (input.keyDown(SDLK_r)) _g.setActiveTile(CT_OR);
@@ -813,11 +818,13 @@ public:
             }
             if (newCell != CT_VOID) {
                 DBG("New Cell: " + std::to_string(newCell));
-                if (newCell == CT_EMPTY) {
+                if (newCell == CT_CLEAR) {
                     if (isTile) sndRemove.play();
                 }
                 else sndAdd.play();
                 cells[x][y].set(newCell);
+                _g.setActiveTile(CT_VOID, false);
+                // _g.activeTile = CT_VOID;
             }
             // Toggle connectors
             if (input.keyDown(SDLK_TAB) || input.mouseKeyDown(SDL_BUTTON_RIGHT)) {
@@ -832,7 +839,7 @@ public:
         for (int y = 0; y < gridSize.y; y++) {
             for (int x = 0; x < gridSize.x; x++) {
                 CellType cellType = cells[x][y].get();
-                if (cellType != CT_EMPTY) {
+                if (cellType != CT_CLEAR) {
                     bool isHovered = mousePosCell.x == x && mousePosCell.y == y;
                     if (isHovered) _g.codeString += "_";
                     if (cells[x][y].parenLeft) _g.codeString += "(";
@@ -875,7 +882,7 @@ public:
         for (int x = 0; x < gridSize.x; x++) {
             for (int y = 0; y < gridSize.y; y++) {
                 CellType cellType = cells[x][y].get();
-                if (cellType != CT_VOID && cellType != CT_EMPTY) {
+                if (cellType != CT_VOID && cellType != CT_CLEAR) {
                     CellSprites::baseTile.render(graph, Vec2i(_g.cellSize * x, _g.cellSize * y));
                     Sprite* spr = nullptr;
                     spr = CellSprites::cellMap[cellType];
@@ -913,8 +920,12 @@ public:
         // Highlight cell on mouse hover
         if (_g.activeTestData == nullptr) {
             Vec2i cell = mousePos / _g.cellSize * _g.cellSize;
+            if (_g.activeTile != CT_VOID) {
+                CellSprites::baseTile.render(graph, cell);
+                CellSprites::cellMap[_g.activeTile]->render(graph, cell);
+            }
             graph->setColor(colors["WHITE"]);
-            graph->rect(cell, Vec2i(_g.cellSize, _g.cellSize), false);
+            graph->rect(cell, Vec2i(_g.cellSize, _g.cellSize), false); 
         }
 
         // Draw static noise
@@ -1032,8 +1043,8 @@ public:
     void render(Graphics* graph) override {
         graph->setColor(colors["BG3"]);
         graph->rect(Vec2i(0, 0), Vec2i(WINDOW_SIZE.x, _g.cellSize / 2));
-        graph->setColor(colors["GREEN"]);
-        graph->text("ESOMachina", Vec2i(20, 0), _g.fontSize * 0.75f);
+        graph->setColor(colors["GRAY"]);
+        graph->text("ESOMachina", Vec2i(20, 4), _g.fontSize * 0.75f);
     }
 };
 
@@ -1063,11 +1074,13 @@ public:
     TestScreen testScreen;
     Cursor cursor;
     Menu menu;
+    TopBar topBar;
     BottomBar bottomBar;
     App() : Imp::Main("EsoMachina (v0.1-alpha)", WINDOW_SIZE, 60, "tiles.png") { 
         clearColor = Color(colors["BG"]);
         entityMan.addEntity(&grid);
         entityMan.addEntity(&bottomBar);
+        entityMan.addEntity(&topBar);
         entityMan.addEntity(&testScreen);
         entityMan.addEntity(&menu);
         entityMan.addEntity(&cursor);
