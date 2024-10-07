@@ -617,6 +617,8 @@ public:
     Uint8 state;
     Uint8 oldState;
     Sound sndTick;
+    std::function<void()> onClick;
+    std::function<void()> onHover;
     BtnTile() : Entity() {
         state = 99; // 99 prevents play on start
         oldState = 99;
@@ -651,6 +653,9 @@ public:
                 state = 2;
                 _g.setActiveTile(type);
             }
+            if (state > 0) {
+                if (onHover != nullptr) onHover();
+            }
             if (state == 1 && oldState == 0) {
                 DBG("play ");
                 sndTick.play();
@@ -679,95 +684,104 @@ public:
     BtnTile btnXnor;
     BottomBar() : Entity() {
         tag = "bottomBar";
-        btnClear.type = CT_CLEAR;
-        btnBlank.type = CT_BLANK;
-        btnInA.type = CT_INA;
-        btnInB.type = CT_INB;
-        btnInC.type = CT_INC;
-        btnInD.type = CT_IND;
-        btnAnd.type = CT_AND;
-        btnOr.type = CT_OR;
-        btnNot.type = CT_NOT;
-        btnXor.type = CT_XOR;
-        btnNand.type = CT_NAND;
-        btnNor.type = CT_NOR;
-        btnXnor.type = CT_XNOR;
-        
-        btnClear.pos = Vec2i(1.5f * _g.cellSize, _g.bottomBarPos.y);
-        btnInA.pos = Vec2i(2.5f * _g.cellSize, _g.bottomBarPos.y);
-        btnInB.pos = Vec2i(3.5f * _g.cellSize, _g.bottomBarPos.y);
-        btnInC.pos = Vec2i(4.5f * _g.cellSize, _g.bottomBarPos.y);
-        btnInD.pos = Vec2i(5.5f * _g.cellSize, _g.bottomBarPos.y);
-        btnBlank.pos = Vec2i(6.5f * _g.cellSize, _g.bottomBarPos.y);
-        btnAnd.pos = Vec2i(7.5f * _g.cellSize, _g.bottomBarPos.y);
-        btnOr.pos = Vec2i(8.5f * _g.cellSize, _g.bottomBarPos.y);
-        btnNot.pos = Vec2i(9.5f * _g.cellSize, _g.bottomBarPos.y);
-        btnXor.pos = Vec2i(10.5f * _g.cellSize, _g.bottomBarPos.y);
-        btnNand.pos = Vec2i(11.5f * _g.cellSize, _g.bottomBarPos.y);
-        btnNor.pos = Vec2i(12.5f * _g.cellSize, _g.bottomBarPos.y);
-        btnXnor.pos = Vec2i(13.5f * _g.cellSize, _g.bottomBarPos.y);
 
+        btnClear.onHover = [&](){
+            _g.setHelpItem(&helpItems["VOID"]);
+        };
+        btnClear.type = CT_CLEAR;
+        btnClear.pos = Vec2i(1.5f * _g.cellSize, _g.bottomBarPos.y);
         em.addEntity(&btnClear);
-        em.addEntity(&btnInA);
-        em.addEntity(&btnInB);
-        em.addEntity(&btnInC);
-        em.addEntity(&btnInD);
+
+        btnBlank.onHover = [&](){
+            _g.setHelpItem(&helpItems["BLANK"]);
+        };
+        btnBlank.type = CT_BLANK;
+        btnBlank.pos = Vec2i(6.5f * _g.cellSize, _g.bottomBarPos.y);
         em.addEntity(&btnBlank);
+
+        btnInA.onHover = [&](){
+            _g.setHelpItem(&helpItems["A"]);
+        };
+        btnInA.type = CT_INA;
+        btnInA.pos = Vec2i(2.5f * _g.cellSize, _g.bottomBarPos.y);
+        em.addEntity(&btnInA);
+
+        btnInB.onHover = [&](){
+            _g.setHelpItem(&helpItems["B"]);
+        };
+        btnInB.type = CT_INB;
+        btnInB.pos = Vec2i(3.5f * _g.cellSize, _g.bottomBarPos.y);
+        em.addEntity(&btnInB);
+
+        btnInC.onHover = [&](){
+            _g.setHelpItem(&helpItems["C"]);
+        };
+        btnInC.type = CT_INC;
+        btnInC.pos = Vec2i(4.5f * _g.cellSize, _g.bottomBarPos.y);
+        em.addEntity(&btnInC);
+
+        btnInD.onHover = [&](){
+            _g.setHelpItem(&helpItems["D"]);
+        };
+        btnInD.type = CT_IND;
+        btnInD.pos = Vec2i(5.5f * _g.cellSize, _g.bottomBarPos.y);
+        em.addEntity(&btnInD);
+        
+        btnAnd.onHover = [&](){
+            _g.setHelpItem(&helpItems["AND"]);
+        };
+        btnAnd.type = CT_AND;
+        btnAnd.pos = Vec2i(7.5f * _g.cellSize, _g.bottomBarPos.y);
         em.addEntity(&btnAnd);
+
+        btnOr.onHover = [&](){
+            _g.setHelpItem(&helpItems["OR"]);
+        };
+        btnOr.type = CT_OR;
+        btnOr.pos = Vec2i(8.5f * _g.cellSize, _g.bottomBarPos.y);
         em.addEntity(&btnOr);
+
+        btnNot.onHover = [&](){
+            _g.setHelpItem(&helpItems["NOT"]);
+        };
+        btnNot.type = CT_NOT;
+        btnNot.pos = Vec2i(9.5f * _g.cellSize, _g.bottomBarPos.y);
         em.addEntity(&btnNot);
+
+        btnXor.onHover = [&](){
+            _g.setHelpItem(&helpItems["XOR"]);
+        };
+        btnXor.type = CT_XOR;
+        btnXor.pos = Vec2i(10.5f * _g.cellSize, _g.bottomBarPos.y);
         em.addEntity(&btnXor);
+
+        btnNand.onHover = [&](){
+            _g.setHelpItem(&helpItems["NAND"]);
+        };
+        btnNand.type = CT_NAND;
+        btnNand.pos = Vec2i(11.5f * _g.cellSize, _g.bottomBarPos.y);
         em.addEntity(&btnNand);
+
+        btnNor.onHover = [&](){
+            _g.setHelpItem(&helpItems["NOR"]);
+        };
+        btnNor.type = CT_NOR;
+        btnNor.pos = Vec2i(12.5f * _g.cellSize, _g.bottomBarPos.y);
         em.addEntity(&btnNor);
+
+        btnXnor.onHover = [&](){
+            _g.setHelpItem(&helpItems["XNOR"]);
+        };
+        btnXnor.type = CT_XNOR;        
+        btnXnor.pos = Vec2i(13.5f * _g.cellSize, _g.bottomBarPos.y);
         em.addEntity(&btnXnor);
     }
     ~BottomBar() {}
     void process() override {
         if (_g.getShowMainMenu()) return;
+        _g.setHelpItem(nullptr);
         em.checkMouse();
         em.process();
-        if (btnClear.state >= 1){
-            _g.setHelpItem(&helpItems["VOID"]);
-        }
-        else if (btnInA.state >= 1){
-            _g.setHelpItem(&helpItems["A"]);
-        }
-        else if (btnInB.state >= 1){
-            _g.setHelpItem(&helpItems["B"]);
-        }
-        else if (btnInC.state >= 1){
-            _g.setHelpItem(&helpItems["C"]);
-        }
-        else if (btnInD.state >= 1){
-            _g.setHelpItem(&helpItems["D"]);
-        }
-        else if (btnBlank.state >= 1){
-            _g.setHelpItem(&helpItems["BLANK"]);
-        }
-        else if (btnAnd.state >= 1){
-            _g.setHelpItem(&helpItems["AND"]);
-        }
-        else if (btnOr.state >= 1){
-            _g.setHelpItem(&helpItems["OR"]);
-        }
-        else if (btnNot.state >= 1){
-            _g.setHelpItem(&helpItems["NOT"]);
-        }
-        else if (btnXor.state >= 1){
-            _g.setHelpItem(&helpItems["XOR"]);
-        }
-        else if (btnNand.state >= 1){
-            _g.setHelpItem(&helpItems["NAND"]);
-        }
-        else if (btnNor.state >= 1){
-            _g.setHelpItem(&helpItems["NOR"]);
-        }
-        else if (btnXnor.state >= 1){
-            _g.setHelpItem(&helpItems["XNOR"]);
-        }
-        else {
-            _g.setHelpItem(nullptr);
-        }
     }
     void render(Graphics* graph) override {
         if (_g.getShowMainMenu()) return;
