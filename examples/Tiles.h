@@ -134,6 +134,9 @@ public:
     const int cellSize = WINDOW_SIZE.x / 16;
     const Vec2i bottomBarSize = Vec2i(WINDOW_SIZE.x, cellSize * 3);
     const Vec2i bottomBarPos = Vec2i(0, WINDOW_SIZE.y - bottomBarSize.y);
+    int vu(float val) {
+        return (int)(val * cellSize);
+    }
     void setReset(bool reset) {
         this->reset = reset;
     }
@@ -372,9 +375,9 @@ public:
 
     }
     void render(Graphics* graph) override {
-        int hoverMod = isHovered ? 4 : 0;
+        int hoverMod = isHovered ? _g.vu(0.1f) : 0;
         if (data.lastCheck) sprPass.render(graph, pos + Vec2i(hoverMod, 0));
-        else sprFail.render(graph, Vec2i(pos.x - 4 - (_g.getTick()/8 % 6) + hoverMod, pos.y));
+        else sprFail.render(graph, Vec2i(pos.x - _g.vu(0.1f) - (_g.getTick()/8 % 6) + hoverMod, pos.y));
         int x = ce;
         for (bool input : data.inputs) {
             if (input) sprTrue.render(graph, Vec2i(pos.x + x, pos.y));
@@ -471,7 +474,7 @@ public:
         // XXX - Maybe slow
         pos.x = WINDOW_SIZE.x - (show ? testWinWidth : _g.cellSize / 2);
         for (int i = 0; i < tests.size(); i++) {
-            tests[i].pos = Vec2i(16, _g.cellSize + (i * _g.cellSize /2 ));
+            tests[i].pos = Vec2i(_g.vu(0.5f), _g.cellSize + (i * _g.cellSize /2 ));
             tests[i].pos += pos;
         }
     }
@@ -482,11 +485,11 @@ public:
         //graph->rect(Vec2i(pos.x, 0), Vec2i(testWinWidth, _g.bottomBarPos.y - _g.cellSize), true);
         if (_g.getHasCodeErr()) {
             graph->setColor(colors["YELLOW"]);
-            graph->text("!! ERROR", Vec2i(pos.x + 16, pos.y - (_g.getTick()/4 % 8)), _g.fontSize);
+            graph->text("!! ERROR", Vec2i(pos.x + _g.vu(0.5f), pos.y - (_g.getTick()/4 % 8)), _g.fontSize);
         }
         else {
             graph->setColor(colors["GRAY"]);
-            graph->text("#P3-" + std::to_string(_g.getPuzzleNum()), Vec2i(pos.x + 16, pos.y), _g.fontSize);
+            graph->text("#P3-" + std::to_string(_g.getPuzzleNum()), Vec2i(pos.x + _g.vu(0.5f), pos.y), _g.fontSize);
         }
         if (testFails == 0) {
             graph->setColor(colors["GREEN"]);
@@ -685,91 +688,91 @@ public:
             _g.setHelpItem(&helpItems["VOID"]);
         };
         btnClear.type = CT_CLEAR;
-        btnClear.pos = Vec2i(1.5f * _g.cellSize, _g.bottomBarPos.y);
+        btnClear.pos = Vec2i(_g.vu(1.5f), _g.bottomBarPos.y);
         em.addEntity(&btnClear);
-
-        btnBlank.onHover = [&](){
-            _g.setHelpItem(&helpItems["BLANK"]);
-        };
-        btnBlank.type = CT_BLANK;
-        btnBlank.pos = Vec2i(6.5f * _g.cellSize, _g.bottomBarPos.y);
-        em.addEntity(&btnBlank);
 
         btnInA.onHover = [&](){
             _g.setHelpItem(&helpItems["A"]);
         };
         btnInA.type = CT_INA;
-        btnInA.pos = Vec2i(2.5f * _g.cellSize, _g.bottomBarPos.y);
+        btnInA.pos = Vec2i(_g.vu(2.5f), _g.bottomBarPos.y);
         em.addEntity(&btnInA);
 
         btnInB.onHover = [&](){
             _g.setHelpItem(&helpItems["B"]);
         };
         btnInB.type = CT_INB;
-        btnInB.pos = Vec2i(3.5f * _g.cellSize, _g.bottomBarPos.y);
+        btnInB.pos = Vec2i(_g.vu(3.5f), _g.bottomBarPos.y);
         em.addEntity(&btnInB);
 
         btnInC.onHover = [&](){
             _g.setHelpItem(&helpItems["C"]);
         };
         btnInC.type = CT_INC;
-        btnInC.pos = Vec2i(4.5f * _g.cellSize, _g.bottomBarPos.y);
+        btnInC.pos = Vec2i(_g.vu(4.5f), _g.bottomBarPos.y);
         em.addEntity(&btnInC);
 
         btnInD.onHover = [&](){
             _g.setHelpItem(&helpItems["D"]);
         };
         btnInD.type = CT_IND;
-        btnInD.pos = Vec2i(5.5f * _g.cellSize, _g.bottomBarPos.y);
+        btnInD.pos = Vec2i(_g.vu(5.5f), _g.bottomBarPos.y);
         em.addEntity(&btnInD);
+
+        btnBlank.onHover = [&](){
+            _g.setHelpItem(&helpItems["BLANK"]);
+        };
+        btnBlank.type = CT_BLANK;
+        btnBlank.pos = Vec2i(_g.vu(6.5f), _g.bottomBarPos.y);
+        em.addEntity(&btnBlank);
         
         btnAnd.onHover = [&](){
             _g.setHelpItem(&helpItems["AND"]);
         };
         btnAnd.type = CT_AND;
-        btnAnd.pos = Vec2i(7.5f * _g.cellSize, _g.bottomBarPos.y);
+        btnAnd.pos = Vec2i(_g.vu(7.5f), _g.bottomBarPos.y);
         em.addEntity(&btnAnd);
 
         btnOr.onHover = [&](){
             _g.setHelpItem(&helpItems["OR"]);
         };
         btnOr.type = CT_OR;
-        btnOr.pos = Vec2i(8.5f * _g.cellSize, _g.bottomBarPos.y);
+        btnOr.pos = Vec2i(_g.vu(8.5f), _g.bottomBarPos.y);
         em.addEntity(&btnOr);
 
         btnNot.onHover = [&](){
             _g.setHelpItem(&helpItems["NOT"]);
         };
         btnNot.type = CT_NOT;
-        btnNot.pos = Vec2i(9.5f * _g.cellSize, _g.bottomBarPos.y);
+        btnNot.pos = Vec2i(_g.vu(9.5f), _g.bottomBarPos.y);
         em.addEntity(&btnNot);
 
         btnXor.onHover = [&](){
             _g.setHelpItem(&helpItems["XOR"]);
         };
         btnXor.type = CT_XOR;
-        btnXor.pos = Vec2i(10.5f * _g.cellSize, _g.bottomBarPos.y);
+        btnXor.pos = Vec2i(_g.vu(10.5f), _g.bottomBarPos.y);
         em.addEntity(&btnXor);
 
         btnNand.onHover = [&](){
             _g.setHelpItem(&helpItems["NAND"]);
         };
         btnNand.type = CT_NAND;
-        btnNand.pos = Vec2i(11.5f * _g.cellSize, _g.bottomBarPos.y);
+        btnNand.pos = Vec2i(_g.vu(11.5f), _g.bottomBarPos.y);
         em.addEntity(&btnNand);
 
         btnNor.onHover = [&](){
             _g.setHelpItem(&helpItems["NOR"]);
         };
         btnNor.type = CT_NOR;
-        btnNor.pos = Vec2i(12.5f * _g.cellSize, _g.bottomBarPos.y);
+        btnNor.pos = Vec2i(_g.vu(12.5f), _g.bottomBarPos.y);
         em.addEntity(&btnNor);
 
         btnXnor.onHover = [&](){
             _g.setHelpItem(&helpItems["XNOR"]);
         };
         btnXnor.type = CT_XNOR;        
-        btnXnor.pos = Vec2i(13.5f * _g.cellSize, _g.bottomBarPos.y);
+        btnXnor.pos = Vec2i(_g.vu(13.5f), _g.bottomBarPos.y);
         em.addEntity(&btnXnor);
     }
     ~BottomBar() {}
@@ -953,7 +956,16 @@ public:
 
             CellType newCell = CT_VOID;
             if (_input.mouseKeyDown(SDL_BUTTON_LEFT)) {
-                newCell = _g.getActiveTile();
+                CellType active = _g.getActiveTile();
+                // Grab tile if nothing is active
+                if (active == CT_VOID && cellType != CT_CLEAR) {
+                    DBG("Grabbed cell type: " + Cell::typeToString(cellType));
+                    _g.setActiveTile(cellType, true);
+                    newCell = CT_CLEAR;
+                }
+                else {
+                    newCell = active;
+                }
             }
             if (newCell != CT_VOID) {
                 DBG("New Cell: " + std::to_string(newCell));
@@ -1061,14 +1073,14 @@ public:
         }
 
         // Highlight cell on mouse hover
-        if (_g.getActiveTestData() == nullptr) {
+        if (_g.getActiveTestData() == nullptr && mousePos.y < _g.bottomBarPos.y) {
             Vec2i cell = mousePos / _g.cellSize * _g.cellSize;
-            if (_g.getActiveTile() != CT_VOID) {
-                CellSprites::baseTile.render(graph, cell);
-                CellSprites::cellMap[_g.getActiveTile()]->render(graph, cell);
-            }
             graph->setColor(colors["WHITE"]);
             graph->rect(cell, Vec2i(_g.cellSize, _g.cellSize), false); 
+            if (_g.getActiveTile() != CT_VOID) {
+                CellSprites::baseTile.render(graph, cell - Vec2i(0, _g.vu(0.25f)));
+                CellSprites::cellMap[_g.getActiveTile()]->render(graph, cell - Vec2i(0, _g.vu(0.25f)));
+            }
         }
 
         // Draw static noise
@@ -1193,7 +1205,7 @@ public:
     std::string activeTopMenu;
     TopBar() : Entity() {
         tag = "topBar";
-        height = _g.cellSize / 2;
+        height = _g.vu(0.5f);
 
         btnFile.onClick = [this]() {
             activeTopMenu = "btnFile";
@@ -1204,7 +1216,7 @@ public:
         btnFile.tag = "btnFile";
         btnFile.show = true;
         btnFile.text = "FILE";
-        btnFile.pos = Vec2i(20, 4);
+        btnFile.pos = Vec2i(_g.vu(0.15f), 4);
         em.addEntity(&btnFile);
 
         btnTools.onClick = [this]() {
@@ -1214,39 +1226,39 @@ public:
         btnTools.tag = "btnTools";
         btnTools.show = true;
         btnTools.text = "TOOLS";
-        btnTools.pos = Vec2i(20 + 100, 4);
+        btnTools.pos = Vec2i(_g.vu(0.15f) + _g.vu(1.25f), 4);
         em.addEntity(&btnTools);
 
         btnHelp.tag = "btnHelp";
         btnHelp.show = true;
         btnHelp.text = "HELP";
-        btnHelp.pos = Vec2i(20 + 200, 4);
+        btnHelp.pos = Vec2i(_g.vu(0.15f) + _g.vu(2.75f), 4);
         em.addEntity(&btnHelp);
 
         // File menu
         btnReset.onClick = []() { _g.setReset(true); };
         btnReset.show = false;
         btnReset.text = "RESET";
-        btnReset.pos = Vec2i(btnFile.pos.x, btnFile.pos.y + _g.fontSize * 1.1f);
+        btnReset.pos = Vec2i(btnFile.pos.x, btnFile.pos.y + _g.vu(0.5f));
         em.addEntity(&btnReset);
 
         btnSave.onClick = []() { DBG("Save"); };
         btnSave.show = false;
         btnSave.text = "SAVE";
-        btnSave.pos = Vec2i(btnFile.pos.x, btnFile.pos.y + _g.fontSize * 2.1f);
+        btnSave.pos = Vec2i(btnFile.pos.x, btnFile.pos.y + _g.vu(1));
         em.addEntity(&btnSave);
 
         btnLoad.onClick = []() { DBG("Load"); };
         btnLoad.show = false;
         btnLoad.text = "LOAD";
-        btnLoad.pos = Vec2i(btnFile.pos.x, btnFile.pos.y + _g.fontSize * 3.1f);
+        btnLoad.pos = Vec2i(btnFile.pos.x, btnFile.pos.y + _g.vu(1.5f));
         em.addEntity(&btnLoad);
 
         // Tools menu
         btnMainMenu.onClick = []() { DBG("MENU"); _g.toggleMainMenu(); };
         btnMainMenu.show = false;
         btnMainMenu.text = "MENU";
-        btnMainMenu.pos = Vec2i(btnTools.pos.x, btnTools.pos.y + _g.fontSize * 1.1f);
+        btnMainMenu.pos = Vec2i(btnTools.pos.x, btnTools.pos.y + _g.vu(0.5f));
         em.addEntity(&btnMainMenu);
 
     }
