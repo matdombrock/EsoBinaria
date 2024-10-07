@@ -1049,7 +1049,7 @@ public:
         graph->setColor(colors["BG3"]);
         graph->rect(Vec2i(0, 0), Vec2i(WINDOW_SIZE.x, _g.cellSize / 2));
         graph->setColor(colors["GRAY"]);
-        graph->text("ESOMachina", Vec2i(20, 4), _g.fontSize * 0.75f);
+        graph->text("FILE  TOOLS  HELP", Vec2i(20, 4), _g.fontSize * 0.75f);
     }
 };
 
