@@ -499,11 +499,6 @@ public:
             DBG("Retesting code");
             DBG(cs);
             int testFails = check();
-            // for (TestCase& test : tests) {
-            //     if (!test.check(_g.getCodeString())){
-            //         testFails++;
-            //     }
-            // }
             codeStringOld = _g.getCodeString();
         }
         if(_input.keyOnce(SDLK_SPACE)) {
