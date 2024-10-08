@@ -709,6 +709,77 @@ public:
 };
 
 //
+// Buttons
+//
+class Btn : public Entity {
+public:
+    Vec2i size;
+    Uint8 state;
+    bool center;
+    bool available;
+    std::function<void()> onClick;
+    std::function<void()> onHover;
+    Btn() : Entity() {
+        tag = "btn";
+        state = 0;
+        center = false;
+        available = true;
+        size = Vec2i(80, 24);
+        setCollider(size);
+    }
+    ~Btn() {}
+    bool isHovered() {
+        return state > 0;
+    }
+    bool isClicked() {
+        return state == 2;
+    }
+    void process() override {}
+    virtual void render(Graphics* graph) override {}
+    void onMouse(bool over) override {
+        if (!available) return;
+        if (_input.mouseKeyDown(SDL_BUTTON_LEFT) && over) {
+            state = 2;
+            if (onClick != nullptr) onClick();
+        }
+        else if (over) {
+            state = 1;
+            if (onHover != nullptr) onHover();
+        }
+        else state = 0;
+    }
+};
+
+class BtnText : public Btn {
+public:
+    std::string text;
+    Uint8 fontSize;
+    BtnText() : Btn() {
+        text = "Button";
+        fontSize = 24;
+    }
+    ~BtnText() {}
+    void render(Graphics* graph) override {
+        if (!available) return;
+        Color c = Color(0, 0, 0);
+        switch (state) {
+            case 0: c = Color(200,200,200); break;
+            case 1: c = Color(255,200,200); break;
+            case 2: c = Color(255,255,200); break;
+        }
+        graph->setColor(c);
+        if (center) {
+            int textWidth = graph->textWidth(text, fontSize);
+            Vec2i textPos = pos + Vec2i((size.x - textWidth) / 2, (size.y - fontSize) / 2);
+            graph->text(text, textPos, fontSize);
+        }
+        else {
+            graph->text(text, pos, fontSize);
+        }
+    }
+};
+
+//
 // Util
 //
 class Util {

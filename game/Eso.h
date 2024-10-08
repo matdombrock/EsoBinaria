@@ -206,12 +206,6 @@ public:
     int getShowTests() {
         return showTests;
     }
-    void setShowModal(bool show) {
-        showModal = show;
-    }
-    bool getShowModal() {
-        return showModal;
-    }
     void setPuzzleNum(int num) {
         puzzleNum = num;
     }
@@ -252,7 +246,6 @@ private:
     char puzzleChallenge = 'e';
     bool showMainMenu = false;
     bool showTests = true;
-    bool showModal = false;
     bool reset = false;
     bool quit = false;
     std::string codeErr = "";
@@ -531,6 +524,8 @@ public:
     }
 };
 
+
+
 class BtnMainMenu : public Entity {
 public:
     Vec2i size;
@@ -580,21 +575,13 @@ public:
 };
 
 
-class BtnTopMenu : public Entity {
+class BtnTopMenu : public BtnText {
 public:
-    Vec2i size;
-    int fontSize;
-    std::string text;
-    Uint8 state;
-    bool center;
-    bool show;
     bool isHomeBtn;
-    std::function<void()> onClick;
-    BtnTopMenu() : Entity() {
+    BtnTopMenu() : BtnText() {
         tag = "btn";
         state = 0;
         center = false;
-        show = false;
         text = "Button";
         fontSize = _g.fontSize * 0.75f;
         size = Vec2i(80, fontSize * 1.1f);
@@ -602,17 +589,8 @@ public:
         setCollider(size);
     }
     ~BtnTopMenu() {}
-    bool isHovered() {
-        return state == 1;
-    }
-    bool isClicked() {
-        return state == 2;
-    }
-    void process() override {
-        timer > 0 ? timer-- : timer = 0;
-    }
     void render(Graphics* graph) override {
-        if (!show) return;
+        if (!available) return;
         // graph->setColor(_colors["BG2"]);
         // graph->rect(pos, size, true);
         Color* c = &_colors["GRAY"];
@@ -640,103 +618,86 @@ public:
             graph->text(" " + text + " ", pos, fontSize);
         }
     }
-    void onMouse(bool over) override {
-        if (!show) return;
-        if (timer == 0) {
-            if (_input.mouseKeyDown(SDL_BUTTON_LEFT) && over) {
-                state = 2;
-                if (onClick != nullptr) onClick();
-                // reset timer
-                timer = 16;
-            }
-            else if (over) {
-                state = 1;
-            }
-            else state = 0;
-        }
-    }
-private:
-    int timer = 0;
 };
 
-class BtnModal : public Entity {
-public:
-    Vec2i size;
-    int fontSize;
-    std::string text;
-    Uint8 state;
-    bool center;
-    bool show;
-    bool isHomeBtn;
-    std::function<void()> onClick;
-    BtnModal() : Entity() {
-        tag = "btn";
-        state = 0;
-        center = false;
-        show = false;
-        text = "Button";
-        fontSize = _g.fontSize * 0.75f;
-        size = Vec2i(80, fontSize * 1.1f);
-        isHomeBtn = false;
-        setCollider(size);
-    }
-    ~BtnModal() {}
-    bool isHovered() {
-        return state == 1;
-    }
-    bool isClicked() {
-        return state == 2;
-    }
-    void process() override {
-        timer > 0 ? timer-- : timer = 0;
-    }
-    void render(Graphics* graph) override {
-        if (!show) return;
-        // graph->setColor(_colors["BG2"]);
-        // graph->rect(pos, size, true);
-        Color* c = &_colors["GRAY"];
-        switch (state) {
-            case 0: c = &_colors["GRAY"]; break;
-            case 1: c = &_colors["YELLOW"]; break;
-            case 2: c = &_colors["GREEN"]; break;
-        }
-        graph->setColor(*c);
-        if (isHomeBtn) {
-            int sz = _g.vu(0.25f);
-            //graph->circle(pos + Vec2i(sz/2, sz/2), sz/2, true);
-            // draw a diamond with triangles
-            graph->tri(pos + Vec2i(sz/2, 0), pos + Vec2i(sz, sz/2), pos + Vec2i(sz/2, sz));
-            graph->tri(pos + Vec2i(sz/2, 0), pos + Vec2i(0, sz/2), pos + Vec2i(sz/2, sz));
+// class BtnModal : public Entity {
+// public:
+//     Vec2i size;
+//     int fontSize;
+//     std::string text;
+//     Uint8 state;
+//     bool center;
+//     bool show;
+//     bool isHomeBtn;
+//     std::function<void()> onClick;
+//     BtnModal() : Entity() {
+//         tag = "btn";
+//         state = 0;
+//         center = false;
+//         show = false;
+//         text = "Button";
+//         fontSize = _g.fontSize * 0.75f;
+//         size = Vec2i(80, fontSize * 1.1f);
+//         isHomeBtn = false;
+//         setCollider(size);
+//     }
+//     ~BtnModal() {}
+//     bool isHovered() {
+//         return state == 1;
+//     }
+//     bool isClicked() {
+//         return state == 2;
+//     }
+//     void process() override {
+//         timer > 0 ? timer-- : timer = 0;
+//     }
+//     void render(Graphics* graph) override {
+//         if (!show) return;
+//         // graph->setColor(_colors["BG2"]);
+//         // graph->rect(pos, size, true);
+//         Color* c = &_colors["GRAY"];
+//         switch (state) {
+//             case 0: c = &_colors["GRAY"]; break;
+//             case 1: c = &_colors["YELLOW"]; break;
+//             case 2: c = &_colors["GREEN"]; break;
+//         }
+//         graph->setColor(*c);
+//         if (isHomeBtn) {
+//             int sz = _g.vu(0.25f);
+//             //graph->circle(pos + Vec2i(sz/2, sz/2), sz/2, true);
+//             // draw a diamond with triangles
+//             graph->tri(pos + Vec2i(sz/2, 0), pos + Vec2i(sz, sz/2), pos + Vec2i(sz/2, sz));
+//             graph->tri(pos + Vec2i(sz/2, 0), pos + Vec2i(0, sz/2), pos + Vec2i(sz/2, sz));
 
-            return;
-        }
-        if (center) {
-            int textWidth = graph->textWidth(text, fontSize);
-            Vec2i textPos = pos + Vec2i((size.x - textWidth) / 2, (size.y - fontSize) / 2);
-            graph->text(text, textPos, fontSize);
-        }
-        else {
-            graph->text(" " + text + " ", pos, fontSize);
-        }
-    }
-    void onMouse(bool over) override {
-        if (!show) return;
-        if (timer == 0) {
-            if (_input.mouseKeyDown(SDL_BUTTON_LEFT) && over) {
-                state = 2;
-                if (onClick != nullptr) onClick();
-                // reset timer
-                timer = 16;
-            }
-            else if (over) {
-                state = 1;
-            }
-            else state = 0;
-        }
-    }
-private:
-    int timer = 0;
-};
+//             return;
+//         }
+//         if (center) {
+//             int textWidth = graph->textWidth(text, fontSize);
+//             Vec2i textPos = pos + Vec2i((size.x - textWidth) / 2, (size.y - fontSize) / 2);
+//             graph->text(text, textPos, fontSize);
+//         }
+//         else {
+//             graph->text(" " + text + " ", pos, fontSize);
+//         }
+//     }
+//     void onMouse(bool over) override {
+//         if (!show) return;
+//         if (timer == 0) {
+//             if (_input.mouseKeyDown(SDL_BUTTON_LEFT) && over) {
+//                 state = 2;
+//                 if (onClick != nullptr) onClick();
+//                 // reset timer
+//                 timer = 16;
+//             }
+//             else if (over) {
+//                 state = 1;
+//             }
+//             else state = 0;
+//         }
+//     }
+// private:
+//     int timer = 0;
+// };
 
 class BtnTile : public Entity {
 public:
@@ -790,6 +751,63 @@ public:
             return;
         }
         state = 0;
+    }
+};
+
+class Modal : public Entity {
+public:
+    std::string title;
+    std::function<void()> onOk;
+    std::function<void()> onCancel;
+    bool showCancel;
+    BtnText btnOk;
+    BtnText btnCancel;
+    EntityManager em;
+    bool show;
+    Modal() : Entity() {
+        tag = "modal";
+        pos = WINDOW_SIZE / 4;
+        title = "Modal";
+        showCancel = true;
+
+        btnOk.text = "OK";
+        btnOk.pos = pos + Vec2i(_g.vu(0.5f), _g.vu(2));
+        btnOk.onClick = [this]() {
+            if (onOk != nullptr) onOk();
+            show = false;
+        };
+        
+        btnCancel.text = "CANCEL";
+        btnCancel.pos = pos + Vec2i(_g.vu(2.5f), _g.vu(2));
+        btnCancel.onClick = [this]() {
+            if (onCancel != nullptr) onCancel();
+            show = false;
+        };
+        em.addEntity(&btnOk);
+        em.addEntity(&btnCancel);
+    }
+    ~Modal() {}
+    void process() override {
+        // if (_g.getShowModal()) {
+        //     btnOk.available = true;
+        //     btnCancel.available = true;
+        // }
+        if (!showCancel) {
+            btnCancel.available = false;
+        }
+        else {
+            btnCancel.available = true;
+        }
+        em.checkMouse();
+        em.process();
+    }
+    void render(Graphics* graph) override {
+        if (!show) return;
+        graph->setColor(_colors["BG3"]);
+        graph->rect(pos, Vec2i(WINDOW_SIZE.x / 2, WINDOW_SIZE.y / 4), true);
+        graph->setColor(_colors["WHITE"]);
+        graph->text(title, pos + Vec2i(_g.vu(0.5f), _g.vu(0.5f)), _g.fontSize);
+        em.render(graph);
     }
 };
 
@@ -1346,6 +1364,7 @@ public:
     BtnTopMenu btnTests;
     //
     EntityManager em;
+    Modal modal;
     int height;
     std::string activeTopMenu;
     TopBar() : Entity() {
@@ -1354,65 +1373,92 @@ public:
 
         btnHome.isHomeBtn = true;
         btnHome.onClick = []() { _g.toggleMainMenu(); };
-        btnHome.show = true;
+        btnHome.available = true;
         btnHome.pos = Vec2i(_g.vu(0.25f), 4);
         btnHome.setCollider(Vec2i(_g.vu(0.25f), height));
         em.addEntity(&btnHome);
 
         btnFile.onClick = [this]() {
             activeTopMenu = "btnFile";
-            btnReset.show = true;
-            btnSave.show = true;
-            btnLoad.show = true;
+            btnReset.available = true;
+            btnSave.available = true;
+            btnLoad.available = true;
         };
         btnFile.tag = "btnFile";
-        btnFile.show = true;
+        btnFile.fontSize = _g.fontSize * 0.75f;
+        btnFile.available = true;
         btnFile.text = "FILE";
         btnFile.pos = Vec2i(_g.vu(0.15f) + _g.vu(0.75f), 4);
         em.addEntity(&btnFile);
 
         btnTools.onClick = [this]() {
             activeTopMenu = "btnTools";
-            btnTests.show = true;
+            btnTests.available = true;
         };
         btnTools.tag = "btnTools";
-        btnTools.show = true;
+        btnTools.fontSize = _g.fontSize * 0.75f;
+        btnTools.available = true;
         btnTools.text = "TOOL";
         btnTools.pos = Vec2i(_g.vu(0.15f) + _g.vu(2.25f), 4);
         em.addEntity(&btnTools);
 
         btnEdit.tag = "btnEdit";
-        btnEdit.show = true;
+        btnEdit.fontSize = _g.fontSize * 0.75f;
+        btnEdit.available = true;
         btnEdit.text = "EDIT";
         btnEdit.pos = Vec2i(_g.vu(0.15f) + _g.vu(3.75f), 4);
         em.addEntity(&btnEdit);
 
         // File menu
-        btnReset.onClick = []() { _g.setReset(true); };
-        btnReset.show = false;
+        btnReset.onClick = [this]() { 
+            modal.onOk = [&]() {
+                _g.setReset(true); 
+            };
+            modal.title = "Reset?";
+            modal.show = true;
+        };
+        btnReset.available = false;
         btnReset.text = "RESET";
+        btnReset.fontSize = _g.fontSize * 0.75f;
         btnReset.pos = Vec2i(btnFile.pos.x, btnFile.pos.y + _g.vu(0.5f));
         em.addEntity(&btnReset);
 
-        btnSave.onClick = []() { DBG("Save"); };
-        btnSave.show = false;
+        btnSave.onClick = [this]() { 
+            modal.onOk = [&]() {
+                DBG("Save");
+            };
+            modal.title = "Saved";
+            modal.showCancel = false;
+            modal.show = true; 
+        };
+        btnSave.available = false;
         btnSave.text = "SAVE";
+        btnSave.fontSize = _g.fontSize * 0.75f;
         btnSave.pos = Vec2i(btnFile.pos.x, btnFile.pos.y + _g.vu(1));
         em.addEntity(&btnSave);
 
-        btnLoad.onClick = []() { DBG("Load"); };
-        btnLoad.show = false;
+        btnLoad.onClick = [this]() { 
+            modal.onOk = [&]() {
+                _g.setReset(true); 
+            };
+            modal.title = "Load?";
+            modal.show = true;
+        };
+        btnLoad.available = false;
         btnLoad.text = "LOAD";
+        btnLoad.fontSize = _g.fontSize * 0.75f;
         btnLoad.pos = Vec2i(btnFile.pos.x, btnFile.pos.y + _g.vu(1.5f));
         em.addEntity(&btnLoad);
 
         // Tools menu
         btnTests.onClick = []() { DBG("TESTS"); _g.toggleTests(); };
-        btnTests.show = false;
+        btnTests.available = false;
         btnTests.text = "TESTS";
+        btnTests.fontSize = _g.fontSize * 0.75f;
         btnTests.pos = Vec2i(btnTools.pos.x, btnTools.pos.y + _g.vu(0.5f));
         em.addEntity(&btnTests);
 
+        em.addEntity(&modal);
     }
     ~TopBar() {}
     void process() override {
@@ -1423,12 +1469,12 @@ public:
         em.checkMouse();
         em.process();
         if (activeTopMenu != "btnFile") {
-            btnReset.show = false;
-            btnSave.show = false;
-            btnLoad.show = false;
+            btnReset.available = false;
+            btnSave.available = false;
+            btnLoad.available = false;
         }
         if (activeTopMenu != "btnTools") {
-            btnTests.show = false;
+            btnTests.available = false;
         }
     }
     void render(Graphics* graph) override {
@@ -1465,56 +1511,7 @@ public:
     }
 };
 
-class Modal : public Entity {
-public:
-    std::string title;
-    std::string text;
-    std::function<void()> onOk;
-    std::function<void()> onCancel;
-    BtnModal btnOk;
-    BtnModal btnCancel;
-    EntityManager em;
-    Modal() : Entity() {
-        tag = "modal";
-        pos = WINDOW_SIZE / 4;
-        title = "Modal";
-        text = "This is a modal";
 
-        btnOk.text = "OK";
-        btnOk.pos = pos + Vec2i(_g.vu(1), _g.vu(3));
-        btnOk.onClick = [this]() {
-            if (onOk != nullptr) onOk();
-            _g.setShowModal(false);
-        };
-        
-        btnCancel.text = "CANCEL";
-        btnCancel.pos = pos + Vec2i(_g.vu(4), _g.vu(3));
-        btnCancel.onClick = [this]() {
-            if (onCancel != nullptr) onCancel();
-            _g.setShowModal(false);
-        };
-        em.addEntity(&btnOk);
-        em.addEntity(&btnCancel);
-    }
-    ~Modal() {}
-    void process() override {
-        if (_g.getShowModal()) {
-            btnOk.show = true;
-            btnCancel.show = true;
-        }
-        em.checkMouse();
-        em.process();
-    }
-    void render(Graphics* graph) override {
-        if (!_g.getShowModal()) return;
-        graph->setColor(_colors["BG3"]);
-        graph->rect(pos, WINDOW_SIZE/2);
-        graph->setColor(_colors["WHITE"]);
-        graph->text(title, pos + Vec2i(_g.vu(1), _g.vu(1)), _g.fontSize);
-        graph->text(text, pos + Vec2i(_g.vu(1), _g.vu(2)), _g.fontSize);
-        em.render(graph);
-    }
-};
 
 class App : public Imp::Main { 
 public:
@@ -1523,7 +1520,6 @@ public:
     Cursor cursor;
     MainMenu mainMenu;
     TopBar topBar;
-    Modal modal;
     BottomBar bottomBar;
     App() : Imp::Main("EsoMachina (v0.1-alpha)", WINDOW_SIZE, 60, "tiles.png") { 
         clearColor = Color(_colors["BG"]);
@@ -1531,10 +1527,8 @@ public:
         entityMan.addEntity(&bottomBar);
         entityMan.addEntity(&topBar);
         entityMan.addEntity(&testScreen);
-        entityMan.addEntity(&modal);
         entityMan.addEntity(&mainMenu);
         entityMan.addEntity(&cursor);
-        _g.setShowModal(true);
     }
     ~App() {}
     void process() override {
