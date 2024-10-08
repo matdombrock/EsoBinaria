@@ -1,3 +1,3 @@
 #!/bin/bash
-./native.sh "../examples/Tiles.h" || exit 1
+./native.sh "../game/Eso.h" || exit 1
 ./out/imp.app
