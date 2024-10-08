@@ -183,15 +183,11 @@ public:
     int getTick() {
         return tick;
     }
-    void toggleMainMenu() {
-        Sounds::toggleMainMenu.play();
-        showMainMenu = !showMainMenu;
+    void setScreen(std::string screen) {
+        activeScreen = screen;
     }
-    void setShowMainMenu(bool show) {
-        showMainMenu = show;
-    }
-    bool getShowMainMenu() {
-        return showMainMenu;
+    std::string getScreen() {
+        return activeScreen;
     }
     void setPuzzleBits(int bits) {
         puzzleBits = bits;
@@ -237,6 +233,9 @@ public:
     TestData* getActiveTestData() {
         return activeTestData;
     }
+    std::string getPuzzleString() {
+        return std::to_string(puzzleBits) + "." + std::to_string(puzzleNum) + puzzleChallenge;
+    }
 private:
     CellType activeTile = CT_VOID;
     TestData* activeTestData = nullptr;
@@ -244,7 +243,7 @@ private:
     int puzzleBits = 3;
     int puzzleNum = 255;
     char puzzleChallenge = 'e';
-    bool showMainMenu = false;
+    std::string activeScreen = "puzzleSetup";
     bool showTests = true;
     bool reset = false;
     bool quit = false;
@@ -302,6 +301,7 @@ class TestCase : public Entity {
 public:
     TestData data;
     bool isHovered;
+    bool show;
     int ce;
     Sprite sprTrue;
     Sprite sprFalse;
@@ -313,6 +313,7 @@ public:
         data.err = "";
         data.lastCheck = false;
         isHovered = false;
+        show = true;
         ce = _g.cellSize / 2;
         setCollider(Vec2i(_g.cellSize * 2, _g.cellSize / 2));
         s7 = s7_init();
@@ -399,6 +400,7 @@ public:
 
     }
     void render(Graphics* graph) override {
+        if (!show) return;
         int hoverMod = isHovered ? _g.vu(0.1f) : 0;
         if (data.lastCheck) sprPass.render(graph, pos + Vec2i(hoverMod, 0));
         else sprFail.render(graph, Vec2i(pos.x - _g.vu(0.1f) - (_g.getTick()/8 % 6) + hoverMod, pos.y));
@@ -417,6 +419,7 @@ public:
         if (data.err != "") _g.setCodeErr(data.err);
     }
     void onMouse(bool over) override {
+        if (!show) return;
         if (over) {
             DBG("Over test case " + std::to_string(data.index));
             isHovered = true;
@@ -442,41 +445,41 @@ private:
     }
 };
 
-class TestScreen : public Entity {
+class TestArea : public Entity {
 public:
     EntityManager em;
+    int testCount;
     int testFails;
     int testWinWidth;
     std::vector<TestCase> tests;
     std::string codeStringOld;
-    TestScreen() : Entity() {
+    TestArea() : Entity() {
         tag = "testScreen";
-        switch (_g.getPuzzleChallenge()) {
-            case 'e': tests.resize(Util::maxUnsignedInt(_g.getPuzzleBits()) / 4); break;
-            case 'm': tests.resize(Util::maxUnsignedInt(_g.getPuzzleBits()) / 2); break;
-            case 'h': tests.resize(Util::maxUnsignedInt(_g.getPuzzleBits())); break;
-            default: tests.resize(Util::maxUnsignedInt(_g.getPuzzleBits())); break;
-        }
+        
         DBG("Max unsigned int: " + std::to_string(Util::maxUnsignedInt(_g.getPuzzleBits())));
 
-        // not dry - reset
-        for (int i = 0; i < tests.size(); i++) {
-            tests[i].set(i, _g.getPuzzleBits(), _g.getPuzzleNum());
-        }
+        tests.resize(256);
+        reset();
         testWinWidth = _g.fontSize * 8;
         pos.y = _g.cellSize;
         for (int i = 0; i < tests.size(); i++) {
             em.addEntity(&tests[i]);
         }
     }
-    ~TestScreen() {}
+    ~TestArea() {}
     void reset() {
+        switch (_g.getPuzzleChallenge()) {
+            case 'e': testCount = Util::maxUnsignedInt(_g.getPuzzleBits()) / 4; break;
+            case 'm': testCount = Util::maxUnsignedInt(_g.getPuzzleBits()) / 2; break;
+            case 'h': testCount = Util::maxUnsignedInt(_g.getPuzzleBits()); break;
+            default: testCount = Util::maxUnsignedInt(_g.getPuzzleBits()); break;
+        }
         for (int i = 0; i < tests.size(); i++) {
            tests[i].set(i, _g.getPuzzleBits(), _g.getPuzzleNum()); 
         }
     }
     void process() {
-        if (_g.getShowMainMenu()) return;
+        if (_g.getScreen() != "puzzle") return;
         em.checkMouse();
         em.process();
         std::string cs = Util::strReplace(Util::strReplace(_g.getCodeString(), " ", ""), "_", "");
@@ -486,11 +489,16 @@ public:
             DBG("Retesting code");
             DBG(cs);
             testFails = 0;
-            for (TestCase& test : tests) {
-                if (!test.check(_g.getCodeString())){
+            for (int i = 0; i < testCount; i++) {
+                if (!tests[i].check(_g.getCodeString())){
                     testFails++;
                 }
             }
+            // for (TestCase& test : tests) {
+            //     if (!test.check(_g.getCodeString())){
+            //         testFails++;
+            //     }
+            // }
             codeStringOld = _g.getCodeString();
         }
         if(_input.keyOnce(SDLK_SPACE)) {
@@ -502,24 +510,28 @@ public:
         for (int i = 0; i < tests.size(); i++) {
             tests[i].pos = Vec2i(_g.vu(0.5f), _g.cellSize + (i * _g.cellSize /2 ));
             tests[i].pos += pos;
+            tests[i].show = true;
+            // DBG("testCount");
+            // DBG(testCount);
+            if (i >= testCount) {
+                tests[i].show = false;
+            }
         }
     }
     void render(Graphics* graph) {
-        if (_g.getShowMainMenu()) return;
+        if (_g.getScreen() != "puzzle") return;
         em.render(graph);
-        //graph->setColor(_colors["BG3"]);
-        //graph->rect(Vec2i(pos.x, 0), Vec2i(testWinWidth, _g.bottomBarPos.y - _g.cellSize), true);
         if (_g.hasCodeErr()) {
             graph->setColor(_colors["YELLOW"]);
             graph->text("!! ERROR", Vec2i(pos.x + _g.vu(0.5f), pos.y - (_g.getTick()/4 % 8)), _g.fontSize);
         }
         else {
             graph->setColor(_colors["GRAY"]);
-            graph->text("3." + std::to_string(_g.getPuzzleNum()) + std::string(1, _g.getPuzzleChallenge()), Vec2i(pos.x + _g.vu(0.5f), pos.y), _g.fontSize);
+            graph->text(_g.getPuzzleString(), Vec2i(pos.x + _g.vu(0.5f), pos.y), _g.fontSize);
         }
         if (testFails == 0) {
             graph->setColor(_colors["GREEN"]);
-            graph->text("PASSED", Vec2i(_g.cellSize/4,_g.cellSize/4), _g.fontSize * 4);
+            graph->text("PASSED", Vec2i(_g.cellSize,_g.cellSize), _g.fontSize * 4);
         }
     }
 };
@@ -754,6 +766,20 @@ public:
     }
 };
 
+class BtnNub : public Btn {
+public:
+    BtnNub() : Btn() {
+        tag = "nub";
+        size = Vec2i(_g.vu(0.25f), _g.vu(0.25f));
+        setCollider(Vec2i(_g.cellSize / 2, _g.cellSize / 2));
+    }
+    ~BtnNub() {}
+    void render(Graphics* graph) override {
+        graph->setColor(state ? _colors["GREEN"] : _colors["GRAY"]);
+        graph->rect(pos, size, true);
+    }
+};
+
 class Modal : public Entity {
 public:
     std::string title;
@@ -923,13 +949,13 @@ public:
     }
     ~BottomBar() {}
     void process() override {
-        if (_g.getShowMainMenu()) return;
+        if (_g.getScreen() != "puzzle") return;
         _g.setHelpItem(nullptr);
         em.checkMouse();
         em.process();
     }
     void render(Graphics* graph) override {
-        if (_g.getShowMainMenu()) return;
+        if (_g.getScreen() != "puzzle") return;
         graph->setColor(_colors["BG3"]);
         graph->rect(_g.bottomBarPos, _g.bottomBarSize);
         em.render(graph);
@@ -1063,7 +1089,7 @@ public:
         }
     }
     void process() override {
-        if (_g.getShowMainMenu()) return;
+        if (_g.getScreen() != "puzzle") return;
         mousePos = _input.mousePos();
         mousePosCell = mousePos / _g.cellSize;
         // Update lastMouse array with the most recent mousePosCell value
@@ -1169,7 +1195,7 @@ public:
         _g.setCodeString(codeStringNew);
     }
     void render(Graphics* graph) override {
-        if (_g.getShowMainMenu()) return;
+        if (_g.getScreen() != "puzzle") return;
         // Drag grid bg
         graph->setColor(_colors["BG2"]);
         for (int x = 0; x < WINDOW_SIZE.x; x += _g.cellSize) {
@@ -1317,7 +1343,7 @@ public:
     }
     ~MainMenu() {}
     void process() override {
-        if (!_g.getShowMainMenu()) {
+        if (_g.getScreen() != "mainMenu") {
             Sounds::menuTrack.volDown(4, 8);
             // Sounds::menuTrack.stop();
             return;
@@ -1329,11 +1355,11 @@ public:
         em.process();
         em.checkMouse();
         if (btnResume.isClicked()) {
-            _g.toggleMainMenu();
+            _g.setScreen("puzzle");
         }
         if (btnRestart.isClicked()) {
             _g.setReset(true);
-            _g.setShowMainMenu(false);
+            _g.setScreen("puzzle");
         }
         if (btnNew.isClicked()) {
             int puzMax = Util::maxUnsignedInt(Util::maxUnsignedInt(_g.getPuzzleBits())); 
@@ -1341,14 +1367,14 @@ public:
             _g.setPuzzleNum(rand() % puzMax); 
             DBG("New puzzle: " + std::to_string(_g.getPuzzleNum()));
             _g.setReset(true);
-            _g.toggleMainMenu();
+            _g.setScreen("puzzle");
         }
         if (btnExit.isClicked()) {
             _g.setQuit(true);
         }
     }
     void render(Graphics* graph) override {
-        if (!_g.getShowMainMenu()) return;
+        if (_g.getScreen() != "mainMenu") return;
         graph->setColor(_colors["BG"]);
         graph->rect(Vec2i(0, 0), WINDOW_SIZE);
         graph->setColor(_colors["WHITE"]);
@@ -1365,6 +1391,7 @@ public:
     BtnTopMenu btnTools;
     BtnTopMenu btnEdit;
     // File menu
+    BtnTopMenu btnNew;
     BtnTopMenu btnReset;
     BtnTopMenu btnSave;
     BtnTopMenu btnLoad;
@@ -1380,7 +1407,7 @@ public:
         height = _g.vu(0.5f);
 
         btnHome.isHomeBtn = true;
-        btnHome.onClick = []() { _g.toggleMainMenu(); };
+        btnHome.onClick = []() { _g.setScreen("mainMenu"); };
         btnHome.available = true;
         btnHome.pos = Vec2i(_g.vu(0.25f), 4);
         btnHome.setCollider(Vec2i(_g.vu(0.25f), height));
@@ -1388,6 +1415,7 @@ public:
 
         btnFile.onClick = [this]() {
             activeTopMenu = "btnFile";
+            btnNew.available = true;
             btnReset.available = true;
             btnSave.available = true;
             btnLoad.available = true;
@@ -1418,6 +1446,16 @@ public:
         em.addEntity(&btnEdit);
 
         // File menu
+        btnNew.tag = "btnNew";
+        btnNew.onClick = [this]() {
+            _g.setScreen("puzzleSetup");
+        };
+        btnNew.available = false;
+        btnNew.text = "NEW";
+        btnNew.fontSize = _g.fontSize * 0.75f;
+        btnNew.pos = Vec2i(btnFile.pos.x, btnFile.pos.y + _g.vu(0.5f));
+        em.addEntity(&btnNew);
+
         btnReset.onClick = [this]() { 
             modal.onOk = [&]() {
                 _g.setReset(true); 
@@ -1428,7 +1466,7 @@ public:
         btnReset.available = false;
         btnReset.text = "RESET";
         btnReset.fontSize = _g.fontSize * 0.75f;
-        btnReset.pos = Vec2i(btnFile.pos.x, btnFile.pos.y + _g.vu(0.5f));
+        btnReset.pos = Vec2i(btnFile.pos.x, btnFile.pos.y + _g.vu(1));
         em.addEntity(&btnReset);
 
         btnSave.onClick = [this]() { 
@@ -1442,7 +1480,7 @@ public:
         btnSave.available = false;
         btnSave.text = "SAVE";
         btnSave.fontSize = _g.fontSize * 0.75f;
-        btnSave.pos = Vec2i(btnFile.pos.x, btnFile.pos.y + _g.vu(1));
+        btnSave.pos = Vec2i(btnFile.pos.x, btnFile.pos.y + _g.vu(1.5f));
         em.addEntity(&btnSave);
 
         btnLoad.onClick = [this]() { 
@@ -1455,7 +1493,7 @@ public:
         btnLoad.available = false;
         btnLoad.text = "LOAD";
         btnLoad.fontSize = _g.fontSize * 0.75f;
-        btnLoad.pos = Vec2i(btnFile.pos.x, btnFile.pos.y + _g.vu(1.5f));
+        btnLoad.pos = Vec2i(btnFile.pos.x, btnFile.pos.y + _g.vu(2));
         em.addEntity(&btnLoad);
 
         // Tools menu
@@ -1470,6 +1508,7 @@ public:
     }
     ~TopBar() {}
     void process() override {
+        if (_g.getScreen() != "puzzle") return;
         // Clear if nothing is clicked
         if (_input.mouseKeyOnce(SDL_BUTTON_LEFT)) {
             activeTopMenu = "";
@@ -1477,6 +1516,7 @@ public:
         em.checkMouse();
         em.process();
         if (activeTopMenu != "btnFile") {
+            btnNew.available = false;
             btnReset.available = false;
             btnSave.available = false;
             btnLoad.available = false;
@@ -1486,6 +1526,7 @@ public:
         }
     }
     void render(Graphics* graph) override {
+        if (_g.getScreen() != "puzzle") return;
         graph->setColor(_colors["BG3"]);
         graph->rect(Vec2i(0, 0), Vec2i(WINDOW_SIZE.x, height));
         
@@ -1519,22 +1560,101 @@ public:
     }
 };
 
+class SetupScreen : public Entity {
+public:
+    EntityManager em;
+    BtnNub btnsLvl[256];
+    BtnText btnEasy;
+    BtnText btnMedium;
+    BtnText btnHard;
+    BtnText btnStart;
+    SetupScreen() : Entity() {
+        tag = "setupScreen";
+        for (int i = 0; i < 256; i++) {
+            int x = i % 16;
+            int y = i / 16;
+            x *= _g.vu(0.5f);
+            y *= _g.vu(0.5f);
+            btnsLvl[i].pos = Vec2i(_g.vu(2), _g.vu(2)) + Vec2i(x,y);
+            btnsLvl[i].onClick = [i](){
+                DBG("Clicked: " + std::to_string(i));
+                _g.setPuzzleNum(i);
+            };
+            em.addEntity(&btnsLvl[i]);
+        }
 
+        btnEasy.pos = Vec2i(_g.vu(10), _g.vu(2));
+        btnEasy.text = "EASY";
+        btnEasy.onClick = [](){
+            _g.setPuzzleChallenge('e');
+        };
+        em.addEntity(&btnEasy);
+
+        btnMedium.pos = Vec2i(_g.vu(10), _g.vu(2) + _g.vu(1));
+        btnMedium.text = "MEDIUM";
+        btnMedium.onClick = [](){
+            _g.setPuzzleChallenge('m');
+        };
+        em.addEntity(&btnMedium);
+
+        btnHard.pos = Vec2i(_g.vu(10), _g.vu(2) + _g.vu(2));
+        btnHard.text = "HARD";
+        btnHard.onClick = [](){
+            _g.setPuzzleChallenge('h');
+        };
+        em.addEntity(&btnHard);
+
+        btnStart.pos = Vec2i(_g.vu(10), _g.vu(2) + _g.vu(3));
+        btnStart.text = "START";
+        btnStart.onClick = [](){
+            _g.setReset(true);
+            _g.setScreen("puzzle");
+        };
+        em.addEntity(&btnStart);
+    }
+    ~SetupScreen() {}
+    void process() override {
+        if (_g.getScreen() != "puzzleSetup") return;
+        em.process();
+        em.checkMouse();
+    }
+    void render(Graphics* graph) override {
+        if (_g.getScreen() != "puzzleSetup") return;
+        graph->setColor(_colors["BG"]);
+        graph->rect(Vec2i(0, 0), WINDOW_SIZE);
+        graph->setColor(_colors["WHITE"]);
+        graph->text(_g.getPuzzleString(), Vec2i(_g.vu(1), _g.vu(1)), _g.fontSize);
+
+        graph->setColor(_colors["YELLOW"], 128);
+        if (_g.getPuzzleChallenge() == 'e') {
+            graph->rect(btnEasy.pos, btnEasy.size);
+        }
+        if (_g.getPuzzleChallenge() == 'm') {
+            graph->rect(btnMedium.pos, btnMedium.size);
+        }
+        if (_g.getPuzzleChallenge() == 'h') {
+            graph->rect(btnHard.pos, btnHard.size);
+        }
+        em.render(graph);
+    }
+};
 
 class App : public Imp::Main { 
 public:
     Grid grid;
-    TestScreen testScreen;
+    TestArea testArea;
     Cursor cursor;
-    MainMenu mainMenu;
     TopBar topBar;
     BottomBar bottomBar;
+    MainMenu mainMenu;
+    SetupScreen setupScreen;
     App() : Imp::Main("EsoMachina (v0.1-alpha)", WINDOW_SIZE, 60, "tiles.png") { 
         clearColor = Color(_colors["BG"]);
         entityMan.addEntity(&grid);
         entityMan.addEntity(&bottomBar);
+        entityMan.addEntity(&testArea);
         entityMan.addEntity(&topBar);
-        entityMan.addEntity(&testScreen);
+        entityMan.addEntity(&setupScreen);
         entityMan.addEntity(&mainMenu);
         entityMan.addEntity(&cursor);
     }
@@ -1544,13 +1664,13 @@ public:
 
         // Pause
         if (_input.keyOnce(SDLK_ESCAPE)) {
-            _g.toggleMainMenu();
+            _g.setScreen("mainMenu");
         }
 
         if (_g.getReset()) {
             _g.setReset(false);
             grid.reset();
-            testScreen.reset();
+            testArea.reset();
         }
         if (_g.getQuit()) {
             exit(0);
