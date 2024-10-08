@@ -768,15 +768,23 @@ public:
 
 class BtnNub : public Btn {
 public:
+    int index;
     BtnNub() : Btn() {
         tag = "nub";
+        index = 0;
         size = Vec2i(_g.vu(0.25f), _g.vu(0.25f));
         setCollider(Vec2i(_g.cellSize / 2, _g.cellSize / 2));
     }
     ~BtnNub() {}
     void render(Graphics* graph) override {
         graph->setColor(state ? _colors["GREEN"] : _colors["GRAY"]);
-        graph->rect(pos, size, true);
+        if (_g.getPuzzleNum() == index) {
+            graph->setColor(_colors["YELLOW"]);
+        }
+        // graph->rect(pos, size, true);
+        graph->tri(pos, pos + Vec2i(size.x, 0), pos + Vec2i(0, size.y), _g.getTick() * (index/256.0f) / 512.0f);
+        // graph->setColor(_colors["BG"]);
+        graph->tri(pos + Vec2i(size.x, size.y), pos + Vec2i(size.x, 0), pos + Vec2i(0, size.y), _g.getTick() * (index/256.0f) / 512.0f);
     }
 };
 
@@ -800,19 +808,24 @@ public:
         btnOk.pos = pos + Vec2i(_g.vu(0.5f), _g.vu(2));
         btnOk.onClick = [this]() {
             if (onOk != nullptr) onOk();
-            show = false;
+            reset();
         };
         
         btnCancel.text = "CANCEL";
         btnCancel.pos = pos + Vec2i(_g.vu(2.5f), _g.vu(2));
         btnCancel.onClick = [this]() {
             if (onCancel != nullptr) onCancel();
-            show = false;
+            reset();
         };
         em.addEntity(&btnOk);
         em.addEntity(&btnCancel);
     }
     ~Modal() {}
+    void reset() {
+        show = false;
+        showCancel = true;
+        title = "Modal";
+    }
     void process() override {
         // if (_g.getShowModal()) {
         //     btnOk.available = true;
@@ -1314,6 +1327,7 @@ public:
     BtnMainMenu btnNew;
     BtnMainMenu btnSettings;
     BtnMainMenu btnExit;
+    Sprite sprWiz;
     Sprite sprBg;
     MainMenu() : Entity() {
         tag = "menu";
@@ -1338,7 +1352,10 @@ public:
         btnExit.text = "Exit";
         em.addEntity(&btnExit);
 
-        sprBg = Sprite(Vec2i(176, 176), Vec2i(96, 96), Vec2i(WINDOW_SIZE.x/2, WINDOW_SIZE.x/2));
+        sprBg = Sprite(Vec2i(176, 176), Vec2i(96, 96), Vec2i(WINDOW_SIZE.x/2, WINDOW_SIZE.x/2));\
+
+        sprWiz = Sprite(Vec2i(0, 224), Vec2i(32,32), Vec2i(256, 256));
+        // sprWiz.setAnimation({Vec2i(0, 224), Vec2i(32, 224)}, 4);
         
     }
     ~MainMenu() {}
@@ -1381,6 +1398,7 @@ public:
         graph->text("ESOMachina", Vec2i(20, 20), _g.fontSize);
         em.render(graph);
         sprBg.render(graph, WINDOW_SIZE - Vec2i(WINDOW_SIZE.x/2, WINDOW_SIZE.x/2));
+        sprWiz.render(graph, Vec2i(0, WINDOW_SIZE.y - 256));
     }
 };
 
@@ -1584,6 +1602,7 @@ public:
                 DBG("Clicked: " + std::to_string(i));
                 _g.setPuzzleNum(i);
             };
+            btnsLvl[i].index = i;
             em.addEntity(&btnsLvl[i]);
         }
 
@@ -1624,10 +1643,17 @@ public:
     }
     void render(Graphics* graph) override {
         if (_g.getScreen() != "puzzleSetup") return;
-        graph->setColor(_colors["BG"]);
+        graph->setColor(_colors["BG3"]);
         graph->rect(Vec2i(0, 0), WINDOW_SIZE);
         graph->setColor(_colors["WHITE"]);
-        graph->text(_g.getPuzzleString(), Vec2i(_g.vu(1), _g.vu(1)), _g.fontSize);
+        graph->text(_g.getPuzzleString(), Vec2i(_g.vu(2), _g.vu(1)), _g.fontSize);
+
+        // Draw cursor lines
+        // graph->setColor(_colors["GREEN"], 128);
+        // graph->line(_input.mousePos(), Vec2i(0,0));
+        // graph->line(_input.mousePos(), Vec2i(WINDOW_SIZE.x,0));
+        // graph->line(_input.mousePos(), Vec2i(WINDOW_SIZE.x,WINDOW_SIZE.y));
+        // graph->line(_input.mousePos(), Vec2i(0,WINDOW_SIZE.y));
 
         graph->setColor(_colors["YELLOW"], 128);
         if (_g.getPuzzleChallenge() == 'e') {
@@ -1640,6 +1666,17 @@ public:
             graph->rect(btnHard.pos, btnHard.size);
         }
         em.render(graph);
+
+        // Draw static noise
+        if (_g.getTick() % 2 == 0) {
+            int staticSize = _g.cellSize / 32;
+            graph->setColor(_colors["YELLOW"],128);
+            for (int i = 0; i < WINDOW_SIZE.size2d()/(staticSize * 1024); i++) {
+                int x = rand() % WINDOW_SIZE.x;
+                int y = rand() % WINDOW_SIZE.y;
+                graph->rect(Vec2i(x, y), Vec2i(staticSize, staticSize));
+            }
+        }
     }
 };
 
