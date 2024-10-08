@@ -1128,8 +1128,15 @@ public:
                     _g.setActiveTile(CT_VOID, false);   
                 }
             }
+            // Remove held tile or right click
+            if (_input.mouseKeyDown(SDL_BUTTON_RIGHT) || _input.mouseKeyDown(4)) {
+                if (_g.getActiveTile() != CT_VOID) {
+                    _g.setActiveTile(CT_VOID);
+                    return;
+                }
+            }
             // Toggle connectors
-            if (_input.keyDown(SDLK_TAB) || _input.mouseKeyDown(SDL_BUTTON_RIGHT)) {
+            if (_input.keyDown(SDLK_TAB) || _input.mouseKeyDown(SDL_BUTTON_RIGHT) || _input.mouseKeyDown(4)) {
                 cells[x][y].cycleParens();
                 if (isTile) sndParen.play();
             }
