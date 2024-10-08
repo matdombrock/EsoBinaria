@@ -116,67 +116,50 @@ public:
 //
 class Input {
 public:
-    Input() : previousMouseState(8, 0), previousKeyStates(512, 0) {}
-
-    Vec2i mousePos() const {
-        int x, y;
-        SDL_GetMouseState(&x, &y);
-        return Vec2i(x, y);
+    Input() {
+        keyState = SDL_GetKeyboardState(NULL);
+        mouseState = SDL_GetMouseState(&mouseX, &mouseY);
+        poll();
     }
-
-    Uint32 getMouseBtn() const {
-        return SDL_GetMouseState(NULL, NULL);
-    }
-
-    bool mouseKey(Uint32 key) const {
-        return SDL_GetMouseState(NULL, NULL) == key;
-    }
-
-    bool mouseKeyDown(Uint32 key) {
-        bool currentState = SDL_GetMouseState(NULL, NULL) == SDL_BUTTON(key);
-        bool mouseDown = currentState && !(previousMouseState[key]);
-        previousMouseState[key] = currentState;
-        return mouseDown;
-    }
-
-    bool key(SDL_Keycode key) const {
-        SDL_Scancode scancode = SDL_GetScancodeFromKey(key);
-        const Uint8* state = SDL_GetKeyboardState(NULL);
-        return state[scancode];
-    }
-
-    bool keyDown(SDL_Keycode key) {
-        SDL_Scancode scancode = SDL_GetScancodeFromKey(key);
-        const Uint8* currentState = SDL_GetKeyboardState(NULL);
-        bool keyDown = currentState[scancode] && !previousKeyStates[scancode];
-        previousKeyStates[scancode] = currentState[scancode];
-        return keyDown;
-    }
-
-    bool anyKey() const {
-        const Uint8* state = SDL_GetKeyboardState(NULL);
+    ~Input() {}
+    void poll() {
         for (int i = 0; i < 512; i++) {
-            if (state[i]) return true;
+            keyStatePrev[i] = keyState[i];
+        }
+        SDL_PumpEvents();
+
+        mouseStatePrev = mouseState;
+        mouseState = SDL_GetMouseState(&mouseX, &mouseY);
+        // DBG((int)keyState[ SDL_SCANCODE_W ]);
+    };
+    Vec2i mousePos() {
+        return Vec2i(mouseX, mouseY);
+    }
+    bool mouseKey(Uint32 key) {
+        return mouseState == key;
+    }
+    bool mouseKeyDown(Uint32 key) {
+        return mouseState == key && mouseStatePrev != key;
+    }
+    bool key(SDL_Keycode keyCode) {
+        return keyState[SDL_GetScancodeFromKey(keyCode)];
+    }
+    bool keyDown(SDL_Keycode keyCode) {
+        return keyState[SDL_GetScancodeFromKey(keyCode)] && !keyStatePrev[SDL_GetScancodeFromKey(keyCode)];
+    }
+    bool anyKey() {
+        for (int i = 0; i < 512; i++) {
+            if (keyState[i]) return true;
         }
         return false;
     }
-
     bool anyKeyDown() {
-        const Uint8* currentState = SDL_GetKeyboardState(NULL);
-        bool keyDown = false;
-
         for (int i = 0; i < 512; i++) {
-            if (currentState[i] && !previousKeyStates[i]) {
-                keyDown = true;
-                break;
-            }
+            if (keyState[i] && !keyStatePrev[i]) return true;
         }
-        // Copy current state to previous state
-        previousKeyStates = std::vector<Uint8>(currentState, currentState + 512);
-        return keyDown;
+        return false;
     }
-
-    Vec2i wasd() const {
+    Vec2i wasd() {
         Vec2i out;
         if (key(SDLK_w)) out.y -= 1;
         if (key(SDLK_s)) out.y += 1;
@@ -184,11 +167,15 @@ public:
         if (key(SDLK_d)) out.x += 1;
         return out;
     }
-
 private:
-    std::vector<Uint32> previousMouseState;
-    std::vector<Uint8> previousKeyStates;
+    const Uint8* keyState;
+    Uint8 keyStatePrev[512];
+    int mouseX;
+    int mouseY;
+    Uint32 mouseState;
+    Uint32 mouseStatePrev;
 };
+Input _input;
 
 //
 // Graphics
@@ -661,7 +648,6 @@ private:
 typedef std::vector<std::pair<int, int>> CollisionPair;
 class EntityManager {
 public:
-    Input input;
     std::vector<Entity*> entities;
     EntityManager() {}
     ~EntityManager() {}
@@ -708,7 +694,7 @@ public:
         return collisions;
     }
     void checkMouse() {
-        Vec2i mousePos = input.mousePos();
+        Vec2i mousePos = _input.mousePos();
         for (Entity* entity : entities) {
             if (entity->colliderEnabled) {
                 bool over = entity->collider->isInside(mousePos);

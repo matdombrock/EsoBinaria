@@ -228,7 +228,6 @@ private:
     HelpItem* helpItem = nullptr;
 };
 Globals _g;
-Input _input;
 
 namespace CellSprites {
     Sprite baseTile = Sprite(Vec2i(0, 0), Vec2i(16, 16), Vec2i(_g.cellSize, _g.cellSize));
@@ -555,6 +554,7 @@ public:
     Uint8 state;
     bool center;
     bool show;
+    bool isHomeBtn;
     std::function<void()> onClick;
     BtnTopMenu() : Entity() {
         tag = "btn";
@@ -564,6 +564,7 @@ public:
         text = "Button";
         fontSize = _g.fontSize * 0.75f;
         size = Vec2i(80, fontSize * 1.1f);
+        isHomeBtn = false;
         setCollider(size);
     }
     ~BtnTopMenu() {}
@@ -573,7 +574,9 @@ public:
     bool isClicked() {
         return state == 2;
     }
-    void process() override {}
+    void process() override {
+        timer > 0 ? timer-- : timer = 0;
+    }
     void render(Graphics* graph) override {
         if (!show) return;
         // graph->setColor(colors["BG2"]);
@@ -585,6 +588,12 @@ public:
             case 2: c = &colors["GREEN"]; break;
         }
         graph->setColor(*c);
+        if (isHomeBtn) {
+            int sz = _g.vu(0.25f);
+            graph->circle(pos + Vec2i(sz/2, sz/2), sz/2, true);
+            // CellSprites::blankTile.render(graph, pos - Vec2i(sz, sz));
+            return;
+        }
         if (center) {
             int textWidth = graph->textWidth(text, fontSize);
             Vec2i textPos = pos + Vec2i((size.x - textWidth) / 2, (size.y - fontSize) / 2);
@@ -594,20 +603,23 @@ public:
             graph->text(" " + text + " ", pos, fontSize);
         }
     }
-    void onMouse(bool over) override {\
+    void onMouse(bool over) override {
         if (!show) return;
-        if (over) {
-            state = 1;
-            if (_input.mouseKey(SDL_BUTTON_LEFT)) {
+        if (timer == 0) {
+            if (_input.mouseKeyDown(SDL_BUTTON_LEFT) && over) {
                 state = 2;
-                if (onClick != nullptr) {
-                    onClick();
-                }
+                if (onClick != nullptr) onClick();
+                // reset timer
+                timer = 16;
             }
-            return;
+            else if (over) {
+                state = 1;
+            }
+            else state = 0;
         }
-        state = 0;
     }
+private:
+    int timer = 0;
 };
 
 class BtnTile : public Entity {
@@ -857,7 +869,6 @@ class Grid : public Entity {
 public:
     Vec2i mousePos;
     Vec2i mousePosCell;
-    Uint32 mouseBtn;
     Vec2i gridSize;
     std::string highlightCellTypeStr;
     std::string helpString;
@@ -915,7 +926,6 @@ public:
     void process() override {
         if (_g.getShowMainMenu()) return;
         mousePos = _input.mousePos();
-        mouseBtn = _input.getMouseBtn();
         mousePosCell = mousePos / _g.cellSize;
         // Update lastMouse array with the most recent mousePosCell value
         if (_g.getTick() % 2 == 0) {
@@ -1190,6 +1200,7 @@ public:
 
 class TopBar : public Entity {
 public:
+    BtnTopMenu btnHome;
     BtnTopMenu btnFile;
     BtnTopMenu btnTools;
     BtnTopMenu btnHelp;
@@ -1207,6 +1218,13 @@ public:
         tag = "topBar";
         height = _g.vu(0.5f);
 
+        btnHome.isHomeBtn = true;
+        btnHome.onClick = []() { _g.toggleMainMenu(); };
+        btnHome.show = true;
+        btnHome.pos = Vec2i(_g.vu(0.15f), 4);
+        btnHome.setCollider(Vec2i(_g.vu(0.25f), height));
+        em.addEntity(&btnHome);
+
         btnFile.onClick = [this]() {
             activeTopMenu = "btnFile";
             btnReset.show = true;
@@ -1216,7 +1234,7 @@ public:
         btnFile.tag = "btnFile";
         btnFile.show = true;
         btnFile.text = "FILE";
-        btnFile.pos = Vec2i(_g.vu(0.15f), 4);
+        btnFile.pos = Vec2i(_g.vu(0.15f) + _g.vu(0.75f), 4);
         em.addEntity(&btnFile);
 
         btnTools.onClick = [this]() {
@@ -1225,14 +1243,14 @@ public:
         };
         btnTools.tag = "btnTools";
         btnTools.show = true;
-        btnTools.text = "TOOLS";
-        btnTools.pos = Vec2i(_g.vu(0.15f) + _g.vu(1.25f), 4);
+        btnTools.text = "TOOL";
+        btnTools.pos = Vec2i(_g.vu(0.15f) + _g.vu(2.25f), 4);
         em.addEntity(&btnTools);
 
         btnHelp.tag = "btnHelp";
         btnHelp.show = true;
         btnHelp.text = "HELP";
-        btnHelp.pos = Vec2i(_g.vu(0.15f) + _g.vu(2.75f), 4);
+        btnHelp.pos = Vec2i(_g.vu(0.15f) + _g.vu(3.75f), 4);
         em.addEntity(&btnHelp);
 
         // File menu
@@ -1257,7 +1275,7 @@ public:
         // Tools menu
         btnMainMenu.onClick = []() { DBG("MENU"); _g.toggleMainMenu(); };
         btnMainMenu.show = false;
-        btnMainMenu.text = "MENU";
+        btnMainMenu.text = "DESKTOP";
         btnMainMenu.pos = Vec2i(btnTools.pos.x, btnTools.pos.y + _g.vu(0.5f));
         em.addEntity(&btnMainMenu);
 
@@ -1265,7 +1283,7 @@ public:
     ~TopBar() {}
     void process() override {
         // Clear if nothing is clicked
-        if (_input.mouseKey(SDL_BUTTON_LEFT)) {
+        if (_input.mouseKeyDown(SDL_BUTTON_LEFT)) {
             activeTopMenu = "";
         }
         em.checkMouse();
@@ -1332,6 +1350,8 @@ public:
     }
     ~App() {}
     void process() override {
+        _input.poll();
+
         // Pause
         if (_input.keyDown(SDLK_ESCAPE)) {
             _g.toggleMainMenu();
