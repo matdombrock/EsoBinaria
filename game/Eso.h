@@ -212,6 +212,12 @@ public:
     int getPuzzleNum() {
         return puzzleNum;
     }
+    void setPuzzleChallenge(char challenge) {
+        puzzleChallenge = challenge;
+    }
+    char getPuzzleChallenge() {
+        return puzzleChallenge;
+    }
     void setActiveTile(CellType type, bool playSound = true, bool autoVoid = true) {
         if (type == CT_IND && puzzleBits < 4) {
             return;
@@ -237,6 +243,7 @@ private:
     int tick = 0;
     int puzzleBits = 3;
     int puzzleNum = 255;
+    char puzzleChallenge = 'e';
     bool showMainMenu = false;
     bool showTests = true;
     bool reset = false;
@@ -444,7 +451,12 @@ public:
     std::string codeStringOld;
     TestScreen() : Entity() {
         tag = "testScreen";
-        tests.resize(Util::maxUnsignedInt(_g.getPuzzleBits()));
+        switch (_g.getPuzzleChallenge()) {
+            case 'e': tests.resize(Util::maxUnsignedInt(_g.getPuzzleBits()) / 4); break;
+            case 'm': tests.resize(Util::maxUnsignedInt(_g.getPuzzleBits()) / 2); break;
+            case 'h': tests.resize(Util::maxUnsignedInt(_g.getPuzzleBits())); break;
+            default: tests.resize(Util::maxUnsignedInt(_g.getPuzzleBits())); break;
+        }
         DBG("Max unsigned int: " + std::to_string(Util::maxUnsignedInt(_g.getPuzzleBits())));
 
         // not dry - reset
@@ -503,7 +515,7 @@ public:
         }
         else {
             graph->setColor(_colors["GRAY"]);
-            graph->text("3." + std::to_string(_g.getPuzzleNum()), Vec2i(pos.x + _g.vu(0.5f), pos.y), _g.fontSize);
+            graph->text("3." + std::to_string(_g.getPuzzleNum()) + std::string(1, _g.getPuzzleChallenge()), Vec2i(pos.x + _g.vu(0.5f), pos.y), _g.fontSize);
         }
         if (testFails == 0) {
             graph->setColor(_colors["GREEN"]);
