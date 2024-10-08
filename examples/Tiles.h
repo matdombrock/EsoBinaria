@@ -31,7 +31,7 @@ std::map<std::string, HelpItem> helpItems = {
     {"XNOR", {"XNOR", "Outputs false if inputs are different", "o"}},
 };
 
-std::map<std::string, Color> colors = {
+std::map<std::string, Color> _colors = {
     {"BG", Color(20,25,20)},
     {"BG2", Color(45,50,45)},
     {"BG3", Color(55,55,60)},
@@ -64,13 +64,20 @@ public:
     CellType type;
     bool parenLeft;
     bool parenRight;
+    bool isComment;
     Cell() {
         type = CT_CLEAR;
         parenLeft = false;
         parenRight = false;
+        isComment = false;
     }
     ~Cell() {}
     void set(CellType type) {
+        if (type == CT_CLEAR) {
+            parenLeft = false;
+            parenRight = false;
+            isComment = false;
+        }
         this->type = type;
     }
     CellType get() {
@@ -483,18 +490,18 @@ public:
     void render(Graphics* graph) {
         if (_g.getShowMainMenu()) return;
         em.render(graph);
-        //graph->setColor(colors["BG3"]);
+        //graph->setColor(_colors["BG3"]);
         //graph->rect(Vec2i(pos.x, 0), Vec2i(testWinWidth, _g.bottomBarPos.y - _g.cellSize), true);
         if (_g.hasCodeErr()) {
-            graph->setColor(colors["YELLOW"]);
+            graph->setColor(_colors["YELLOW"]);
             graph->text("!! ERROR", Vec2i(pos.x + _g.vu(0.5f), pos.y - (_g.getTick()/4 % 8)), _g.fontSize);
         }
         else {
-            graph->setColor(colors["GRAY"]);
+            graph->setColor(_colors["GRAY"]);
             graph->text("#P3-" + std::to_string(_g.getPuzzleNum()), Vec2i(pos.x + _g.vu(0.5f), pos.y), _g.fontSize);
         }
         if (testFails == 0) {
-            graph->setColor(colors["GREEN"]);
+            graph->setColor(_colors["GREEN"]);
             graph->text("PASSED", Vec2i(_g.cellSize/4,_g.cellSize/4), _g.fontSize * 4);
         }
     }
@@ -520,11 +527,11 @@ public:
     }
     void process() override {}
     void render(Graphics* graph) override {
-        Color* c = &colors["GRAY"];
+        Color* c = &_colors["GRAY"];
         switch (state) {
-            case 0: c = &colors["GRAY"]; break;
-            case 1: c = &colors["YELLOW"]; break;
-            case 2: c = &colors["GREEN"]; break;
+            case 0: c = &_colors["GRAY"]; break;
+            case 1: c = &_colors["YELLOW"]; break;
+            case 2: c = &_colors["GREEN"]; break;
         }
         std::string textMod = (state > 0 ? ">> " : "") + text;
         graph->setColor(*c);
@@ -582,13 +589,13 @@ public:
     }
     void render(Graphics* graph) override {
         if (!show) return;
-        // graph->setColor(colors["BG2"]);
+        // graph->setColor(_colors["BG2"]);
         // graph->rect(pos, size, true);
-        Color* c = &colors["GRAY"];
+        Color* c = &_colors["GRAY"];
         switch (state) {
-            case 0: c = &colors["GRAY"]; break;
-            case 1: c = &colors["YELLOW"]; break;
-            case 2: c = &colors["GREEN"]; break;
+            case 0: c = &_colors["GRAY"]; break;
+            case 1: c = &_colors["YELLOW"]; break;
+            case 2: c = &_colors["GREEN"]; break;
         }
         graph->setColor(*c);
         if (isHomeBtn) {
@@ -654,7 +661,7 @@ public:
             else if (state > 0) {
             post += Vec2i(0, -_g.cellSize / 8);
         }
-        graph->setColor(colors["GREEN"]);
+        graph->setColor(_colors["GREEN"]);
         graph->rect(pos + Vec2i(_g.cellSize / 4, _g.cellSize / 8), Vec2i(_g.cellSize - (_g.cellSize / 2), _g.cellSize - _g.cellSize / 4));
         CellSprites::baseTile.render(graph, post);
         CellSprites::cellMap[type]->render(graph, post);
@@ -799,25 +806,25 @@ public:
     }
     void render(Graphics* graph) override {
         if (_g.getShowMainMenu()) return;
-        graph->setColor(colors["BG3"]);
+        graph->setColor(_colors["BG3"]);
         graph->rect(_g.bottomBarPos, _g.bottomBarSize);
         em.render(graph);
 
         int padX = _g.cellSize;
         int padY = _g.cellSize / 4;
-        graph->setColor(colors["BG"]);
+        graph->setColor(_colors["BG"]);
         graph->rect(Vec2i(0, _g.bottomBarPos.y + _g.cellSize), Vec2i(WINDOW_SIZE.x, _g.bottomBarSize.y - _g.cellSize), true);
         if (_g.getHelpItem() != nullptr) {
-            graph->setColor(colors["GREEN"]);
+            graph->setColor(_colors["GREEN"]);
             graph->text("Name: ", Vec2i(padX, _g.bottomBarPos.y + _g.cellSize + padY), _g.fontSize);
             int w = graph->textWidth("Name: ", _g.fontSize);
             graph->setColor(200, 200, 200);
             graph->text(_g.getHelpItem()->title, Vec2i(padX + w, _g.bottomBarPos.y + _g.cellSize + padY), _g.fontSize);
             w += graph->textWidth(_g.getHelpItem()->title, _g.fontSize);
-            graph->setColor(colors["GRAY"]);
+            graph->setColor(_colors["GRAY"]);
             graph->text(" (" + _g.getHelpItem()->key + ")", Vec2i(padX + w, _g.bottomBarPos.y + _g.cellSize + padY), _g.fontSize);
 
-            graph->setColor(colors["GREEN"]);
+            graph->setColor(_colors["GREEN"]);
             graph->text("Info: ", Vec2i(padX, _g.bottomBarPos.y + _g.cellSize + _g.fontSize + padY), _g.fontSize);
             w = graph->textWidth("Info: ", _g.fontSize);
             graph->setColor(200, 200, 200);
@@ -825,12 +832,12 @@ public:
         }
         else if (_g.getCodeString().length() > 0) {
             std::string codePre = _g.hasCodeErr() ? "!!" :">> ";
-            graph->setColor(_g.hasCodeErr() ? colors["YELLOW"] : colors["GREEN"]);
+            graph->setColor(_g.hasCodeErr() ? _colors["YELLOW"] : _colors["GREEN"]);
             graph->text(codePre, Vec2i(padX, _g.bottomBarPos.y + _g.cellSize + padY), _g.fontSize);
             int w = graph->textWidth(codePre, _g.fontSize);
             //
             // if (_g.hasCodeErr()) {
-            //     graph->setColor(colors["YELLOW"]);
+            //     graph->setColor(_colors["YELLOW"]);
             //     graph->text(_g.getCodeErr(), Vec2i(padX + w, _g.bottomBarPos.y + _g.cellSize + padY), _g.fontSize);
             //     return;
             // }
@@ -858,15 +865,15 @@ public:
             int p1w = graph->textWidth(p1, _g.fontSize);
             int p2w = graph->textWidth(p2, _g.fontSize);
             if (p1.length() > 0) {
-                graph->setColor(colors["GRAY"]);
+                graph->setColor(_colors["GRAY"]);
                 graph->text(p1, Vec2i(padX + w, _g.bottomBarPos.y + _g.cellSize + padY), _g.fontSize);
             }
             if (p2.length() > 0) {
-                graph->setColor(colors["GREEN"]);
+                graph->setColor(_colors["GREEN"]);
                 graph->text(p2, Vec2i(padX + w + p1w, _g.bottomBarPos.y + _g.cellSize + padY), _g.fontSize);
             }
             if (p3.length() > 0) {
-                graph->setColor(colors["GRAY"]);
+                graph->setColor(_colors["GRAY"]);
                 graph->text(p3, Vec2i(padX + w + p1w + p2w, _g.bottomBarPos.y + _g.cellSize + padY), _g.fontSize);
             }
         }
@@ -1002,6 +1009,10 @@ public:
                 cells[x][y].cycleParens();
                 if (isTile) sndParen.play();
             }
+            // Toggle comments
+            if (_input.keyDown(SDLK_c) || _input.mouseKeyDown(SDL_BUTTON_MIDDLE)) {
+                cells[x][y].isComment = !cells[x][y].isComment;
+            }
         }
 
         // Generate code string
@@ -1010,6 +1021,7 @@ public:
         _g.setCodeString("");
         for (int y = 0; y < gridSize.y; y++) {
             for (int x = 0; x < gridSize.x; x++) {
+                if (cells[x][y].isComment) continue;
                 CellType cellType = cells[x][y].get();
                 if (cellType != CT_CLEAR) {
                     bool isHovered = mousePosCell.x == x && mousePosCell.y == y;
@@ -1027,7 +1039,7 @@ public:
     void render(Graphics* graph) override {
         if (_g.getShowMainMenu()) return;
         // Drag grid bg
-        graph->setColor(colors["BG2"]);
+        graph->setColor(_colors["BG2"]);
         for (int x = 0; x < WINDOW_SIZE.x; x += _g.cellSize) {
             graph->line(Vec2i(x, 0), Vec2i(x, WINDOW_SIZE.y));
         }
@@ -1036,7 +1048,7 @@ public:
         }
         // Draw border
         int borderWidth = _g.hasCodeErr() ? _g.cellSize/16 : _g.cellSize/4;
-        graph->setColor(_g.hasCodeErr() ? colors["YELLOW"] : colors["BG2"], _g.hasCodeErr() ? 128 : 255);
+        graph->setColor(_g.hasCodeErr() ? _colors["YELLOW"] : _colors["BG2"], _g.hasCodeErr() ? 128 : 255);
         graph->rect(Vec2i(0, 0), Vec2i(WINDOW_SIZE.x, borderWidth));
         graph->rect(Vec2i(0, _g.bottomBarPos.y - borderWidth), Vec2i(WINDOW_SIZE.x, borderWidth));
         graph->rect(Vec2i(0, 0), Vec2i(borderWidth, WINDOW_SIZE.y));
@@ -1046,7 +1058,7 @@ public:
         for (int i = 0; i < 8; i++) {
             Vec2i pos = lastMouse[i];
             Vec2i cellPos = pos * _g.cellSize;
-            Color c = colors["GREEN"];
+            Color c = _colors["GREEN"];
             graph->setColor(c.r, c.g - (i * 8), c.b);
             graph->rect(cellPos, Vec2i(_g.cellSize, _g.cellSize), false);
         }
@@ -1058,7 +1070,7 @@ public:
                 if (cellType != CT_VOID && cellType != CT_CLEAR) {
                     CellSprites::baseTile.render(graph, Vec2i(_g.cellSize * x, _g.cellSize * y));
                     Sprite* spr = nullptr;
-                    spr = CellSprites::cellMap[cellType];
+                    // Draw test highlights
                     if (_g.getActiveTestData() != nullptr) {
                         if (cellType == CT_INA) {
                             spr = _g.getActiveTestData()->inputs[0] ? &CellSprites::inATrueTile : &CellSprites::inAFalseTile;
@@ -1073,6 +1085,9 @@ public:
                             spr = _g.getActiveTestData()->inputs[3] ? &CellSprites::inDTrueTile : &CellSprites::inDFalseTile;
                         }
                     }
+                    else {
+                        spr = CellSprites::cellMap[cellType];
+                    }
                     if (spr != nullptr) {
                         spr->render(graph, Vec2i(_g.cellSize * x, _g.cellSize * y));
                     }
@@ -1086,6 +1101,11 @@ public:
                     if (cells[x][y].parenRight) {
                         CellSprites::parenR.render(graph, Vec2i(_g.cellSize * x, _g.cellSize * y));
                     }
+                    // Comment
+                    if (cells[x][y].isComment) {
+                        graph->setColor(_colors["GRAY"], 128 + (std::sin(_g.getTick()/32.0f) * 16));
+                        graph->rect(Vec2i(_g.cellSize * x, _g.cellSize * y), Vec2i(_g.cellSize, _g.cellSize));
+                    }
                 }
             }
         }
@@ -1093,7 +1113,7 @@ public:
         // Highlight cell on mouse hover
         if (_g.getActiveTestData() == nullptr && mousePos.y < _g.bottomBarPos.y) {
             Vec2i cell = mousePos / _g.cellSize * _g.cellSize;
-            graph->setColor(colors["WHITE"]);
+            graph->setColor(_colors["WHITE"]);
             graph->rect(cell, Vec2i(_g.cellSize, _g.cellSize), false); 
             if (_g.getActiveTile() != CT_VOID) {
                 CellSprites::baseTile.render(graph, cell - Vec2i(0, _g.vu(0.25f)));
@@ -1104,7 +1124,7 @@ public:
         // Draw static noise
         if (_g.getTick() % 2 == 0) {
             int staticSize = _g.cellSize / 32;
-            graph->setColor(colors["YELLOW"], 64);
+            graph->setColor(_colors["YELLOW"], 64);
             for (int i = 0; i < WINDOW_SIZE.size2d()/(staticSize * (_g.hasCodeErr() ? 128 : 1024)); i++) {
                 int x = rand() % WINDOW_SIZE.x;
                 int y = rand() % WINDOW_SIZE.y;
@@ -1113,14 +1133,14 @@ public:
         }
 
         // Draw opposite scans
-        // graph->setColor(colors["GREEN"], 32);
+        // graph->setColor(_colors["GREEN"], 32);
         // for (int x = 0; x < WINDOW_SIZE.x; x += _g.cellSize) {
         //     int xx = x + sin(x + (tick/6) * 0.1) * _g.cellSize;
         //     graph->line(Vec2i(xx, 0), Vec2i(xx, WINDOW_SIZE.y));
         // }
 
         // Draw scanlines
-        graph->setColor(colors["GREEN"],32);
+        graph->setColor(_colors["GREEN"],32);
         for (int y = 0; y < WINDOW_SIZE.y; y += _g.cellSize) {
             int yy = y + sin(y + (_g.getTick()/6) * 0.1) * _g.cellSize;
             graph->line(Vec2i(0, yy), Vec2i(WINDOW_SIZE.x, yy));
@@ -1197,9 +1217,9 @@ public:
     }
     void render(Graphics* graph) override {
         if (!_g.getShowMainMenu()) return;
-        graph->setColor(colors["BG"]);
+        graph->setColor(_colors["BG"]);
         graph->rect(Vec2i(0, 0), WINDOW_SIZE);
-        graph->setColor(colors["WHITE"]);
+        graph->setColor(_colors["WHITE"]);
         graph->text("ESOMachina", Vec2i(20, 20), _g.fontSize);
         em.render(graph);
         sprBg.render(graph, WINDOW_SIZE - Vec2i(WINDOW_SIZE.x/2, WINDOW_SIZE.x/2));
@@ -1306,10 +1326,10 @@ public:
         }
     }
     void render(Graphics* graph) override {
-        graph->setColor(colors["BG3"]);
+        graph->setColor(_colors["BG3"]);
         graph->rect(Vec2i(0, 0), Vec2i(WINDOW_SIZE.x, height));
         
-        graph->setColor(colors["BG3"]);
+        graph->setColor(_colors["BG3"]);
         if (activeTopMenu == "btnFile") {
             graph->rect(Vec2i(btnFile.pos.x, height), Vec2i(129, 120));
         }
@@ -1348,7 +1368,7 @@ public:
     TopBar topBar;
     BottomBar bottomBar;
     App() : Imp::Main("EsoMachina (v0.1-alpha)", WINDOW_SIZE, 60, "tiles.png") { 
-        clearColor = Color(colors["BG"]);
+        clearColor = Color(_colors["BG"]);
         entityMan.addEntity(&grid);
         entityMan.addEntity(&bottomBar);
         entityMan.addEntity(&topBar);
