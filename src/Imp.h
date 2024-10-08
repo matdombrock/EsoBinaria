@@ -138,13 +138,13 @@ public:
     bool mouseKey(Uint32 key) {
         return mouseState == key;
     }
-    bool mouseKeyDown(Uint32 key) {
+    bool mouseKeyOnce(Uint32 key) {
         return mouseState == key && mouseStatePrev != key;
     }
     bool key(SDL_Keycode keyCode) {
         return keyState[SDL_GetScancodeFromKey(keyCode)];
     }
-    bool keyDown(SDL_Keycode keyCode) {
+    bool keyOnce(SDL_Keycode keyCode) {
         return keyState[SDL_GetScancodeFromKey(keyCode)] && !keyStatePrev[SDL_GetScancodeFromKey(keyCode)];
     }
     bool anyKey() {
@@ -738,7 +738,7 @@ public:
     virtual void render(Graphics* graph) override {}
     void onMouse(bool over) override {
         if (!available) return;
-        if (_input.mouseKeyDown(SDL_BUTTON_LEFT) && over) {
+        if (_input.mouseKeyOnce(SDL_BUTTON_LEFT) && over) {
             state = 2;
             if (onClick != nullptr) onClick();
         }

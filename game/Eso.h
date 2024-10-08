@@ -493,7 +493,7 @@ public:
             }
             codeStringOld = _g.getCodeString();
         }
-        if(_input.keyDown(SDLK_SPACE)) {
+        if(_input.keyOnce(SDLK_SPACE)) {
             _g.toggleTests();
         }
         // Update positions
@@ -564,7 +564,7 @@ public:
         }
     }
     void onMouse(bool over) override {
-        if (_input.mouseKeyDown(SDL_BUTTON_LEFT) && over) {
+        if (_input.mouseKeyOnce(SDL_BUTTON_LEFT) && over) {
             state = 2;
         }
         else if (over) {
@@ -683,7 +683,7 @@ public:
 //     void onMouse(bool over) override {
 //         if (!show) return;
 //         if (timer == 0) {
-//             if (_input.mouseKeyDown(SDL_BUTTON_LEFT) && over) {
+//             if (_input.mouseKeyOnce(SDL_BUTTON_LEFT) && over) {
 //                 state = 2;
 //                 if (onClick != nullptr) onClick();
 //                 // reset timer
@@ -737,7 +737,7 @@ public:
         oldState = state;
         if (over) {
             state = 1;
-            if (_input.mouseKeyDown(SDL_BUTTON_LEFT)) {
+            if (_input.mouseKeyOnce(SDL_BUTTON_LEFT)) {
                 state = 2;
                 _g.setActiveTile(type);
             }
@@ -1079,20 +1079,20 @@ public:
         bool isTile = cellType != CT_VOID && cellType != CT_CLEAR;
         highlightCellTypeStr = Cell::typeToString(cellType);
         
-        if (_input.keyDown(SDLK_q)) _g.setActiveTile(CT_CLEAR);
-        if (_input.keyDown(SDLK_BACKSPACE)) _g.setActiveTile(CT_CLEAR);
-        if (_input.keyDown(SDLK_w)) _g.setActiveTile(CT_BLANK);
-        if (_input.keyDown(SDLK_e)) _g.setActiveTile(CT_AND);
-        if (_input.keyDown(SDLK_r)) _g.setActiveTile(CT_OR);
-        if (_input.keyDown(SDLK_t)) _g.setActiveTile(CT_NOT);
-        if (_input.keyDown(SDLK_a)) _g.setActiveTile(CT_INA);
-        if (_input.keyDown(SDLK_s)) _g.setActiveTile(CT_INB);
-        if (_input.keyDown(SDLK_d)) _g.setActiveTile(CT_INC);
-        if (_input.keyDown(SDLK_f)) _g.setActiveTile(CT_IND);
-        if (_input.keyDown(SDLK_y)) _g.setActiveTile(CT_XOR);
-        if (_input.keyDown(SDLK_u)) _g.setActiveTile(CT_NAND);
-        if (_input.keyDown(SDLK_i)) _g.setActiveTile(CT_NOR);
-        if (_input.keyDown(SDLK_o)) _g.setActiveTile(CT_XNOR);
+        if (_input.keyOnce(SDLK_q)) _g.setActiveTile(CT_CLEAR);
+        if (_input.keyOnce(SDLK_BACKSPACE)) _g.setActiveTile(CT_CLEAR);
+        if (_input.keyOnce(SDLK_w)) _g.setActiveTile(CT_BLANK);
+        if (_input.keyOnce(SDLK_e)) _g.setActiveTile(CT_AND);
+        if (_input.keyOnce(SDLK_r)) _g.setActiveTile(CT_OR);
+        if (_input.keyOnce(SDLK_t)) _g.setActiveTile(CT_NOT);
+        if (_input.keyOnce(SDLK_a)) _g.setActiveTile(CT_INA);
+        if (_input.keyOnce(SDLK_s)) _g.setActiveTile(CT_INB);
+        if (_input.keyOnce(SDLK_d)) _g.setActiveTile(CT_INC);
+        if (_input.keyOnce(SDLK_f)) _g.setActiveTile(CT_IND);
+        if (_input.keyOnce(SDLK_y)) _g.setActiveTile(CT_XOR);
+        if (_input.keyOnce(SDLK_u)) _g.setActiveTile(CT_NAND);
+        if (_input.keyOnce(SDLK_i)) _g.setActiveTile(CT_NOR);
+        if (_input.keyOnce(SDLK_o)) _g.setActiveTile(CT_XNOR);
 
         if (_input.mousePos().y < _g.bottomBarPos.y) {
             if (lastMouse[0] != lastMouse[1]) {
@@ -1104,7 +1104,7 @@ public:
             }
 
             CellType newCell = CT_VOID;
-            if (_input.mouseKeyDown(SDL_BUTTON_LEFT)) {
+            if (_input.mouseKeyOnce(SDL_BUTTON_LEFT)) {
                 CellType active = _g.getActiveTile();
                 // Grab tile if nothing is active
                 if (active == CT_VOID && cellType != CT_CLEAR) {
@@ -1130,19 +1130,19 @@ public:
                 }
             }
             // Remove held tile or right click
-            if (_input.mouseKeyDown(SDL_BUTTON_RIGHT) || _input.mouseKeyDown(4)) {
+            if (_input.mouseKeyOnce(SDL_BUTTON_RIGHT) || _input.mouseKeyOnce(4)) {
                 if (_g.getActiveTile() != CT_VOID) {
                     _g.setActiveTile(CT_VOID);
                     return;
                 }
             }
             // Toggle connectors
-            if (_input.keyDown(SDLK_TAB) || _input.mouseKeyDown(SDL_BUTTON_RIGHT) || _input.mouseKeyDown(4)) {
+            if (_input.keyOnce(SDLK_TAB) || _input.mouseKeyOnce(SDL_BUTTON_RIGHT) || _input.mouseKeyOnce(4)) {
                 cells[x][y].cycleParens();
                 if (isTile) sndParen.play();
             }
             // Toggle comments
-            if (_input.keyDown(SDLK_c) || _input.mouseKeyDown(SDL_BUTTON_MIDDLE)) {
+            if (_input.keyOnce(SDLK_c) || _input.mouseKeyOnce(SDL_BUTTON_MIDDLE)) {
                 cells[x][y].isComment = !cells[x][y].isComment;
             }
         }
@@ -1471,7 +1471,7 @@ public:
     ~TopBar() {}
     void process() override {
         // Clear if nothing is clicked
-        if (_input.mouseKeyDown(SDL_BUTTON_LEFT)) {
+        if (_input.mouseKeyOnce(SDL_BUTTON_LEFT)) {
             activeTopMenu = "";
         }
         em.checkMouse();
@@ -1543,7 +1543,7 @@ public:
         _input.poll();
 
         // Pause
-        if (_input.keyDown(SDLK_ESCAPE)) {
+        if (_input.keyOnce(SDLK_ESCAPE)) {
             _g.toggleMainMenu();
         }
 
