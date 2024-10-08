@@ -199,6 +199,13 @@ public:
     int getPuzzleBits() {
         return puzzleBits;
     }
+    void toggleTests() {
+        Sounds::toggleTests.play();
+        this->showTests = !this->showTests;
+    }
+    int getShowTests() {
+        return showTests;
+    }
     void setPuzzleNum(int num) {
         puzzleNum = num;
     }
@@ -231,6 +238,7 @@ private:
     int puzzleBits = 3;
     int puzzleNum = 255;
     bool showMainMenu = false;
+    bool showTests = true;
     bool reset = false;
     bool quit = false;
     std::string codeErr = "";
@@ -430,14 +438,12 @@ private:
 class TestScreen : public Entity {
 public:
     EntityManager em;
-    bool show;
     int testFails;
     int testWinWidth;
     std::vector<TestCase> tests;
     std::string codeStringOld;
     TestScreen() : Entity() {
         tag = "testScreen";
-        show = true;
         tests.resize(Util::maxUnsignedInt(_g.getPuzzleBits()));
         DBG("Max unsigned int: " + std::to_string(Util::maxUnsignedInt(_g.getPuzzleBits())));
 
@@ -476,12 +482,11 @@ public:
             codeStringOld = _g.getCodeString();
         }
         if(_input.keyDown(SDLK_SPACE)) {
-            show = !show;
-            Sounds::toggleTests.play();
+            _g.toggleTests();
         }
         // Update positions
         // XXX - Maybe slow
-        pos.x = WINDOW_SIZE.x - (show ? testWinWidth : _g.cellSize / 2);
+        pos.x = WINDOW_SIZE.x - (_g.getShowTests() ? testWinWidth : _g.cellSize / 2);
         for (int i = 0; i < tests.size(); i++) {
             tests[i].pos = Vec2i(_g.vu(0.5f), _g.cellSize + (i * _g.cellSize /2 ));
             tests[i].pos += pos;
@@ -498,7 +503,7 @@ public:
         }
         else {
             graph->setColor(_colors["GRAY"]);
-            graph->text("#P3-" + std::to_string(_g.getPuzzleNum()), Vec2i(pos.x + _g.vu(0.5f), pos.y), _g.fontSize);
+            graph->text("3." + std::to_string(_g.getPuzzleNum()), Vec2i(pos.x + _g.vu(0.5f), pos.y), _g.fontSize);
         }
         if (testFails == 0) {
             graph->setColor(_colors["GREEN"]);
@@ -600,8 +605,11 @@ public:
         graph->setColor(*c);
         if (isHomeBtn) {
             int sz = _g.vu(0.25f);
-            graph->circle(pos + Vec2i(sz/2, sz/2), sz/2, true);
-            // CellSprites::blankTile.render(graph, pos - Vec2i(sz, sz));
+            //graph->circle(pos + Vec2i(sz/2, sz/2), sz/2, true);
+            // draw a diamond with triangles
+            graph->tri(pos + Vec2i(sz/2, 0), pos + Vec2i(sz, sz/2), pos + Vec2i(sz/2, sz));
+            graph->tri(pos + Vec2i(sz/2, 0), pos + Vec2i(0, sz/2), pos + Vec2i(sz/2, sz));
+
             return;
         }
         if (center) {
@@ -1231,13 +1239,13 @@ public:
     BtnTopMenu btnHome;
     BtnTopMenu btnFile;
     BtnTopMenu btnTools;
-    BtnTopMenu btnHelp;
+    BtnTopMenu btnEdit;
     // File menu
     BtnTopMenu btnReset;
     BtnTopMenu btnSave;
     BtnTopMenu btnLoad;
     // Tools menu
-    BtnTopMenu btnMainMenu;
+    BtnTopMenu btnTests;
     //
     EntityManager em;
     int height;
@@ -1249,7 +1257,7 @@ public:
         btnHome.isHomeBtn = true;
         btnHome.onClick = []() { _g.toggleMainMenu(); };
         btnHome.show = true;
-        btnHome.pos = Vec2i(_g.vu(0.15f), 4);
+        btnHome.pos = Vec2i(_g.vu(0.25f), 4);
         btnHome.setCollider(Vec2i(_g.vu(0.25f), height));
         em.addEntity(&btnHome);
 
@@ -1267,7 +1275,7 @@ public:
 
         btnTools.onClick = [this]() {
             activeTopMenu = "btnTools";
-            btnMainMenu.show = true;
+            btnTests.show = true;
         };
         btnTools.tag = "btnTools";
         btnTools.show = true;
@@ -1275,11 +1283,11 @@ public:
         btnTools.pos = Vec2i(_g.vu(0.15f) + _g.vu(2.25f), 4);
         em.addEntity(&btnTools);
 
-        btnHelp.tag = "btnHelp";
-        btnHelp.show = true;
-        btnHelp.text = "HELP";
-        btnHelp.pos = Vec2i(_g.vu(0.15f) + _g.vu(3.75f), 4);
-        em.addEntity(&btnHelp);
+        btnEdit.tag = "btnEdit";
+        btnEdit.show = true;
+        btnEdit.text = "EDIT";
+        btnEdit.pos = Vec2i(_g.vu(0.15f) + _g.vu(3.75f), 4);
+        em.addEntity(&btnEdit);
 
         // File menu
         btnReset.onClick = []() { _g.setReset(true); };
@@ -1301,11 +1309,11 @@ public:
         em.addEntity(&btnLoad);
 
         // Tools menu
-        btnMainMenu.onClick = []() { DBG("MENU"); _g.toggleMainMenu(); };
-        btnMainMenu.show = false;
-        btnMainMenu.text = "DESKTOP";
-        btnMainMenu.pos = Vec2i(btnTools.pos.x, btnTools.pos.y + _g.vu(0.5f));
-        em.addEntity(&btnMainMenu);
+        btnTests.onClick = []() { DBG("TESTS"); _g.toggleTests(); };
+        btnTests.show = false;
+        btnTests.text = "TESTS";
+        btnTests.pos = Vec2i(btnTools.pos.x, btnTools.pos.y + _g.vu(0.5f));
+        em.addEntity(&btnTests);
 
     }
     ~TopBar() {}
@@ -1322,14 +1330,14 @@ public:
             btnLoad.show = false;
         }
         if (activeTopMenu != "btnTools") {
-            btnMainMenu.show = false;
+            btnTests.show = false;
         }
     }
     void render(Graphics* graph) override {
         graph->setColor(_colors["BG3"]);
         graph->rect(Vec2i(0, 0), Vec2i(WINDOW_SIZE.x, height));
         
-        graph->setColor(_colors["BG3"]);
+        graph->setColor(_colors["BG2"]);
         if (activeTopMenu == "btnFile") {
             graph->rect(Vec2i(btnFile.pos.x, height), Vec2i(129, 120));
         }
