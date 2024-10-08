@@ -1116,6 +1116,7 @@ public:
                     newCell = active;
                 }
             }
+            // Drop tile
             if (newCell != CT_VOID) {
                 DBG("New Cell: " + std::to_string(newCell));
                 if (newCell == CT_CLEAR) {
@@ -1124,8 +1125,8 @@ public:
                 else sndAdd.play();
                 cells[x][y].set(newCell);
                 // clear actie Tile
-                if (newCell != CT_CLEAR) {
-                    _g.setActiveTile(CT_VOID, false);   
+                if (newCell != CT_CLEAR && !_input.key(SDLK_LCTRL)) {
+                    _g.setActiveTile(CT_VOID, false);
                 }
             }
             // Remove held tile or right click
