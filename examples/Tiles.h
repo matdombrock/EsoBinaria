@@ -124,7 +124,7 @@ public:
     int index;
     std::vector<bool> inputs;
     bool output;
-    bool hasError;
+    std::string err;
     bool lastCheck;
 };
 
@@ -161,11 +161,14 @@ public:
     HelpItem* getHelpItem() {
         return helpItem;
     }
-    void setHasCodeErr(bool hasCodeErr) {
-        this->hasCodeErr = hasCodeErr;
+    void setCodeErr(std::string err) {
+        codeErr = err;
     }
-    bool getHasCodeErr() {
-        return hasCodeErr;
+    bool hasCodeErr() {
+        return codeErr != "";
+    }
+    std::string getCodeErr() {
+        return codeErr;
     }
     void incTick() {
         tick++;
@@ -223,7 +226,7 @@ private:
     bool showMainMenu = false;
     bool reset = false;
     bool quit = false;
-    bool hasCodeErr = false;
+    std::string codeErr = "";
     std::string codeString = "";
     HelpItem* helpItem = nullptr;
 };
@@ -285,7 +288,7 @@ public:
     TestCase() : Entity() {
         data.inputs.resize(4);
         data.output = false;
-        data.hasError = false;
+        data.err = "";
         data.lastCheck = false;
         isHovered = false;
         ce = _g.cellSize / 2;
@@ -329,7 +332,7 @@ public:
         data.output = rand() % 2;
     }
     bool check(std::string code) { 
-        data.hasError = false;
+        data.err = "";
         code = Util::toLowercase(code);
         code = Util::strReplace(code, "_", " ");
         DBG("Code Check:");
@@ -341,7 +344,7 @@ public:
             || code == "")
         {
             data.lastCheck = false;
-            data.hasError = false;
+            data.err = "";
             DBG("Ignoring empty code");
             return data.lastCheck;
         }
@@ -359,7 +362,7 @@ public:
         code = "(begin " + pre + code + ")";
         std::string eval = evalScheme(code);
         if (eval != "#t" && eval != "#f") {
-            data.hasError = true;
+            data.err = eval;
             data.lastCheck = false;
             return data.lastCheck;
         }
@@ -389,7 +392,7 @@ public:
         else {
             sprFalse.render(graph, Vec2i(pos.x + ce + x + hoverMod, pos.y));
         }
-        if (data.hasError) _g.setHasCodeErr(true);
+        if (data.err != "") _g.setCodeErr(data.err);
     }
     void onMouse(bool over) override {
         if (over) {
@@ -454,7 +457,7 @@ public:
         std::string cs = Util::strReplace(Util::strReplace(_g.getCodeString(), " ", ""), "_", "");
         std::string cso = Util::strReplace(Util::strReplace(codeStringOld, " ", ""), "_", "");
         if (cs != cso) {
-            _g.setHasCodeErr(false);
+            _g.setCodeErr("");
             DBG("Retesting code");
             DBG(cs);
             testFails = 0;
@@ -482,7 +485,7 @@ public:
         em.render(graph);
         //graph->setColor(colors["BG3"]);
         //graph->rect(Vec2i(pos.x, 0), Vec2i(testWinWidth, _g.bottomBarPos.y - _g.cellSize), true);
-        if (_g.getHasCodeErr()) {
+        if (_g.hasCodeErr()) {
             graph->setColor(colors["YELLOW"]);
             graph->text("!! ERROR", Vec2i(pos.x + _g.vu(0.5f), pos.y - (_g.getTick()/4 % 8)), _g.fontSize);
         }
@@ -821,11 +824,16 @@ public:
             graph->text(_g.getHelpItem()->desc, Vec2i(padX + w, _g.bottomBarPos.y + _g.cellSize + _g.fontSize + padY), _g.fontSize);
         }
         else if (_g.getCodeString().length() > 0) {
-            std::string codePre = _g.getHasCodeErr() ? "!!" :">> ";
-            graph->setColor(_g.getHasCodeErr() ? colors["YELLOW"] : colors["GREEN"]);
+            std::string codePre = _g.hasCodeErr() ? "!!" :">> ";
+            graph->setColor(_g.hasCodeErr() ? colors["YELLOW"] : colors["GREEN"]);
             graph->text(codePre, Vec2i(padX, _g.bottomBarPos.y + _g.cellSize + padY), _g.fontSize);
             int w = graph->textWidth(codePre, _g.fontSize);
             //
+            // if (_g.hasCodeErr()) {
+            //     graph->setColor(colors["YELLOW"]);
+            //     graph->text(_g.getCodeErr(), Vec2i(padX + w, _g.bottomBarPos.y + _g.cellSize + padY), _g.fontSize);
+            //     return;
+            // }
             std::string csMod = _g.getCodeString();
             if (_g.getActiveTestData() != nullptr) {
                 DBG("Active test data replace");
@@ -1027,8 +1035,8 @@ public:
             graph->line(Vec2i(0, y), Vec2i(WINDOW_SIZE.x, y));
         }
         // Draw border
-        int borderWidth = _g.getHasCodeErr() ? _g.cellSize/16 : _g.cellSize/4;
-        graph->setColor(_g.getHasCodeErr() ? colors["YELLOW"] : colors["BG2"], _g.getHasCodeErr() ? 128 : 255);
+        int borderWidth = _g.hasCodeErr() ? _g.cellSize/16 : _g.cellSize/4;
+        graph->setColor(_g.hasCodeErr() ? colors["YELLOW"] : colors["BG2"], _g.hasCodeErr() ? 128 : 255);
         graph->rect(Vec2i(0, 0), Vec2i(WINDOW_SIZE.x, borderWidth));
         graph->rect(Vec2i(0, _g.bottomBarPos.y - borderWidth), Vec2i(WINDOW_SIZE.x, borderWidth));
         graph->rect(Vec2i(0, 0), Vec2i(borderWidth, WINDOW_SIZE.y));
@@ -1097,7 +1105,7 @@ public:
         if (_g.getTick() % 2 == 0) {
             int staticSize = _g.cellSize / 32;
             graph->setColor(colors["YELLOW"], 64);
-            for (int i = 0; i < WINDOW_SIZE.size2d()/(staticSize * (_g.getHasCodeErr() ? 128 : 1024)); i++) {
+            for (int i = 0; i < WINDOW_SIZE.size2d()/(staticSize * (_g.hasCodeErr() ? 128 : 1024)); i++) {
                 int x = rand() % WINDOW_SIZE.x;
                 int y = rand() % WINDOW_SIZE.y;
                 graph->rect(Vec2i(x, y), Vec2i(staticSize, staticSize));
