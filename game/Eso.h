@@ -467,6 +467,15 @@ public:
         }
     }
     ~TestArea() {}
+    int check() {
+        testFails = 0;
+        for (int i = 0; i < testCount; i++) {
+            if (!tests[i].check(_g.getCodeString())){
+                testFails++;
+            }
+        }
+        return testFails;
+    }
     void reset() {
         switch (_g.getPuzzleChallenge()) {
             case 'e': testCount = Util::maxUnsignedInt(_g.getPuzzleBits()) / 4; break;
@@ -477,6 +486,7 @@ public:
         for (int i = 0; i < tests.size(); i++) {
            tests[i].set(i, _g.getPuzzleBits(), _g.getPuzzleNum()); 
         }
+        check();
     }
     void process() {
         if (_g.getScreen() != "puzzle") return;
@@ -488,12 +498,7 @@ public:
             _g.setCodeErr("");
             DBG("Retesting code");
             DBG(cs);
-            testFails = 0;
-            for (int i = 0; i < testCount; i++) {
-                if (!tests[i].check(_g.getCodeString())){
-                    testFails++;
-                }
-            }
+            int testFails = check();
             // for (TestCase& test : tests) {
             //     if (!test.check(_g.getCodeString())){
             //         testFails++;
@@ -1448,7 +1453,11 @@ public:
         // File menu
         btnNew.tag = "btnNew";
         btnNew.onClick = [this]() {
-            _g.setScreen("puzzleSetup");
+            modal.onOk = [&]() {
+                _g.setScreen("puzzleSetup");
+            };
+            modal.title = "New Puzzle?";
+            modal.show = true;
         };
         btnNew.available = false;
         btnNew.text = "NEW";
