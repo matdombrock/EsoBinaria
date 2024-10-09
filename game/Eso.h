@@ -777,6 +777,7 @@ public:
     }
     ~BtnNub() {}
     void render(Graphics* graph) override {
+        if (!available) return;
         graph->setColor(state ? _colors["GREEN"] : _colors["GRAY"]);
         if (_g.getPuzzleNum() == index) {
             graph->setColor(_colors["YELLOW"]);
@@ -1240,7 +1241,7 @@ public:
                 CellType cellType = cells[x][y].get();
                 if (cellType != CT_VOID && cellType != CT_CLEAR) {
                     CellSprites::baseTile.render(graph, Vec2i(_g.cellSize * x, _g.cellSize * y));
-                    Sprite* spr = nullptr;
+                    Sprite* spr = CellSprites::cellMap[cellType];
                     // Draw test highlights
                     if (_g.getActiveTestData() != nullptr) {
                         if (cellType == CT_INA) {
@@ -1255,9 +1256,6 @@ public:
                         if (cellType == CT_IND) {
                             spr = _g.getActiveTestData()->inputs[3] ? &CellSprites::inDTrueTile : &CellSprites::inDFalseTile;
                         }
-                    }
-                    else {
-                        spr = CellSprites::cellMap[cellType];
                     }
                     if (spr != nullptr) {
                         spr->render(graph, Vec2i(_g.cellSize * x, _g.cellSize * y));
@@ -1607,21 +1605,21 @@ public:
         }
 
         btnEasy.pos = Vec2i(_g.vu(10), _g.vu(2));
-        btnEasy.text = "EASY";
+        btnEasy.text = "IMP";
         btnEasy.onClick = [](){
             _g.setPuzzleChallenge('e');
         };
         em.addEntity(&btnEasy);
 
         btnMedium.pos = Vec2i(_g.vu(10), _g.vu(2) + _g.vu(1));
-        btnMedium.text = "MEDIUM";
+        btnMedium.text = "MAGE";
         btnMedium.onClick = [](){
             _g.setPuzzleChallenge('m');
         };
         em.addEntity(&btnMedium);
 
         btnHard.pos = Vec2i(_g.vu(10), _g.vu(2) + _g.vu(2));
-        btnHard.text = "HARD";
+        btnHard.text = "ARCH";
         btnHard.onClick = [](){
             _g.setPuzzleChallenge('h');
         };
@@ -1638,6 +1636,16 @@ public:
     ~SetupScreen() {}
     void process() override {
         if (_g.getScreen() != "puzzleSetup") return;
+        int maxLevel = _g.getPuzzleChallenge() == 'e' ? 4 : _g.getPuzzleChallenge() == 'm' ? 64 : 256;
+        for (int i = 0; i < 256; i++) {
+            btnsLvl[i].available = true;
+            if (btnsLvl[i].index >= maxLevel) {
+                btnsLvl[i].available = false;
+            }
+        }
+        if (_g.getPuzzleNum() >= maxLevel) {
+            _g.setPuzzleNum(maxLevel - 1);
+        }
         em.process();
         em.checkMouse();
     }
