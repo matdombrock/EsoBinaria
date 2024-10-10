@@ -66,14 +66,14 @@ public:
     bool parenRight;
     bool isComment;
     Cell() {
-        type = CT_CLEAR;
+        type = CT_VOID;
         parenLeft = false;
         parenRight = false;
         isComment = false;
     }
     ~Cell() {}
     void set(CellType type) {
-        if (type == CT_CLEAR) {
+        if (type == CT_VOID) {
             parenLeft = false;
             parenRight = false;
             isComment = false;
@@ -100,7 +100,7 @@ public:
     static std::string typeToString(CellType type) {
         switch (type) {
             case CT_VOID: return "VOID";
-            case CT_CLEAR: return "VOID";
+            case CT_CLEAR: return "CLEAR";
             case CT_INA: return "A";
             case CT_INB: return "B";
             case CT_INC: return "C";
@@ -1068,7 +1068,7 @@ public:
         for (int x = 0; x < gridSize.x; x++) {
             cells[x].resize(gridSize.y);
             for (int y = 0; y < gridSize.y; y++) {
-                cells[x][y].set(CT_CLEAR);
+                cells[x][y].set(CT_VOID);
             }
         }
 
@@ -1098,7 +1098,7 @@ public:
     void reset() {
         for (int x = 0; x < gridSize.x; x++) {
             for (int y = 0; y < gridSize.y; y++) {
-                cells[x][y].set(CT_CLEAR);
+                cells[x][y].set(CT_VOID);
             }
         }
     }
@@ -1147,7 +1147,7 @@ public:
             if (_input.mouseKeyOnce(SDL_BUTTON_LEFT)) {
                 CellType active = _g.getActiveTile();
                 // Grab tile if nothing is active
-                if (active == CT_VOID && cellType != CT_CLEAR) {
+                if (active == CT_VOID && cellType != CT_VOID) {
                     DBG("Grabbed cell type: " + Cell::typeToString(cellType));
                     _g.setActiveTile(cellType, true);
                     newCell = CT_CLEAR;
@@ -1161,10 +1161,14 @@ public:
                 DBG("New Cell: " + std::to_string(newCell));
                 if (newCell == CT_CLEAR) {
                     if (isTile) sndRemove.play();
+                    // Do not ever place the CT_CLEAR tile
+                    cells[x][y].set(CT_VOID);
                 }
-                else sndAdd.play();
-                cells[x][y].set(newCell);
-                // clear actie Tile
+                else {
+                    sndAdd.play();
+                    cells[x][y].set(newCell);
+                }
+                // clear active Tile
                 if (newCell != CT_CLEAR && !_input.key(SDLK_LCTRL)) {
                     _g.setActiveTile(CT_VOID, false);
                 }
@@ -1187,6 +1191,25 @@ public:
             }
         }
 
+        // Mod tiles
+        CellType cellTypeLast = CT_VOID;
+        int xOld = 0;
+        int yOld = 0;
+        for (int y = 0; y < gridSize.y; y++) {
+            for (int x = 0; x < gridSize.x; x++) {
+                CellType cellType = cells[x][y].get();
+                if (cellTypeLast == CT_NOT && cellType != CT_VOID) {
+                    cells[x][y].parenRight = true;
+                    cells[xOld][yOld].parenLeft = true;
+                }
+                if (cellType != CT_VOID) {
+                    cellTypeLast = cellType;
+                    xOld = x;
+                    yOld = y;
+                }
+            }
+        }
+
         // Generate code string
         std::string codeStringOld = _g.getCodeString();
         std::string codeStringNew = "";
@@ -1195,7 +1218,7 @@ public:
             for (int x = 0; x < gridSize.x; x++) {
                 if (cells[x][y].isComment) continue;
                 CellType cellType = cells[x][y].get();
-                if (cellType != CT_CLEAR) {
+                if (cellType != CT_VOID) {
                     bool isHovered = mousePosCell.x == x && mousePosCell.y == y;
                     if (isHovered) codeStringNew += "_";
                     if (cells[x][y].parenLeft) codeStringNew += "(";
