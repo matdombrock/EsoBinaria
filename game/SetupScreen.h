@@ -1,9 +1,31 @@
 #pragma once
 #include "../src/Imp.h"
 using namespace Imp;
-#include "BtnNub.h"
 #include "_colors.h"
 #include "_gameMaster.h"
+
+class BtnNub : public Btn {
+public:
+    int index;
+    BtnNub() : Btn() {
+        tag = "nub";
+        index = 0;
+        size = Vec2i(_g.vu(0.25f), _g.vu(0.25f));
+        setCollider(Vec2i(_g.cellSize / 2, _g.cellSize / 2));
+    }
+    ~BtnNub() {}
+    void render(Graphics* graph) override {
+        if (!available) return;
+        graph->setColor(state ? _colors["GREEN"] : _colors["GRAY"]);
+        if (_g.getPuzzleNum() == index) {
+            graph->setColor(_colors["YELLOW"]);
+        }
+        // graph->rect(pos, size, true);
+        graph->tri(pos, pos + Vec2i(size.x, 0), pos + Vec2i(0, size.y), _g.getTick() * (index/256.0f) / 512.0f);
+        // graph->setColor(_colors["BG"]);
+        graph->tri(pos + Vec2i(size.x, size.y), pos + Vec2i(size.x, 0), pos + Vec2i(0, size.y), (_g.getTick() * (index / 256.0f) / 512.0f));
+    }
+};
 
 class SetupScreen : public Entity {
 public:
@@ -20,7 +42,7 @@ public:
             int y = i / 16;
             x *= _g.vu(0.5f);
             y *= _g.vu(0.5f);
-            btnsLvl[i].pos = Vec2i(_g.vu(2), _g.vu(2)) + Vec2i(x,y);
+            btnsLvl[i].pos = Vec2i(_g.vu(2), _g.vu(3)) + Vec2i(x,y);
             btnsLvl[i].onClick = [i](){
                 DBG("Clicked: " + std::to_string(i));
                 _g.setPuzzleNum(i);
@@ -76,10 +98,19 @@ public:
     }
     void render(Graphics* graph) override {
         if (_g.getScreen() != "puzzleSetup") return;
-        graph->setColor(_colors["BG3"]);
+        graph->setColor(_colors["BG"]);
         graph->rect(Vec2i(0, 0), WINDOW_SIZE);
+        
+        graph->setColor(_colors["YELLOW"],180);
+        graph->rect(Vec2i(0, 0), Vec2i(WINDOW_SIZE.x, _g.fontSize * 4));
+        // Draw tri in top left
+        graph->setColor(_colors["BG"]);
+        graph->tri(Vec2i(0, 0), Vec2i(_g.vu(2), 0), Vec2i(0, _g.vu(2)));
+        
         graph->setColor(_colors["WHITE"]);
-        graph->text(_g.getPuzzleString(), Vec2i(_g.vu(2), _g.vu(1)), _g.fontSize);
+        graph->text("   EsoMachina", Vec2i(_g.vu(0), _g.vu(0)), _g.fontSize * 4);
+        graph->setColor(_colors["WHITE"]);
+        graph->text(_g.getPuzzleString(), Vec2i(_g.vu(2), _g.vu(2)), _g.fontSize);
 
         // Draw cursor lines
         // graph->setColor(_colors["GREEN"], 128);
@@ -88,17 +119,32 @@ public:
         // graph->line(_input.mousePos(), Vec2i(WINDOW_SIZE.x,WINDOW_SIZE.y));
         // graph->line(_input.mousePos(), Vec2i(0,WINDOW_SIZE.y));
 
-        graph->setColor(_colors["YELLOW"], 128);
         if (_g.getPuzzleChallenge() == 'e') {
-            graph->rect(btnEasy.pos, btnEasy.size);
+            graph->setColor(_colors["GREEN"], 64);
+            graph->rect(btnEasy.pos, Vec2i(_g.vu(10), _g.vu(10)));
         }
         if (_g.getPuzzleChallenge() == 'm') {
-            graph->rect(btnMedium.pos, btnMedium.size);
+            graph->setColor(_colors["YELLOW"], 128);
+            graph->rect(btnMedium.pos, Vec2i(_g.vu(10), _g.vu(10)));
         }
         if (_g.getPuzzleChallenge() == 'h') {
-            graph->rect(btnHard.pos, btnHard.size);
+            graph->setColor(_colors["RED"], 128);
+            graph->rect(btnHard.pos, Vec2i(_g.vu(10), _g.vu(10)));
         }
+        
+        // Draw behind start
+        graph->setColor(_colors["RED"], 200);
+        graph->rect(btnStart.pos, Vec2i(_g.vu(10), _g.vu(10)));
+
+        // Draw behind levels
+        graph->setColor(_colors["BG2"]);
+        graph->rect(Vec2i(_g.vu(1.8f), _g.vu(2.8f)), Vec2i(16 * _g.vu(0.5f) + _g.vu(0.2f), 16 * _g.vu(0.5f) + _g.vu(0.2f)));
+
         em.render(graph);
+
+        // Draw triangle in bottom right corner
+        graph->setColor(_colors["BG"]);
+        graph->tri(Vec2i(WINDOW_SIZE.x, WINDOW_SIZE.y), Vec2i(WINDOW_SIZE.x, WINDOW_SIZE.y - _g.vu(6)), Vec2i(WINDOW_SIZE.x - _g.vu(6), WINDOW_SIZE.y));
 
         // Draw static noise
         if (_g.getTick() % 2 == 0) {
