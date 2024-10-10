@@ -2836,7 +2836,7 @@ static void init_types(void)
 #define is_not_null(p)                 ((T_Exs(p)) != sc->nil)
 #define is_list(p)                     ((is_pair(p)) || (type(p) == T_NIL))
 #define is_quote(p)                    (((p) == sc->quote_symbol) || ((p) == sc->quote_function)) /* order here apparently does not matter */
-#define is_safe_quote(p)               ((((p) == sc->quote_symbol) && (is_global(sc->quote_symbol))) || ((p) == sc->quote_function))
+#define is_safe_quote(p)               ((((p) == sc->quote_symbol) && (is_gameMaster(sc->quote_symbol))) || ((p) == sc->quote_function))
 #define is_quoted_pair(p)              ((is_pair(p)) && (is_quote(car(p))))
 #define is_safe_quoted_pair(p)         ((is_pair(p)) && (is_safe_quote(car(p))))
 #define is_unquoted_pair(p)            ((is_pair(p)) && (!is_quote(car(p))))
@@ -3202,11 +3202,11 @@ static void symbol_set_id(s7_pointer p, s7_int id)
   #define set_local(p)                 full_type(T_Sym(p)) &= ~(T_DONT_EVAL_ARGS | T_SYNTACTIC)
   /* if symbol_increment_ctr, local shadowing value is not found? same if {} */
 #endif
-#define is_global(p)                   (symbol_id(p) == 0)
-#define is_defined_global(p)           ((is_slot(global_slot(p))) && (symbol_id(p) == 0))
+#define is_gameMaster(p)                   (symbol_id(p) == 0)
+#define is_defined_gameMaster(p)           ((is_slot(global_slot(p))) && (symbol_id(p) == 0))
 
 #define global_slot(p)                 T_Sld((T_Sym(p))->object.sym.global_slot)
-#define set_global_slot(p, Val)        (T_Sym(p))->object.sym.global_slot = T_Sld(Val)
+#define set_gameMaster_slot(p, Val)        (T_Sym(p))->object.sym.global_slot = T_Sld(Val)
 #define local_slot(p)                  T_Sln((T_Sym(p))->object.sym.local_slot)
 #define set_local_slot(p, Val)         (T_Sym(p))->object.sym.local_slot = T_Slt(Val)
 
@@ -5127,7 +5127,7 @@ static const char *checked_type_name(s7_scheme *sc, int32_t typ)
 #if REPORT_ROOTLET_REDEF
 static void set_local_1(s7_scheme *sc, s7_pointer symbol, const char *func, int32_t line)
 {
-  if (is_defined_global(symbol))
+  if (is_defined_gameMaster(symbol))
     fprintf(stderr, "%s[%d]: %s%s%s in %s\n", func, line, bold_text, display(symbol), unbold_text, display_truncated(sc->cur_code));
   full_type(symbol) = (full_type(symbol) & ~(T_DONT_EVAL_ARGS | T_SYNTACTIC));
 }
@@ -6249,7 +6249,7 @@ static inline s7_pointer lookup_slot_from(s7_pointer symbol, s7_pointer e);
 static s7_pointer find_method(s7_scheme *sc, s7_pointer let, s7_pointer symbol)
 {
   s7_pointer slot;
-  if (is_global(symbol)) /* this means the symbol has never been used locally, so how can it be a method? */
+  if (is_gameMaster(symbol)) /* this means the symbol has never been used locally, so how can it be a method? */
     return(sc->undefined);
   slot = lookup_slot_from(symbol, let);
   if (slot != global_slot(symbol))
@@ -8779,7 +8779,7 @@ static /* inline */ s7_pointer new_symbol(s7_scheme *sc, const char *name, s7_in
 
   full_type(x) = T_SYMBOL | T_UNHEAP;
   symbol_set_name_cell(x, str);
-  set_global_slot(x, sc->undefined);                       /* was sc->nil */
+  set_gameMaster_slot(x, sc->undefined);                       /* was sc->nil */
   symbol_info(x) = (block_t *)(base + 3 * sizeof(s7_cell));
   set_initial_value(x, sc->undefined);
   symbol_set_local_slot_unchecked_and_unincremented(x, 0LL, sc->nil);
@@ -8803,7 +8803,7 @@ static /* inline */ s7_pointer new_symbol(s7_scheme *sc, const char *name, s7_in
 	  (in_heap(ksym)))
 	remove_gensym_from_heap(sc, ksym);
       slot = make_semipermanent_slot(sc, x, x);
-      set_global_slot(x, slot);
+      set_gameMaster_slot(x, slot);
       set_local_slot(x, slot);
       set_immutable_slot(slot);
     }
@@ -9030,7 +9030,7 @@ static s7_pointer g_gensym(s7_scheme *sc, s7_pointer args)
   new_cell(sc, x, T_SYMBOL | T_GENSYM);
   symbol_set_name_cell(x, str);
   symbol_info(x) = ib;
-  set_global_slot(x, sc->undefined);
+  set_gameMaster_slot(x, sc->undefined);
   set_initial_value(x, sc->undefined);
   symbol_set_local_slot_unchecked(x, 0LL, sc->nil);
   symbol_clear_ctr(x);
@@ -9806,8 +9806,8 @@ s7_pointer s7_make_slot(s7_scheme *sc, s7_pointer let, s7_pointer symbol, s7_poi
 
       slot = make_semipermanent_slot(sc, symbol, value);
       add_slot_to_rootlet(sc, slot);
-      set_global_slot(symbol, slot);
-      if (is_global(symbol))                  /* never defined locally (symbol_id tracks let_id) */
+      set_gameMaster_slot(symbol, slot);
+      if (is_gameMaster(symbol))                  /* never defined locally (symbol_id tracks let_id) */
 	{
 	  if ((!is_gensym(symbol)) &&
 	      (initial_value(symbol) == sc->undefined) &&
@@ -9893,7 +9893,7 @@ static s7_pointer g_unlet(s7_scheme *sc, s7_pointer unused_args)
       s7_pointer sym = p->symbol;
       s7_pointer x = initial_value(sym);
       if ((x != global_value(sym)) ||  /* it has been changed globally */
-	  ((!is_global(sym)) &&        /* it might be shadowed locally */
+	  ((!is_gameMaster(sym)) &&        /* it might be shadowed locally */
 	   (s7_symbol_local_value(sc, sym, sc->curlet) != global_value(sym))))
 	add_slot_checked_with_id(sc, res, sym, x);
     }
@@ -10361,7 +10361,7 @@ static s7_pointer inlet_p_pp(s7_scheme *sc, s7_pointer symbol, s7_pointer value)
     symbol = keyword_symbol(symbol);
   if (is_constant_symbol(sc, symbol))
     wrong_type_error_nr(sc, sc->inlet_symbol, 1, symbol, a_non_constant_symbol_string);
-  if ((is_defined_global(symbol)) &&
+  if ((is_defined_gameMaster(symbol)) &&
       (is_syntax_or_qq(global_value(symbol))))
     wrong_type_error_nr(sc, sc->inlet_symbol, 1, symbol, wrap_string(sc, "a non-syntactic symbol", 22));
 
@@ -11093,7 +11093,7 @@ static s7_pointer symbol_to_local_slot(s7_scheme *sc, s7_pointer symbol, s7_poin
 {
   if ((!is_let(e)) || (e == sc->rootlet)) /* e is () if from s7_define */
     return(global_slot(symbol));
-  if (!is_global(symbol))
+  if (!is_gameMaster(symbol))
     for (s7_pointer y = let_slots(e); tis_slot(y); y = next_slot(y))
       if (slot_symbol(y) == symbol)
 	return(y);
@@ -11131,7 +11131,7 @@ s7_pointer s7_symbol_local_value(s7_scheme *sc, s7_pointer sym, s7_pointer let)
 
 
 /* -------------------------------- symbol->value -------------------------------- */
-#define lookup_global(Sc, Sym) ((is_defined_global(Sym)) ? global_value(Sym) : lookup_checked(Sc, Sym))
+#define lookup_gameMaster(Sc, Sym) ((is_defined_gameMaster(Sym)) ? global_value(Sym) : lookup_checked(Sc, Sym))
 
 static s7_pointer g_symbol_to_value(s7_scheme *sc, s7_pointer args)
 {
@@ -11165,7 +11165,7 @@ symbol sym in the given let: (let ((x 32)) (symbol->value 'x)) -> 32"
       if (local_let == sc->starlet) return(starlet(sc, starlet_symbol_id(sym)));
       return(s7_symbol_local_value(sc, sym, local_let));
     }
-  if (is_defined_global(sym))
+  if (is_defined_gameMaster(sym))
     return(global_value(sym));
   return(s7_symbol_value(sc, sym));
 }
@@ -11222,7 +11222,7 @@ static s7_pointer g_symbol_to_dynamic_value(s7_scheme *sc, s7_pointer args)
   if (!is_symbol(sym))
     return(method_or_bust(sc, sym, sc->symbol_to_dynamic_value_symbol, args, sc->type_names[T_SYMBOL], 1));
 
-  if (is_defined_global(sym))
+  if (is_defined_gameMaster(sym))
     return(global_value(sym));
 
   if (let_id(sc->curlet) == symbol_id(sym))
@@ -11480,7 +11480,7 @@ static s7_pointer make_macro(s7_scheme *sc, opcode_t op, bool named)
   /* passed to maclet in apply_macro et al, copied in copy_closure */
 
   /* we can't add the T_EXPANSION bit ourselves if
-   *  ((mac_name) && (!is_bacro(mac_name)) && (!is_expansion(mac_name)) && (sc->curlet == sc->rootlet) && (is_global(mac_name)))
+   *  ((mac_name) && (!is_bacro(mac_name)) && (!is_expansion(mac_name)) && (sc->curlet == sc->rootlet) && (is_gameMaster(mac_name)))
    * because the user might reuse mac_name locally later, and our hidden expansion setting will cause the s7 reader to try to
    * treat that reuse as a call of the original macro.
    */
@@ -11780,7 +11780,7 @@ Only the let is searched if ignore-globals is not #f."
 	return(sc->T);
       return((b == sc->T) ? sc->F : make_boolean(sc, is_slot(global_slot(sym))));
     }
-  return((is_defined_global(sym)) ? sc->T : make_boolean(sc, is_slot(s7_slot(sc, sym))));
+  return((is_defined_gameMaster(sym)) ? sc->T : make_boolean(sc, is_slot(s7_slot(sc, sym))));
 }
 
 static s7_pointer g_is_defined_in_unlet(s7_scheme *sc, s7_pointer args)
@@ -11846,7 +11846,7 @@ void s7_define(s7_scheme *sc, s7_pointer let, s7_pointer symbol, s7_pointer valu
       /* if let is rootlet, s7_make_slot makes a semipermanent_slot */
       if ((let == sc->shadow_rootlet) &&
 	  (!is_slot(global_slot(symbol))))
-	set_global_slot(symbol, local_slot(symbol));
+	set_gameMaster_slot(symbol, local_slot(symbol));
     }
 }
 
@@ -31902,7 +31902,7 @@ static s7_pointer g_is_provided(s7_scheme *sc, s7_pointer args)
   if (is_a_feature(sym, topf))
     return(sc->T);
 
-  if (is_global(sc->features_symbol))
+  if (is_gameMaster(sc->features_symbol))
     return(sc->F);
   for (x = sc->curlet; let_id(x) > symbol_id(sc->features_symbol); x = let_outlet(x));
   for (; x; x = let_outlet(x))
@@ -36028,7 +36028,7 @@ static void c_function_to_port(s7_scheme *sc, s7_pointer obj, s7_pointer port, u
   s7_pointer local_val = lookup_unexamined(sc, sym); /* lookup here really needs the env where sym is defined */
   s7_int len = c_function_name_length(obj);
 
-  if ((!is_global(sym)) &&
+  if ((!is_gameMaster(sym)) &&
       (initial_value(sym) != sc->undefined) &&
       ((use_write == P_READABLE) || ((local_val) && (local_val != initial_value(sym)))))
     {
@@ -44055,7 +44055,7 @@ static s7_pointer byte_vector_set_chooser(s7_scheme *sc, s7_pointer f, int32_t a
 /* -------------------------------------------------------------------------------- */
 static bool c_function_is_ok(s7_scheme *sc, s7_pointer x)
 {
-  s7_pointer p = lookup_unexamined(sc, car(x)); /* lookup_global is usually slower (faster in Snd) */
+  s7_pointer p = lookup_unexamined(sc, car(x)); /* lookup_gameMaster is usually slower (faster in Snd) */
   if ((p == opt1_cfunc(x)) ||
       ((p) && (is_any_c_function(p)) && (c_function_class(p) == c_function_class(opt1_cfunc(x))) && (set_opt1_cfunc(x, p))))
     return(true);
@@ -44413,7 +44413,7 @@ static s7_pointer g_sort(s7_scheme *sc, s7_pointer args)
 		   *   but that is irrelevant at this point -- if c_function_is_ok, we're good to go.
 		   */
 		  ((op_has_hop(expr)) ||
-		   ((is_defined_global(car(expr))) &&            /* (sort! x (lambda (car y) (car x)...))! */
+		   ((is_defined_gameMaster(car(expr))) &&            /* (sort! x (lambda (car y) (car x)...))! */
 		    (c_function_is_ok(sc, expr)))))
 		{
 		  int32_t orig_data = optimize_op(expr);
@@ -46514,7 +46514,7 @@ static s7_pointer hash_table_ref_chooser(s7_scheme *sc, s7_pointer f, int32_t ar
   if (args == 2)
     {
       s7_pointer key = caddr(expr);
-      if ((is_pair(key)) && (car(key) == sc->substring_symbol) && (is_global(sc->substring_symbol)))
+      if ((is_pair(key)) && (car(key) == sc->substring_symbol) && (is_gameMaster(sc->substring_symbol)))
 	set_class_and_fn_proc(key, sc->substring_uncopied);
       return(sc->hash_table_ref_2);
     }
@@ -47604,7 +47604,7 @@ static s7_pointer g_documentation(s7_scheme *sc, s7_pointer args)
   if (is_symbol(p))
     {
       if ((symbol_has_help(p)) &&
-	  (is_defined_global(p)))
+	  (is_defined_gameMaster(p)))
 	return(s7_make_string(sc, symbol_help(p)));
       p = s7_symbol_value(sc, p);
     }
@@ -47896,7 +47896,7 @@ each a function of no arguments, guaranteeing that finish is called even if body
 
 static bool is_lambda(s7_scheme *sc, s7_pointer sym)
 {
-  return((sym == sc->lambda_symbol) && (is_global(sym))); /* do we need (!sc->in_with_let) ? */
+  return((sym == sc->lambda_symbol) && (is_gameMaster(sym))); /* do we need (!sc->in_with_let) ? */
 }
 
 static int32_t is_ok_thunk(s7_scheme *sc, s7_pointer arg) /* used only in dynamic_wind_chooser */
@@ -49460,7 +49460,7 @@ static bool let_equal(s7_scheme *sc, s7_pointer x, s7_pointer y, shared_info_t *
 static bool let_equivalent(s7_scheme *sc, s7_pointer x, s7_pointer y, shared_info_t *ci)
 {
   if (x == y) return(true);
-  if (!is_global(sc->is_equivalent_symbol))
+  if (!is_gameMaster(sc->is_equivalent_symbol))
     {
       check_equivalent_method(sc, x, y);
       check_equivalent_method(sc, y, x);
@@ -50406,14 +50406,14 @@ static s7_pointer iter_length(s7_scheme *sc, s7_pointer lst) {return(s7_length(s
 
 static s7_pointer c_obj_length(s7_scheme *sc, s7_pointer lst)
 {
-  if (!is_global(sc->length_symbol))
+  if (!is_gameMaster(sc->length_symbol))
     check_method(sc, lst, sc->length_symbol, set_plist_1(sc, lst));
   return(c_object_length(sc, lst));
 }
 
 static s7_pointer lt_length(s7_scheme *sc, s7_pointer lst)
 {
-  if (!is_global(sc->length_symbol))
+  if (!is_gameMaster(sc->length_symbol))
     check_method(sc, lst, sc->length_symbol, set_plist_1(sc, lst));
   return(make_integer(sc, let_length(sc, lst)));
 }
@@ -55610,7 +55610,7 @@ static s7_pointer o_lookup_1(s7_scheme *sc, s7_pointer symbol, const char *func,
 #endif
 
 #define s_lookup(Sc, Sym, Expr) lookup(Sc, Sym)
-#define g_lookup(Sc, Sym, Expr) lookup_global(Sc, Sym)
+#define g_lookup(Sc, Sym, Expr) lookup_gameMaster(Sc, Sym)
 
 /* arg here is the full expression */
 static s7_pointer fx_c(s7_scheme *sc, s7_pointer arg)        {return(arg);}
@@ -55618,7 +55618,7 @@ static s7_pointer fx_q(s7_scheme *sc, s7_pointer arg)        {return(cadr(arg));
 static s7_pointer fx_unsafe_s(s7_scheme *sc, s7_pointer arg) {return(lookup_checked(sc, T_Sym(arg)));}
 
 static s7_pointer fx_s(s7_scheme *sc, s7_pointer arg) {return(lookup(sc, T_Sym(arg)));}
-static s7_pointer fx_g(s7_scheme *sc, s7_pointer arg) {return((is_defined_global(arg)) ? global_value(arg) : lookup(sc, arg));}
+static s7_pointer fx_g(s7_scheme *sc, s7_pointer arg) {return((is_defined_gameMaster(arg)) ? global_value(arg) : lookup(sc, arg));}
 static s7_pointer fx_o(s7_scheme *sc, s7_pointer arg) {return(o_lookup(sc, T_Sym(arg), arg));}
 static s7_pointer fx_t(s7_scheme *sc, s7_pointer arg) {return(t_lookup(sc, T_Sym(arg), arg));}
 static s7_pointer fx_u(s7_scheme *sc, s7_pointer arg) {return(u_lookup(sc, T_Sym(arg), arg));}
@@ -55646,7 +55646,7 @@ fx_c_any(fx_c_o, o_lookup)
 fx_c_any(fx_c_T, T_lookup)
 fx_c_any(fx_c_V, V_lookup)
 
-static s7_pointer fx_c_g_direct(s7_scheme *sc, s7_pointer arg) {return(((s7_p_p_t)opt2_direct(cdr(arg)))(sc, lookup_global(sc, cadr(arg))));}
+static s7_pointer fx_c_g_direct(s7_scheme *sc, s7_pointer arg) {return(((s7_p_p_t)opt2_direct(cdr(arg)))(sc, lookup_gameMaster(sc, cadr(arg))));}
 static s7_pointer fx_c_s_direct(s7_scheme *sc, s7_pointer arg) {return(((s7_p_p_t)opt2_direct(cdr(arg)))(sc, lookup(sc, cadr(arg))));}
 static s7_pointer fx_c_o_direct(s7_scheme *sc, s7_pointer arg) {return(((s7_p_p_t)opt2_direct(cdr(arg)))(sc, o_lookup(sc, cadr(arg), arg)));}
 static s7_pointer fx_c_t_direct(s7_scheme *sc, s7_pointer arg) {return(((s7_p_p_t)opt2_direct(cdr(arg)))(sc, t_lookup(sc, cadr(arg), arg)));}
@@ -56338,7 +56338,7 @@ static s7_pointer fx_vref_st(s7_scheme *sc, s7_pointer arg) {return(vector_ref_p
 static s7_pointer fx_vref_ts(s7_scheme *sc, s7_pointer arg) {return(vector_ref_p_pp(sc, t_lookup(sc, cadr(arg), arg), s_lookup(sc, opt2_sym(cdr(arg)), arg)));}
 static s7_pointer fx_vref_tu(s7_scheme *sc, s7_pointer arg) {return(vector_ref_p_pp(sc, t_lookup(sc, cadr(arg), arg), u_lookup(sc, opt2_sym(cdr(arg)), arg)));}
 static s7_pointer fx_vref_ot(s7_scheme *sc, s7_pointer arg) {return(vector_ref_p_pp(sc, o_lookup(sc, cadr(arg), arg), t_lookup(sc, opt2_sym(cdr(arg)), arg)));}
-static s7_pointer fx_vref_gt(s7_scheme *sc, s7_pointer arg) {return(vector_ref_p_pp(sc, lookup_global(sc, cadr(arg)), t_lookup(sc, opt2_sym(cdr(arg)), arg)));}
+static s7_pointer fx_vref_gt(s7_scheme *sc, s7_pointer arg) {return(vector_ref_p_pp(sc, lookup_gameMaster(sc, cadr(arg)), t_lookup(sc, opt2_sym(cdr(arg)), arg)));}
 static s7_pointer fx_sref_ss(s7_scheme *sc, s7_pointer arg) {return(string_ref_p_pp(sc, lookup(sc, cadr(arg)), lookup(sc, opt2_sym(cdr(arg)))));}
 static s7_pointer fx_sref_su(s7_scheme *sc, s7_pointer arg) {return(string_ref_p_pp(sc, lookup(sc, cadr(arg)), u_lookup(sc, opt2_sym(cdr(arg)), arg)));}
 static s7_pointer fx_cons_ss(s7_scheme *sc, s7_pointer arg) {return(cons(sc, lookup(sc, cadr(arg)), lookup(sc, opt2_sym(cdr(arg)))));}
@@ -56514,14 +56514,14 @@ fx_leq_si_any(fx_leq_ui, u_lookup)
 fx_leq_si_any(fx_leq_vi, v_lookup)
 
 static s7_pointer fx_lt_ss(s7_scheme *sc, s7_pointer arg) {return(lt_p_pp(sc, lookup(sc, cadr(arg)), lookup(sc, opt2_sym(cdr(arg)))));}
-static s7_pointer fx_lt_sg(s7_scheme *sc, s7_pointer arg) {return(lt_p_pp(sc, lookup(sc, cadr(arg)), lookup_global(sc, opt2_sym(cdr(arg)))));}
-static s7_pointer fx_lt_tg(s7_scheme *sc, s7_pointer arg) {return(lt_p_pp(sc, t_lookup(sc, cadr(arg), arg), lookup_global(sc, opt2_sym(cdr(arg)))));}
+static s7_pointer fx_lt_sg(s7_scheme *sc, s7_pointer arg) {return(lt_p_pp(sc, lookup(sc, cadr(arg)), lookup_gameMaster(sc, opt2_sym(cdr(arg)))));}
+static s7_pointer fx_lt_tg(s7_scheme *sc, s7_pointer arg) {return(lt_p_pp(sc, t_lookup(sc, cadr(arg), arg), lookup_gameMaster(sc, opt2_sym(cdr(arg)))));}
 
 static s7_pointer fx_lt_gsg(s7_scheme *sc, s7_pointer arg) /* gsg is much faster than sss */
 {
-  s7_pointer v1 = lookup_global(sc, cadr(arg));
+  s7_pointer v1 = lookup_gameMaster(sc, cadr(arg));
   s7_pointer v2 = lookup(sc, opt1_sym(cdr(arg)));        /* caddr(arg) */
-  s7_pointer v3 = lookup_global(sc, opt2_sym(cdr(arg))); /* cadddr(arg) */
+  s7_pointer v3 = lookup_gameMaster(sc, opt2_sym(cdr(arg))); /* cadddr(arg) */
   if ((is_t_integer(v1)) && (is_t_integer(v2)) && (is_t_integer(v3)))
     return(make_boolean(sc, ((integer(v1) < integer(v2)) && (integer(v2) < integer(v3)))));
   if (!is_real(v3))
@@ -57398,14 +57398,14 @@ fx_c_s_opssq_direct_any(fx_c_t_opsuq_direct, t_lookup, u_lookup)
 
 static s7_pointer fx_vref_g_vref_gs(s7_scheme *sc, s7_pointer arg)
 {
-  return(vector_ref_p_pp(sc, lookup_global(sc, cadr(arg)),
-			 vector_ref_p_pp(sc, lookup_global(sc, car(opt3_pair(arg))), lookup(sc, opt2_sym(opt3_pair(arg))))));
+  return(vector_ref_p_pp(sc, lookup_gameMaster(sc, cadr(arg)),
+			 vector_ref_p_pp(sc, lookup_gameMaster(sc, car(opt3_pair(arg))), lookup(sc, opt2_sym(opt3_pair(arg))))));
 }
 
 static s7_pointer fx_vref_g_vref_gt(s7_scheme *sc, s7_pointer arg)
 {
-  return(vector_ref_p_pp(sc, lookup_global(sc, cadr(arg)),
-			 vector_ref_p_pp(sc, lookup_global(sc, car(opt3_pair(arg))), t_lookup(sc, opt2_sym(opt3_pair(arg)), arg))));
+  return(vector_ref_p_pp(sc, lookup_gameMaster(sc, cadr(arg)),
+			 vector_ref_p_pp(sc, lookup_gameMaster(sc, car(opt3_pair(arg))), t_lookup(sc, opt2_sym(opt3_pair(arg)), arg))));
 }
 
 static s7_pointer fx_c_c_opssq(s7_scheme *sc, s7_pointer arg)
@@ -58104,7 +58104,7 @@ static s7_pointer fx_c_gac(s7_scheme *sc, s7_pointer arg)
 {
   set_car(sc->t3_2, fx_call(sc, opt3_pair(arg)));
   set_car(sc->t3_3, cadr(opt3_pair(arg)));
-  set_car(sc->t3_1, lookup_global(sc, cadr(arg)));
+  set_car(sc->t3_1, lookup_gameMaster(sc, cadr(arg)));
   return(fn_proc(arg)(sc, sc->t3_1));
 }
 
@@ -58778,10 +58778,10 @@ static s7_p_dd_t s7_p_dd_function(s7_pointer f);
 static s7_p_pi_t s7_p_pi_function(s7_pointer f);
 static s7_p_ii_t s7_p_ii_function(s7_pointer f);
 
-#define is_unchanged_global(P) ((is_symbol(P)) && (is_defined_global(P)) && (initial_value(P) == global_value(P)))
-#define is_global_and_has_func(P, Func) ((is_unchanged_global(P)) && (Func(global_value(P)))) /* Func = s7_p_pp_function and friends */
+#define is_unchanged_gameMaster(P) ((is_symbol(P)) && (is_defined_gameMaster(P)) && (initial_value(P) == global_value(P)))
+#define is_gameMaster_and_has_func(P, Func) ((is_unchanged_gameMaster(P)) && (Func(global_value(P)))) /* Func = s7_p_pp_function and friends */
 
-static bool fx_matches(s7_pointer symbol, const s7_pointer target_symbol) {return((symbol == target_symbol) && (is_unchanged_global(symbol)));}
+static bool fx_matches(s7_pointer symbol, const s7_pointer target_symbol) {return((symbol == target_symbol) && (is_unchanged_gameMaster(symbol)));}
 
 typedef bool (safe_sym_t)(s7_scheme *sc, s7_pointer sym, s7_pointer e);
 
@@ -58794,12 +58794,12 @@ static s7_function fx_choose(s7_scheme *sc, s7_pointer holder, s7_pointer cur_en
       if (is_symbol(arg))
 	{
 	  if (is_keyword(arg)) return(fx_c);
-	  if ((arg == sc->else_symbol) && (is_global(sc->else_symbol)))
+	  if ((arg == sc->else_symbol) && (is_gameMaster(sc->else_symbol)))
 	    {
 	      if (is_let(cur_env)) {if (s7_symbol_local_value(sc, arg, cur_env) == sc->else_symbol) return(fx_c);}
 	      else if ((is_pair(cur_env)) && (!direct_memq(arg, cur_env))) return(fx_c);
 	    }
-	  return((is_defined_global(arg)) ? fx_g : ((checker(sc, arg, cur_env)) ? fx_s : fx_unsafe_s));
+	  return((is_defined_gameMaster(arg)) ? fx_g : ((checker(sc, arg, cur_env)) ? fx_s : fx_unsafe_s));
 	}
       return(fx_c);
     }
@@ -58850,7 +58850,7 @@ static s7_function fx_choose(s7_scheme *sc, s7_pointer holder, s7_pointer cur_en
 	  return(fx_and_2a);
 
 	case HOP_SAFE_C_S:
-	  if (is_unchanged_global(car(arg))) /* mus-copy would work here but in tgen (for example) it's loading generators.scm with local mus-copy methods */
+	  if (is_unchanged_gameMaster(car(arg))) /* mus-copy would work here but in tgen (for example) it's loading generators.scm with local mus-copy methods */
 	    {
 	      uint8_t typ;
 	      if (car(arg) == sc->cdr_symbol)            return(fx_cdr_s);
@@ -58880,7 +58880,7 @@ static s7_function fx_choose(s7_scheme *sc, s7_pointer holder, s7_pointer cur_en
 	       *    (define kar car) (load "mockery.scm") (let ((p (mock-pair '(1 2 3)))) (call-with-exit (lambda (x) (x (kar p)))))
 	       *  "kar" fails but not "car" because symbol_id(kar) == 0!  symbol_id(car) > 0 because mockery provides a method for it.
 	       */
-	      if (is_global(c_function_name_to_symbol(sc, global_value(car(arg)))))
+	      if (is_gameMaster(c_function_name_to_symbol(sc, global_value(car(arg)))))
 		{
 		  s7_p_p_t f = s7_p_p_function(global_value(car(arg)));
 		  if (f)
@@ -58890,9 +58890,9 @@ static s7_function fx_choose(s7_scheme *sc, s7_pointer holder, s7_pointer cur_en
 		      if (f == imag_part_p_p) return(fx_imag_part_s);
 		      if (f == iterate_p_p)   return(fx_iterate_s);
 		      if (f == car_p_p)       return(fx_car_s); /* can happen if (define var-name car) etc */
-		      return((is_defined_global(cadr(arg))) ? fx_c_g_direct : fx_c_s_direct);
+		      return((is_defined_gameMaster(cadr(arg))) ? fx_c_g_direct : fx_c_s_direct);
 		    }}}
-	  return((is_defined_global(cadr(arg))) ? fx_c_g : fx_c_s);
+	  return((is_defined_gameMaster(cadr(arg))) ? fx_c_g : fx_c_s);
 
 	case HOP_SAFE_C_SS:
 	  if (fn_proc(arg) == g_cons)       return(fx_cons_ss);
@@ -58900,7 +58900,7 @@ static s7_function fx_choose(s7_scheme *sc, s7_pointer holder, s7_pointer cur_en
 	  if (fn_proc(arg) == g_geq_2)      return(fx_geq_ss);
 	  if (fn_proc(arg) == g_greater_2)  return(fx_gt_ss);
 	  if (fn_proc(arg) == g_leq_2)      return(fx_leq_ss);
-	  if (fn_proc(arg) == g_less_2)     return((is_defined_global(caddr(arg))) ? fx_lt_sg : fx_lt_ss);
+	  if (fn_proc(arg) == g_less_2)     return((is_defined_gameMaster(caddr(arg))) ? fx_lt_sg : fx_lt_ss);
 	  if ((fx_matches(car(arg), sc->multiply_symbol)) && (cadr(arg) == caddr(arg))) return(fx_sqr_s);
 	  if (fn_proc(arg) == g_is_eq)      return(fx_is_eq_ss);
 	  if (fn_proc(arg) == g_multiply_2) return(fx_multiply_ss);
@@ -58908,7 +58908,7 @@ static s7_function fx_choose(s7_scheme *sc, s7_pointer holder, s7_pointer cur_en
 	  if (fn_proc(arg) == g_subtract_2) return(fx_subtract_ss);
 	  if (fn_proc(arg) == g_hash_table_ref_2) return(fx_hash_table_ref_ss);
 
-	  if (is_global_and_has_func(car(arg), s7_p_pp_function))
+	  if (is_gameMaster_and_has_func(car(arg), s7_p_pp_function))
 	    {
 	      if (car(arg) == sc->assq_symbol) return(fx_assq_ss);
 	      if (car(arg) == sc->memq_symbol) return(fx_memq_ss);
@@ -58925,8 +58925,8 @@ static s7_function fx_choose(s7_scheme *sc, s7_pointer holder, s7_pointer cur_en
 	  return((fn_proc(arg) == g_vector) ? fx_vector_ns : fx_c_ns);
 
 	case HOP_SAFE_C_opSq_S:
-	  if ((is_global_and_has_func(car(arg), s7_p_pp_function)) &&
-	      (is_global_and_has_func(caadr(arg), s7_p_p_function)))
+	  if ((is_gameMaster_and_has_func(car(arg), s7_p_pp_function)) &&
+	      (is_gameMaster_and_has_func(caadr(arg), s7_p_p_function)))
 	    {
 	      set_opt2_direct(cdr(arg), (s7_pointer)(s7_p_pp_function(global_value(car(arg)))));
 	      set_opt3_direct(cdr(arg), (s7_pointer)(s7_p_p_function(global_value(caadr(arg)))));
@@ -58935,8 +58935,8 @@ static s7_function fx_choose(s7_scheme *sc, s7_pointer holder, s7_pointer cur_en
 	  return(fx_c_opsq_s);
 
 	case HOP_SAFE_C_SSS:
-	  if ((fn_proc(arg) == g_less) && (is_defined_global(cadr(arg))) && (is_defined_global(cadddr(arg)))) return(fx_lt_gsg);
-	  if (is_global_and_has_func(car(arg), s7_p_ppp_function))
+	  if ((fn_proc(arg) == g_less) && (is_defined_gameMaster(cadr(arg))) && (is_defined_gameMaster(cadddr(arg)))) return(fx_lt_gsg);
+	  if (is_gameMaster_and_has_func(car(arg), s7_p_ppp_function))
 	    {
 	      set_opt3_direct(cdr(arg), (s7_pointer)(s7_p_ppp_function(global_value(car(arg)))));
 	      return(fx_c_sss_direct);
@@ -58944,7 +58944,7 @@ static s7_function fx_choose(s7_scheme *sc, s7_pointer holder, s7_pointer cur_en
 	  return(fx_c_sss);
 
 	case HOP_SAFE_C_SSA:
-	  if (is_global_and_has_func(car(arg), s7_p_ppp_function))
+	  if (is_gameMaster_and_has_func(car(arg), s7_p_ppp_function))
 	    {
 	      set_opt2_direct(cdr(arg), (s7_pointer)(s7_p_ppp_function(global_value(car(arg)))));
 	      return(fx_c_ssa_direct);
@@ -58952,7 +58952,7 @@ static s7_function fx_choose(s7_scheme *sc, s7_pointer holder, s7_pointer cur_en
 	  return(fx_c_ssa);
 
 	case HOP_SAFE_C_SCS:
-	  if (is_global_and_has_func(car(arg), s7_p_ppp_function))
+	  if (is_gameMaster_and_has_func(car(arg), s7_p_ppp_function))
 	    {
 	      set_opt3_direct(cdr(arg), (s7_pointer)(s7_p_ppp_function(global_value(car(arg)))));
 	      return(fx_c_scs_direct);
@@ -58976,8 +58976,8 @@ static s7_function fx_choose(s7_scheme *sc, s7_pointer holder, s7_pointer cur_en
 	    s7_pointer s2 = caddr(arg);
 	    if ((fx_matches(car(s2), sc->multiply_symbol)) && (cadr(s2) == caddr(s2))) return(fx_c_s_sqr);
 
-	    if ((is_global_and_has_func(car(arg), s7_p_pp_function)) &&
-		(is_global_and_has_func(car(s2), s7_p_pp_function)))
+	    if ((is_gameMaster_and_has_func(car(arg), s7_p_pp_function)) &&
+		(is_gameMaster_and_has_func(car(s2), s7_p_pp_function)))
 	      {
 		set_opt2_direct(cdr(arg), (s7_pointer)(s7_p_pp_function(global_value(car(arg)))));
 		set_opt3_direct(cdr(arg), (s7_pointer)(s7_p_pp_function(global_value(car(s2)))));
@@ -58991,7 +58991,7 @@ static s7_function fx_choose(s7_scheme *sc, s7_pointer holder, s7_pointer cur_en
 		    if (car(arg) == sc->is_eq_symbol)    return(fx_is_eq_s_vref);
 		    if (car(arg) == sc->hash_table_ref_symbol) return(fx_href_s_vref);
 		    if (car(arg) == sc->let_ref_symbol)  return(fx_lref_s_vref);
-		    if ((is_defined_global(cadr(arg))) && (is_defined_global(cadr(s2))) && (car(arg) == sc->vector_ref_symbol)) return(fx_vref_g_vref_gs);
+		    if ((is_defined_gameMaster(cadr(arg))) && (is_defined_gameMaster(cadr(s2))) && (car(arg) == sc->vector_ref_symbol)) return(fx_vref_g_vref_gs);
 		  }
 		if ((car(arg) == sc->vector_ref_symbol) && (car(s2) == sc->add_symbol)) return(fx_vref_s_add);
 		return(fx_c_s_opssq_direct);
@@ -59000,8 +59000,8 @@ static s7_function fx_choose(s7_scheme *sc, s7_pointer holder, s7_pointer cur_en
 	  }
 
 	case HOP_SAFE_C_opSSq_S:
-	  if ((is_global_and_has_func(car(arg), s7_p_pp_function)) &&
-	      (is_global_and_has_func(caadr(arg), s7_p_pp_function)))
+	  if ((is_gameMaster_and_has_func(car(arg), s7_p_pp_function)) &&
+	      (is_gameMaster_and_has_func(caadr(arg), s7_p_pp_function)))
 	    {
 	      /* op_c_opgsq_t */
 	      set_opt2_direct(cdr(arg), (s7_pointer)(s7_p_pp_function(global_value(car(arg)))));
@@ -59055,7 +59055,7 @@ static s7_function fx_choose(s7_scheme *sc, s7_pointer holder, s7_pointer cur_en
 	  }
 
 	case HOP_SAFE_C_opSq:
-	  if (is_unchanged_global(caadr(arg)))
+	  if (is_unchanged_gameMaster(caadr(arg)))
 	    {
 	      if (fx_matches(car(arg), sc->is_pair_symbol))
 		{
@@ -59084,7 +59084,7 @@ static s7_function fx_choose(s7_scheme *sc, s7_pointer holder, s7_pointer cur_en
 	      if ((fx_matches(car(arg), sc->floor_symbol)) && (caadr(arg) == sc->sqrt_symbol))
 		{set_opt3_sym(arg, cadadr(arg)); return(fx_floor_sqrt_s);}
 	    }
-	  if (is_unchanged_global(car(arg))) /* (? (op arg)) where (op arg) might return a let with a ? method etc */
+	  if (is_unchanged_gameMaster(car(arg))) /* (? (op arg)) where (op arg) might return a let with a ? method etc */
 	    {                                /* other possibility: fx_c_a */
 	      uint8_t typ = symbol_type(car(arg));
 	      if (typ > 0)                   /* h_safe_c here so the type checker isn't shadowed */
@@ -59109,7 +59109,7 @@ static s7_function fx_choose(s7_scheme *sc, s7_pointer holder, s7_pointer cur_en
 	  return(fx_c_opsq);
 
 	case HOP_SAFE_C_SC:
-	  if (is_unchanged_global(car(arg)))
+	  if (is_unchanged_gameMaster(car(arg)))
 	    {
 	      if (car(arg) == sc->add_symbol)
 		{
@@ -59159,7 +59159,7 @@ static s7_function fx_choose(s7_scheme *sc, s7_pointer holder, s7_pointer cur_en
 	  return(fx_c_sc);
 
 	case HOP_SAFE_C_CS:
-	  if (is_unchanged_global(car(arg)))
+	  if (is_unchanged_gameMaster(car(arg)))
 	    {
 	      if (car(arg) == sc->cons_symbol) return(fx_cons_cs);
 	      if ((car(arg) == sc->add_symbol) && (is_t_real(cadr(arg)))) return(fx_add_fs);
@@ -59183,8 +59183,8 @@ static s7_function fx_choose(s7_scheme *sc, s7_pointer holder, s7_pointer cur_en
 	      if (fx_matches(car(arg), sc->hash_table_ref_symbol)) return(fx_hash_table_ref_car);
 	      return(fx_matches(car(arg), sc->add_symbol) ? fx_add_s_car_s : fx_c_s_car_s);
 	    }
-	  if ((is_global_and_has_func(car(arg), s7_p_pp_function)) &&
-	      (is_global_and_has_func(caaddr(arg), s7_p_p_function)))
+	  if ((is_gameMaster_and_has_func(car(arg), s7_p_pp_function)) &&
+	      (is_gameMaster_and_has_func(caaddr(arg), s7_p_p_function)))
 	    {
 	      if ((car(arg) == sc->cons_symbol) && (caaddr(arg) == sc->cdr_symbol)) {set_opt2_sym(cdr(arg), cadaddr(arg)); return(fx_cons_s_cdr_s);}
 	      set_opt1_sym(cdr(arg), cadaddr(arg));
@@ -59195,10 +59195,10 @@ static s7_function fx_choose(s7_scheme *sc, s7_pointer holder, s7_pointer cur_en
 	  return(fx_c_s_opsq);
 
 	case HOP_SAFE_C_C_opSq:
-	  if (is_global_and_has_func(car(arg), s7_p_pp_function))
+	  if (is_gameMaster_and_has_func(car(arg), s7_p_pp_function))
 	    {
 	      s7_pointer arg2 = caddr(arg);
-	      if (is_global_and_has_func(car(arg2), s7_p_p_function))
+	      if (is_gameMaster_and_has_func(car(arg2), s7_p_p_function))
 		{
 		  set_opt2_direct(cdr(arg), (s7_pointer)(s7_p_pp_function(global_value(car(arg)))));
 		  set_opt3_direct(cdr(arg), (s7_pointer)(s7_p_p_function(global_value(car(arg2)))));
@@ -59208,7 +59208,7 @@ static s7_function fx_choose(s7_scheme *sc, s7_pointer holder, s7_pointer cur_en
 	  return(fx_c_c_opsq);
 
 	case HOP_SAFE_C_opSq_C:
-	  if (is_unchanged_global(car(arg)))
+	  if (is_unchanged_gameMaster(car(arg)))
 	    {
 	      if ((car(arg) == sc->memq_symbol) &&
 		  (fx_matches(caadr(arg), sc->car_symbol)) &&
@@ -59253,10 +59253,10 @@ static s7_function fx_choose(s7_scheme *sc, s7_pointer holder, s7_pointer cur_en
 	  return(fx_c_opscq);
 
 	case HOP_SAFE_C_S_opSCq:
-	  if (is_global_and_has_func(car(arg), s7_p_pp_function))
+	  if (is_gameMaster_and_has_func(car(arg), s7_p_pp_function))
 	    {
 	      s7_pointer arg2 = caddr(arg);
-	      if ((is_global_and_has_func(car(arg2), s7_p_pi_function)) &&
+	      if ((is_gameMaster_and_has_func(car(arg2), s7_p_pi_function)) &&
 		  (is_t_integer(caddr(arg2))))
 		{
 		  set_opt2_direct(cdr(arg), (s7_pointer)(s7_p_pp_function(global_value(car(arg)))));
@@ -59272,7 +59272,7 @@ static s7_function fx_choose(s7_scheme *sc, s7_pointer holder, s7_pointer cur_en
 		    return(fx_vref_p1);
 		  return(fx_c_s_opsiq_direct);
 		}
-	      if (is_global_and_has_func(car(arg2), s7_p_pp_function))
+	      if (is_gameMaster_and_has_func(car(arg2), s7_p_pp_function))
 		{
 		  set_opt2_direct(cdr(arg), (s7_pointer)(s7_p_pp_function(global_value(car(arg)))));
 		  set_opt3_direct(cdr(arg), (s7_pointer)(s7_p_pp_function(global_value(car(arg2)))));
@@ -59288,8 +59288,8 @@ static s7_function fx_choose(s7_scheme *sc, s7_pointer holder, s7_pointer cur_en
 	      if (fn_proc(cadr(arg)) == g_is_eq) return(fx_not_is_eq_ss);
 	      return(fx_not_opssq);
 	    }
-	  if ((is_global_and_has_func(car(arg), s7_p_p_function)) &&
-	      (is_global_and_has_func(caadr(arg), s7_p_pp_function)))
+	  if ((is_gameMaster_and_has_func(car(arg), s7_p_p_function)) &&
+	      (is_gameMaster_and_has_func(caadr(arg), s7_p_pp_function)))
 	    {
 	      set_opt2_direct(cdr(arg), (s7_pointer)(s7_p_p_function(global_value(car(arg)))));
 	      set_opt3_direct(cdr(arg), (s7_pointer)(s7_p_pp_function(global_value(caadr(arg)))));
@@ -59304,8 +59304,8 @@ static s7_function fx_choose(s7_scheme *sc, s7_pointer holder, s7_pointer cur_en
 	      return(fx_c_c_sqr);
 	  }
 	  if ((is_small_real(cadr(arg))) &&
-	      (is_global_and_has_func(car(arg), s7_p_dd_function)) &&
-	      (is_global_and_has_func(caaddr(arg), s7_d_pd_function))) /* not * currently (this is for clm) */
+	      (is_gameMaster_and_has_func(car(arg), s7_p_dd_function)) &&
+	      (is_gameMaster_and_has_func(caaddr(arg), s7_d_pd_function))) /* not * currently (this is for clm) */
 	    {
 	      set_opt3_direct(cdr(arg), s7_d_pd_function(global_value(caaddr(arg))));
 	      set_opt2_direct(cdr(arg), s7_p_dd_function(global_value(car(arg))));
@@ -59313,8 +59313,8 @@ static s7_function fx_choose(s7_scheme *sc, s7_pointer holder, s7_pointer cur_en
 	      set_opt1_sym(cdr(arg), caddaddr(arg));
 	      return(fx_c_nc_opssq_direct);
 	    }
-	  if ((is_global_and_has_func(car(arg), s7_p_pp_function)) &&
-	      (is_global_and_has_func(caaddr(arg), s7_p_pp_function)))
+	  if ((is_gameMaster_and_has_func(car(arg), s7_p_pp_function)) &&
+	      (is_gameMaster_and_has_func(caaddr(arg), s7_p_pp_function)))
 	    {
 	      set_opt2_direct(cdr(arg), (s7_pointer)(s7_p_pp_function(global_value(car(arg)))));
 	      set_opt3_direct(cdr(arg), (s7_pointer)(s7_p_pp_function(global_value(caaddr(arg)))));
@@ -59326,9 +59326,9 @@ static s7_function fx_choose(s7_scheme *sc, s7_pointer holder, s7_pointer cur_en
 	  return(fx_c_c_opssq);
 
 	case HOP_SAFE_C_opSq_opSq:
-	  if ((is_global_and_has_func(car(arg), s7_p_pp_function)) &&
-	      (is_global_and_has_func(caadr(arg), s7_p_p_function)) &&
-	      (is_global_and_has_func(caaddr(arg), s7_p_p_function)))
+	  if ((is_gameMaster_and_has_func(car(arg), s7_p_pp_function)) &&
+	      (is_gameMaster_and_has_func(caadr(arg), s7_p_p_function)) &&
+	      (is_gameMaster_and_has_func(caaddr(arg), s7_p_p_function)))
 	    {
 	      set_opt3_direct(arg, (s7_pointer)(s7_p_pp_function(global_value(car(arg)))));
 	      set_opt2_direct(cdr(arg), (s7_pointer)(s7_p_p_function(global_value(caadr(arg)))));
@@ -59348,9 +59348,9 @@ static s7_function fx_choose(s7_scheme *sc, s7_pointer holder, s7_pointer cur_en
 	  return((fx_matches(car(arg), sc->not_symbol)) ? fx_not_op_s_opsqq : fx_c_op_s_opsqq);
 
 	case HOP_SAFE_C_op_opSSqq_S:
-	  if ((is_global_and_has_func(car(arg), s7_p_pp_function)) &&
-	      (is_global_and_has_func(caadr(arg), s7_p_p_function)) &&
-	      (is_global_and_has_func(car(cadadr(arg)), s7_p_pp_function)))
+	  if ((is_gameMaster_and_has_func(car(arg), s7_p_pp_function)) &&
+	      (is_gameMaster_and_has_func(caadr(arg), s7_p_p_function)) &&
+	      (is_gameMaster_and_has_func(car(cadadr(arg)), s7_p_pp_function)))
 	    {
 	      set_opt3_direct(arg, (s7_pointer)(s7_p_pp_function(global_value(car(arg)))));
 	      set_opt2_direct(cdr(arg), (s7_pointer)(s7_p_p_function(global_value(caadr(arg)))));
@@ -59370,7 +59370,7 @@ static s7_function fx_choose(s7_scheme *sc, s7_pointer holder, s7_pointer cur_en
 		}
 	      return(fx_not_a);
 	    }
-	  if (is_global_and_has_func(car(arg), s7_p_p_function))
+	  if (is_gameMaster_and_has_func(car(arg), s7_p_p_function))
 	    {
 	      set_opt3_direct(arg, (s7_pointer)(s7_p_p_function(global_value(car(arg)))));
 	      if ((car(arg) == sc->sqrt_symbol) && (fx_proc(cdr(arg)) == fx_add_sqr_sqr))
@@ -59386,7 +59386,7 @@ static s7_function fx_choose(s7_scheme *sc, s7_pointer holder, s7_pointer cur_en
 	case HOP_SAFE_C_AC:
 	  if (fn_proc(arg) == g_cons) return(fx_cons_ac);
 	  if (fx_matches(car(arg), sc->is_eq_symbol)) return(fx_is_eq_ac);
-	  if (is_global_and_has_func(car(arg), s7_p_pp_function))
+	  if (is_gameMaster_and_has_func(car(arg), s7_p_pp_function))
 	    {
 	      set_opt3_direct(cdr(arg), (s7_pointer)(s7_p_pp_function(global_value(car(arg)))));
 	      if ((opt3_direct(cdr(arg)) == (s7_pointer)string_ref_p_pp) && (is_t_integer(caddr(arg))) && (integer(caddr(arg)) == 0))
@@ -59427,7 +59427,7 @@ static s7_function fx_choose(s7_scheme *sc, s7_pointer holder, s7_pointer cur_en
 	case HOP_SAFE_C_SA:
 	  if (fn_proc(arg) == g_multiply_2) return(fx_multiply_sa);
 	  if (fn_proc(arg) == g_add_2) return(fx_add_sa);
-	  if (is_global_and_has_func(car(arg), s7_p_pp_function))
+	  if (is_gameMaster_and_has_func(car(arg), s7_p_pp_function))
 	    {
 	      set_opt3_direct(cdr(arg), (s7_pointer)(s7_p_pp_function(global_value(car(arg)))));
 	      return((fn_proc(arg) == g_cons) ? fx_cons_sa : fx_c_sa_direct);
@@ -59436,7 +59436,7 @@ static s7_function fx_choose(s7_scheme *sc, s7_pointer holder, s7_pointer cur_en
 
 	case HOP_SAFE_C_AS:
 	  if (fn_proc(arg) == g_add_2) return(fx_add_as);
-	  if (is_global_and_has_func(car(arg), s7_p_pp_function))
+	  if (is_gameMaster_and_has_func(car(arg), s7_p_pp_function))
 	    {
 	      set_opt3_direct(cdr(arg), (s7_pointer)(s7_p_pp_function(global_value(car(arg)))));
 	      return((fn_proc(arg) == g_cons) ? fx_cons_as : fx_c_as_direct);
@@ -59513,7 +59513,7 @@ static s7_function fx_choose(s7_scheme *sc, s7_pointer holder, s7_pointer cur_en
 	  return(fx_implicit_starlet_ref_s);
 
 	case HOP_C:
-	  if ((is_unchanged_global(car(arg))) && (car(arg) == sc->curlet_symbol)) return(fx_curlet);
+	  if ((is_unchanged_gameMaster(car(arg))) && (car(arg) == sc->curlet_symbol)) return(fx_curlet);
 	  /* fall through */
 
 	default:
@@ -59637,7 +59637,7 @@ static bool fx_tree_in(s7_scheme *sc, s7_pointer tree, s7_pointer var1, s7_point
 	  if (p == var1) return(with_fx(tree, fx_t));
 	  if (p == var2) return(with_fx(tree, fx_u));
 	  if (p == var3) return(with_fx(tree, fx_v));
-	  if (is_defined_global(p)) return(with_fx(tree, fx_g));
+	  if (is_defined_gameMaster(p)) return(with_fx(tree, fx_g));
 	  if (!more_vars) return(with_fx(tree, fx_o));
 	}
       return(false);
@@ -59674,7 +59674,7 @@ static bool fx_tree_in(s7_scheme *sc, s7_pointer tree, s7_pointer var1, s7_point
 	{
 	  if (fx_proc(tree) == fx_c_s)
 	    {
-	      if (is_global_and_has_func(car(p), s7_p_p_function))
+	      if (is_gameMaster_and_has_func(car(p), s7_p_p_function))
 		{
 		  set_opt2_direct(cdr(p), (s7_pointer)(s7_p_p_function(global_value(car(p)))));
 		  return(with_fx(tree, (car(p) == sc->cddr_symbol) ? fx_cddr_u :
@@ -59805,12 +59805,12 @@ static bool fx_tree_in(s7_scheme *sc, s7_pointer tree, s7_pointer var1, s7_point
     case HOP_SAFE_C_CS:
       if (caddr(p) == var1)
 	{
-	  if ((car(p) == sc->cons_symbol) && (is_unchanged_global(sc->cons_symbol))) return(with_fx(tree, fx_cons_ct));
+	  if ((car(p) == sc->cons_symbol) && (is_unchanged_gameMaster(sc->cons_symbol))) return(with_fx(tree, fx_cons_ct));
 	  if (fx_proc(tree) == fx_multiply_is) return(with_fx(tree, fx_multiply_it));
 	  if (fx_proc(tree) == fx_add_fs) return(with_fx(tree, fx_add_ft));
 	  if (fx_proc(tree) == fx_c_cs)
 	    {
-	      if (is_global_and_has_func(car(p), s7_p_pp_function))
+	      if (is_gameMaster_and_has_func(car(p), s7_p_pp_function))
 		{
 		  if (fn_proc(p) == g_tree_set_memq_syms)
 		    set_opt3_direct(cdr(p), (s7_pointer)tree_set_memq_syms_direct);
@@ -59845,7 +59845,7 @@ static bool fx_tree_in(s7_scheme *sc, s7_pointer tree, s7_pointer var1, s7_point
 	  if (fx_proc(tree) == fx_num_eq_ss)
 	    {
 	      if (caddr(p) == var3) return(with_fx(tree, fx_num_eq_tv));
-	      if (is_defined_global(caddr(p))) return(with_fx(tree, fx_num_eq_tg));
+	      if (is_defined_gameMaster(caddr(p))) return(with_fx(tree, fx_num_eq_tg));
 	      if ((!more_vars) && (o_var_ok(caddr(p), var1, var2, var3))) return(with_fx(tree, fx_num_eq_to));
 	      return(with_fx(tree, fx_num_eq_ts));
 	    }
@@ -59859,7 +59859,7 @@ static bool fx_tree_in(s7_scheme *sc, s7_pointer tree, s7_pointer var1, s7_point
 	  if (fx_proc(tree) == fx_lt_sg)  return(with_fx(tree, fx_lt_tg));
 	  if (fx_proc(tree) == fx_gt_ss)
 	    {
-	      if (is_defined_global(caddr(p))) return(with_fx(tree, fx_gt_tg));
+	      if (is_defined_gameMaster(caddr(p))) return(with_fx(tree, fx_gt_tg));
 	      if ((!more_vars) && (o_var_ok(caddr(p), var1, var2, var3))) return(with_fx(tree, fx_gt_to));
 	      return(with_fx(tree, fx_gt_ts));
 	    }
@@ -59878,12 +59878,12 @@ static bool fx_tree_in(s7_scheme *sc, s7_pointer tree, s7_pointer var1, s7_point
       if (caddr(p) == var1)
 	{
 	  if (fx_proc(tree) == fx_c_ss) return(with_fx(tree, fx_c_st));
-	  if (fx_proc(tree) == fx_c_ss_direct) {return(with_fx(tree, (is_defined_global(cadr(p))) ? fx_c_gt_direct : fx_c_st_direct));}
+	  if (fx_proc(tree) == fx_c_ss_direct) {return(with_fx(tree, (is_defined_gameMaster(cadr(p))) ? fx_c_gt_direct : fx_c_st_direct));}
 	  if (fx_proc(tree) == fx_hash_table_ref_ss) return(with_fx(tree, fx_hash_table_ref_st));
 	  if (fx_proc(tree) == fx_cons_ss) return(with_fx(tree, fx_cons_st));
 	  if (fx_proc(tree) == fx_vref_ss)
 	    {
-	      if (is_defined_global(cadr(p))) return(with_fx(tree, fx_vref_gt));
+	      if (is_defined_gameMaster(cadr(p))) return(with_fx(tree, fx_vref_gt));
 	      if ((!more_vars) && (cadr(p) != var2) && (cadr(p) != var3)) return(with_fx(tree, fx_vref_ot));
 	      return(with_fx(tree, fx_vref_st));
 	    }
@@ -59989,8 +59989,8 @@ static bool fx_tree_in(s7_scheme *sc, s7_pointer tree, s7_pointer var1, s7_point
 	  if (fx_proc(tree) == fx_c_opsq)
 	    {
 	      set_opt1_sym(cdr(p), cadadr(p));
-	      if ((is_global_and_has_func(car(p), s7_p_p_function)) &&
-		  (is_global_and_has_func(caadr(p), s7_p_p_function)))
+	      if ((is_gameMaster_and_has_func(car(p), s7_p_p_function)) &&
+		  (is_gameMaster_and_has_func(caadr(p), s7_p_p_function)))
 		{
 		  set_opt2_direct(cdr(p), (s7_pointer)(s7_p_p_function(global_value(car(p)))));
 		  set_opt3_direct(cdr(p), (s7_pointer)(s7_p_p_function(global_value(caadr(p)))));
@@ -60024,8 +60024,8 @@ static bool fx_tree_in(s7_scheme *sc, s7_pointer tree, s7_pointer var1, s7_point
 	{
 	  if (fx_proc(tree) == fx_c_opsq_s)
 	    {
-	      if ((is_global_and_has_func(car(p), s7_p_pp_function)) &&
-		  (is_global_and_has_func(caadr(p), s7_p_p_function)))
+	      if ((is_gameMaster_and_has_func(car(p), s7_p_pp_function)) &&
+		  (is_gameMaster_and_has_func(caadr(p), s7_p_p_function)))
 		{
 		  set_opt2_direct(cdr(p), (s7_pointer)(s7_p_pp_function(global_value(car(p)))));
 		  set_opt3_direct(cdr(p), (s7_pointer)(s7_p_p_function(global_value(caadr(p)))));
@@ -60043,8 +60043,8 @@ static bool fx_tree_in(s7_scheme *sc, s7_pointer tree, s7_pointer var1, s7_point
 	{
 	  if ((fx_proc(tree) == fx_c_opsq_s) && (caddr(p) == var1))
 	    {
-	      if ((is_global_and_has_func(car(p), s7_p_pp_function)) &&
-		  (is_global_and_has_func(caadr(p), s7_p_p_function))) /* (memq (car sequence) items) lint */
+	      if ((is_gameMaster_and_has_func(car(p), s7_p_pp_function)) &&
+		  (is_gameMaster_and_has_func(caadr(p), s7_p_p_function))) /* (memq (car sequence) items) lint */
 		{
 		  set_opt2_direct(cdr(p), (s7_pointer)(s7_p_pp_function(global_value(car(p)))));
 		  set_opt3_direct(cdr(p), (s7_pointer)(s7_p_p_function(global_value(caadr(p)))));
@@ -60107,8 +60107,8 @@ static bool fx_tree_in(s7_scheme *sc, s7_pointer tree, s7_pointer var1, s7_point
 	    {
 	      if (fn_proc(p) != g_cdr_let_ref) /* don't step on opt3_sym */
 		{
-		  if ((is_global_and_has_func(car(p), s7_p_pp_function)) &&
-		      (is_global_and_has_func(caadr(p), s7_p_p_function)))
+		  if ((is_gameMaster_and_has_func(car(p), s7_p_pp_function)) &&
+		      (is_gameMaster_and_has_func(caadr(p), s7_p_p_function)))
 		    {
 		      if (fn_proc(p) == g_memq_2)
 			set_opt3_direct(p, (s7_pointer)memq_2_p_pp);
@@ -60118,8 +60118,8 @@ static bool fx_tree_in(s7_scheme *sc, s7_pointer tree, s7_pointer var1, s7_point
 		      return(true);
 		    }
 		  if ((is_t_integer(caddr(p))) &&
-		      (is_global_and_has_func(caadr(p), s7_i_7p_function)) &&
-		      (is_global_and_has_func(car(p), s7_p_ii_function)))
+		      (is_gameMaster_and_has_func(caadr(p), s7_i_7p_function)) &&
+		      (is_gameMaster_and_has_func(car(p), s7_p_ii_function)))
 		    {
 		      set_opt3_direct(p, (s7_pointer)(s7_p_ii_function(global_value(car(p)))));
 		      set_opt3_direct(cdr(p), (s7_pointer)(s7_i_7p_function(global_value(caadr(p)))));
@@ -60167,7 +60167,7 @@ static bool fx_tree_in(s7_scheme *sc, s7_pointer tree, s7_pointer var1, s7_point
     case HOP_SAFE_C_opSSq_C:
       if ((fx_proc(tree) == fx_c_opssq_c) && (caddadr(p) == var1))
 	{
-	  if (is_global_and_has_func(car(p), s7_p_pp_function))
+	  if (is_gameMaster_and_has_func(car(p), s7_p_pp_function))
 	    {
 	      if ((car(p) == sc->is_eq_symbol) && (!is_unspecified(caddr(p))) && (caadr(p) == sc->vector_ref_symbol) &&
 		  (!more_vars) && (o_var_ok(cadadr(p), var1, var2, var3)))
@@ -60199,9 +60199,9 @@ static bool fx_tree_in(s7_scheme *sc, s7_pointer tree, s7_pointer var1, s7_point
 
     case HOP_SAFE_C_opSq_opSSq:
       if ((fx_proc(tree) == fx_c_opsq_opssq) && (cadaddr(p) == var1) && (caddaddr(p) == var2) &&
-	  (is_global_and_has_func(car(p), s7_p_pp_function)) &&
-	  (is_global_and_has_func(caadr(p), s7_p_p_function)) &&
-	  (is_global_and_has_func(caaddr(p), s7_p_pp_function)))
+	  (is_gameMaster_and_has_func(car(p), s7_p_pp_function)) &&
+	  (is_gameMaster_and_has_func(caadr(p), s7_p_p_function)) &&
+	  (is_gameMaster_and_has_func(caaddr(p), s7_p_pp_function)))
 	{
 	  set_opt3_direct(p, (s7_pointer)(s7_p_pp_function(global_value(car(p)))));
 	  set_opt2_direct(cdr(p), (s7_pointer)(s7_p_p_function(global_value(caadr(p)))));
@@ -60223,7 +60223,7 @@ static bool fx_tree_in(s7_scheme *sc, s7_pointer tree, s7_pointer var1, s7_point
 	s7_pointer s1 = cadadr(p), s2 = caddadr(p), s3 = caddr(p);
 	if (fx_proc(tree) == fx_vref_vref_ss_s)
 	  {
-	    if ((s3 == var1) && (is_defined_global(s1)))
+	    if ((s3 == var1) && (is_defined_gameMaster(s1)))
 	      {
 		if ((!more_vars) && (o_var_ok(s2, var1, var2, var3))) return(with_fx(tree, fx_vref_vref_go_t));
 		return(with_fx(tree, fx_vref_vref_gs_t));
@@ -60240,7 +60240,7 @@ static bool fx_tree_in(s7_scheme *sc, s7_pointer tree, s7_pointer var1, s7_point
     case HOP_SAFE_C_S_opSSq:
       if (caddaddr(p) == var1)
 	{
-	  if ((fn_proc(p) == g_vector_ref_2) && (is_defined_global(cadr(p)) && (is_defined_global(cadaddr(p)))))
+	  if ((fn_proc(p) == g_vector_ref_2) && (is_defined_gameMaster(cadr(p)) && (is_defined_gameMaster(cadaddr(p)))))
 	    {
 	      set_opt3_pair(p, cdaddr(p));
 	      return(with_fx(tree, fx_vref_g_vref_gt));
@@ -60251,7 +60251,7 @@ static bool fx_tree_in(s7_scheme *sc, s7_pointer tree, s7_pointer var1, s7_point
       break;
 
     case HOP_SAFE_C_op_opSq_Sq:
-      if ((car(p) == sc->not_symbol) && (is_global(sc->not_symbol)) && (var1 == cadr(cadadr(p))))
+      if ((car(p) == sc->not_symbol) && (is_gameMaster(sc->not_symbol)) && (var1 == cadr(cadadr(p))))
 	return(with_fx(tree, fx_not_op_optq_sq));
       break;
 
@@ -64190,7 +64190,7 @@ static s7_pointer opt_arg_type(s7_scheme *sc, s7_pointer argp)
       if (is_symbol(car(arg)))
 	{
 	  if ((is_slot(global_slot(car(arg)))) &&
-	      ((is_global(car(arg))) ||
+	      ((is_gameMaster(car(arg))) ||
 	       (s7_slot(sc, car(arg)) == global_slot(car(arg)))))
 	    {
 	      s7_pointer a_func = global_value(car(arg));
@@ -67880,7 +67880,7 @@ static bool opt_cell_cond(s7_scheme *sc, s7_pointer car_x)
     {
       if ((max_blen == 1) &&
 	  ((car(last_clause) == sc->T) ||
-	   ((car(last_clause) == sc->else_symbol) && (is_global(sc->else_symbol)))))
+	   ((car(last_clause) == sc->else_symbol) && (is_gameMaster(sc->else_symbol)))))
 	{
 	  opt_info *o1;
 	  top->v[6].o1 = top->v[COND_O1].o1->v[COND_CLAUSE_O1].o1;
@@ -69300,7 +69300,7 @@ static bool opt_cell_do(s7_scheme *sc, s7_pointer car_x, int32_t len)
 
 static bool p_syntax_ok(s7_scheme *sc, s7_pointer car_x, int32_t len)
 {
-  s7_pointer func = lookup_global(sc, car(car_x));
+  s7_pointer func = lookup_gameMaster(sc, car(car_x));
   opcode_t op;
   if (!is_syntax(func)) {clear_syntactic(car_x); return_false(sc, car_x);}
   /* I think this is the only case where we don't precede syntax_opcode with syntactic_symbol checks */
@@ -69784,7 +69784,7 @@ static bool bool_optimize_nw_1(s7_scheme *sc, s7_pointer expr)
   if (!s_func) return_false(sc, car_x);
   if (is_c_function(s_func))
     {
-      if ((is_symbol(head)) && (!is_global(head)))  /* (float-vector? (block)) -- both safe c_funcs, but this is a method invocation */
+      if ((is_symbol(head)) && (!is_gameMaster(head)))  /* (float-vector? (block)) -- both safe c_funcs, but this is a method invocation */
 	return_false(sc, car_x);
       switch (len)
 	{
@@ -72747,7 +72747,7 @@ static opt_t optimize_thunk(s7_scheme *sc, s7_pointer expr, s7_pointer func, int
     {
       if (c_function_min_args(func) != 0)
 	return(OPT_F);
-      if ((hop == 0) && (is_global(car(expr)))) hop = 1;
+      if ((hop == 0) && (is_gameMaster(car(expr)))) hop = 1;
       if ((is_safe_procedure(func)) || (c_function_call(func) == s7_values))
 	{
 	  set_safe_optimize_op(expr, hop + OP_SAFE_C_NC);
@@ -73009,7 +73009,7 @@ static inline s7_pointer find_uncomplicated_symbol(s7_scheme *sc, s7_pointer sym
    * misses 'loop (it's not in big_symbol_set when recursive call is encountered) -- tricky to fix
    */
 
-  if (is_defined_global(symbol))
+  if (is_defined_gameMaster(symbol))
     return(global_slot(symbol));
 
   /* see 59108 (OP_DEFINE_* in optimize_syntax) -- keyword version of name is used if a definition is
@@ -73044,7 +73044,7 @@ static bool is_ok_lambda(s7_scheme *sc, s7_pointer arg2)
 static bool hop_if_constant(s7_scheme *sc, s7_pointer sym)
 {
   return(((!sc->in_with_let) && 
-	  (is_global(sym))) ? 1 : 0); /* for with-let, see s7test atanh (77261) */
+	  (is_gameMaster(sym))) ? 1 : 0); /* for with-let, see s7test atanh (77261) */
 }
 
 static opt_t optimize_c_function_one_arg(s7_scheme *sc, s7_pointer expr, s7_pointer func,
@@ -73214,7 +73214,7 @@ static opt_t fxify_closure_s(s7_scheme *sc, s7_pointer func, s7_pointer expr, s7
 	    s7_pointer body_arg2 = caddar(body);
 	    set_opt3_con(cdr(expr), (is_pair(body_arg2)) ? cadr(body_arg2) : body_arg2);
 	    set_safe_optimize_op(expr, hop + OP_SAFE_CLOSURE_S_TO_SC);
-	    if ((caar(body) == sc->vector_ref_symbol) && (is_global(sc->vector_ref_symbol)))
+	    if ((caar(body) == sc->vector_ref_symbol) && (is_gameMaster(sc->vector_ref_symbol)))
 	      set_fx_direct(cdr(expr), fx_safe_closure_s_to_vref);
 	    else
 	      {
@@ -73253,7 +73253,7 @@ static bool fxify_closure_a(s7_scheme *sc, s7_pointer func, bool one_form, bool 
 		set_opt3_con(cdr(expr), (is_pair(body_arg2)) ? cadr(body_arg2) : body_arg2);
 		set_safe_optimize_op(expr, hop + OP_SAFE_CLOSURE_A_TO_SC);
 		/* why is this setting expr whereas _s case above sets cdr(expr)? */
-		if ((caar(body) == sc->vector_ref_symbol) && (is_global(sc->vector_ref_symbol)))
+		if ((caar(body) == sc->vector_ref_symbol) && (is_gameMaster(sc->vector_ref_symbol)))
 		  set_fx_direct(expr, fx_safe_closure_a_to_vref);
 		else set_fx_direct(expr, fx_safe_closure_a_to_sc);
 	      }
@@ -73435,7 +73435,7 @@ static opt_t optimize_func_one_arg(s7_scheme *sc, s7_pointer expr, s7_pointer fu
 	    (c_function_max_args(func) >= 1) &&
 	    (!is_symbol_and_keyword(arg1)))           /* the only arg should not be a keyword (needs error checks later) */
 	  {
-	    if ((hop == 0) && ((is_immutable(func)) || ((!sc->in_with_let) && (is_global(car(expr)))))) hop = 1;
+	    if ((hop == 0) && ((is_immutable(func)) || ((!sc->in_with_let) && (is_gameMaster(car(expr)))))) hop = 1;
 	    set_safe_optimize_op(expr, hop + OP_SAFE_C_STAR_A);
 	    fx_annotate_arg(sc, cdr(expr), e);
 	    set_opt3_arglen(cdr(expr), 1);
@@ -73700,7 +73700,7 @@ static opt_t optimize_func_two_args(s7_scheme *sc, s7_pointer expr, s7_pointer f
 		{
 		  if (((op_no_hop(cadr(expr))) == OP_SAFE_CLOSURE_S_TO_SC) &&
 		      ((op_no_hop(caddr(expr))) == OP_SAFE_CLOSURE_S_TO_SC) &&
-		      (is_defined_global(caadr(expr))) && (is_defined_global(caaddr(expr))))
+		      (is_defined_gameMaster(caadr(expr))) && (is_defined_gameMaster(caaddr(expr))))
 		    {
 		      /* ideally this would be OP not HOP, but safe_closure_s_to_sc is too picky */
 		      /* set_opt3_pair(expr, caddr(expr)); */ /* set_opt3_arglen(cdr(expr), 2); */
@@ -74181,7 +74181,7 @@ static opt_t optimize_func_two_args(s7_scheme *sc, s7_pointer expr, s7_pointer f
       (c_function_max_args(func) >= 1) &&
       (!is_symbol_and_keyword(arg2)))
     {
-      if ((hop == 0) && ((is_immutable(func)) || ((!sc->in_with_let) && (is_global(car(expr)))))) hop = 1;
+      if ((hop == 0) && ((is_immutable(func)) || ((!sc->in_with_let) && (is_gameMaster(car(expr)))))) hop = 1;
       set_optimized(expr);
       set_optimize_op(expr, hop + OP_SAFE_C_STAR_AA); /* k+c? = cc */
       fx_annotate_args(sc, cdr(expr), e);
@@ -75056,7 +75056,7 @@ static opt_t optimize_syntax(s7_scheme *sc, s7_pointer expr, s7_pointer func, in
 	      /* actually if this is defining a function, the name should probably be included in the local let
 	       *   but that's next-to-impossible to guarantee unless it's (define x (lambda...)) of course.
 	       */
-	      if ((is_global(vars)) && (initial_value(vars) != sc->undefined))
+	      if ((is_gameMaster(vars)) && (initial_value(vars) != sc->undefined))
 		{
 		  /* fprintf(stderr, "%d: set_is_maybe_shadowed: %s\n", __LINE__, display(vars)); */
 		  set_is_maybe_shadowed(vars);
@@ -75231,7 +75231,7 @@ static opt_t optimize_syntax(s7_scheme *sc, s7_pointer expr, s7_pointer func, in
 
   if ((hop == 1) &&
       ((is_syntax(car(expr))) ||
-       (is_global(car(expr)))))
+       (is_gameMaster(car(expr)))))
     {
       if (op == OP_IF)
 	{
@@ -75336,8 +75336,8 @@ static opt_t optimize_syntax(s7_scheme *sc, s7_pointer expr, s7_pointer func, in
 		  if (op == OP_OR)
 		    {
 		      set_opt3_sym(cdr(expr), cadadr(expr));
-		      if ((is_symbol(caadr(expr))) && (symbol_type(caadr(expr)) > 0) && (is_defined_global(caadr(expr))) &&
-			  ((is_symbol(caaddr(expr))) && (symbol_type(caaddr(expr)) > 0) && (is_defined_global(caaddr(expr)))))
+		      if ((is_symbol(caadr(expr))) && (symbol_type(caadr(expr)) > 0) && (is_defined_gameMaster(caadr(expr))) &&
+			  ((is_symbol(caaddr(expr))) && (symbol_type(caaddr(expr)) > 0) && (is_defined_gameMaster(caaddr(expr)))))
 			{
 			  set_opt3_int(expr, symbol_type(caadr(expr)));
 			  set_opt2_int(cdr(expr), symbol_type(caaddr(expr)));
@@ -75483,7 +75483,7 @@ static opt_t optimize_expression(s7_scheme *sc, s7_pointer expr, int32_t hop, s7
 	      if ((hop != 0) &&
 		  ((is_maybe_shadowed(car_expr)) ||      /* for globals that are possibly clobbered at run-time (i.e. not yet) */
 		   (((is_any_closure(func)) ||           /* see use-redef in s7test -- I'm not sure about this */
-		     ((!is_global(car_expr)) &&
+		     ((!is_gameMaster(car_expr)) &&
 		      ((!is_slot(global_slot(car_expr))) ||
 		       (global_value(car_expr) != func)))) &&
 		    (!is_immutable(car_expr)) && /* list|apply-values -- can't depend on opt1 here because it might not be global, or might be redefined locally */
@@ -75507,7 +75507,7 @@ static opt_t optimize_expression(s7_scheme *sc, s7_pointer expr, int32_t hop, s7
 		   *   current optimizer.
 		   * Another case (from K Matheussen):
 		   *   (define (call-func func arg1 arg2) (define (call) (func arg1 arg2)) (call)) (call-func + 1 2.5) (call-func - 5 2)
-		   *   when we get here originally "func" is +, hop=1, but just checking for !is_defined_global(car_expr) is
+		   *   when we get here originally "func" is +, hop=1, but just checking for !is_defined_gameMaster(car_expr) is
 		   *   not good enough -- if we load mockery.scm, nothing is global!
 		   * Yet another case (define (test-abs) (define (abs x) (+ x 1)) (format *stderr* "abs ~A~%" (abs -1)))
 		   *   when optimize_syntax sees the (define abs ...), it inserts abs into e so that the caller's e is extended (set-cdr!)
@@ -76166,7 +76166,7 @@ static body_t form_is_safe(s7_scheme *sc, s7_pointer func, s7_pointer x, bool at
 
 	  result = ((is_simple_sequence(f)) || /* was is_sequence? */
 		    ((is_closure(f)) && (is_very_safe_closure(f))) ||
-		    ((c_safe) && ((is_immutable_slot(f_slot)) || (is_defined_global(expr))))) ? VERY_SAFE_BODY : SAFE_BODY;
+		    ((c_safe) && ((is_immutable_slot(f_slot)) || (is_defined_gameMaster(expr))))) ? VERY_SAFE_BODY : SAFE_BODY;
 
 	  if ((c_safe) ||
 	      ((is_any_closure(f)) && (is_safe_closure(f))) ||
@@ -76574,7 +76574,7 @@ static bool check_recur(s7_scheme *sc, s7_pointer name, int32_t pars, s7_pointer
 	    }
 	  if ((is_proper_list_2(sc, la_clause)) &&
 	      ((car(la_clause) == sc->T) ||
-	       ((car(la_clause) == sc->else_symbol) && (is_global(sc->else_symbol)))) &&
+	       ((car(la_clause) == sc->else_symbol) && (is_gameMaster(sc->else_symbol)))) &&
 	      (is_pair(cadr(la_clause))))
 	    {
 	      la_clause = cadr(la_clause); /* (c_op arg (recur par)) or (c_op (recur) (recur)) or (op|l a l2a) */
@@ -76807,7 +76807,7 @@ static bool check_tc_cond_n(s7_scheme *sc, const s7_pointer name, int32_t pars, 
 	  s7_pointer result;
 	  if (((!is_pair(cdr(p))) &&
 	       (car(clause) != sc->T) &&
-	       ((car(clause) != sc->else_symbol) || (!is_global(sc->else_symbol)))) ||
+	       ((car(clause) != sc->else_symbol) || (!is_gameMaster(sc->else_symbol)))) ||
 	      ((tree_count(sc, name, clause, 0) == 1) &&
 	       (name != caadr(clause))))
 	    return(false);
@@ -76859,7 +76859,7 @@ static bool check_tc_cond(s7_scheme *sc, s7_pointer name, int32_t pars, s7_point
   p = cdr(p);
   if ((pars < 4) && (names == 1) && (body_len == 3))
     {
-      if (((caar(p) == sc->T) || ((caar(p) == sc->else_symbol) && (is_global(sc->else_symbol)))))
+      if (((caar(p) == sc->T) || ((caar(p) == sc->else_symbol) && (is_gameMaster(sc->else_symbol)))))
 	{ /* body len=3, (cond clause1 else */
 	  s7_pointer else_clause = cdar(p);
 	  if (tree_count(sc, name, body, 0) != 1) return(false);
@@ -76922,7 +76922,7 @@ static bool check_tc_cond(s7_scheme *sc, s7_pointer name, int32_t pars, s7_point
 	  s7_pointer else_clause = car(else_p);
 
 	  if ((is_proper_list_2(sc, else_clause)) &&
-	      ((car(else_clause) == sc->T) || ((car(else_clause) == sc->else_symbol) && (is_global(sc->else_symbol)))))
+	      ((car(else_clause) == sc->T) || ((car(else_clause) == sc->else_symbol) && (is_gameMaster(sc->else_symbol)))))
 	    {
 	      bool zs_fxable = true;
 	      if ((pars == 2) && /* ...l2a_l2a case */
@@ -77081,7 +77081,7 @@ static bool check_tc_let(s7_scheme *sc, const s7_pointer name, int32_t pars, s7_
 
 		if ((!is_pair(cdr(p))) &&
 		    (car(clause) != sc->T) &&
-		    ((car(clause) != sc->else_symbol) || (!is_global(sc->else_symbol))))
+		    ((car(clause) != sc->else_symbol) || (!is_gameMaster(sc->else_symbol))))
 		  return(false);
 		result = cadr(clause);
 		if ((is_pair(result)) &&
@@ -80568,9 +80568,9 @@ static void check_define(s7_scheme *sc)
       if ((is_pair(cadr(code))) &&               /* look for (define sym (lambda ...)) and treat it like (define (sym ...)...) */
 	  ((caadr(code) == sc->lambda_symbol) ||
 	   (caadr(code) == sc->lambda_star_symbol)) &&
-	  (is_global(caadr(code))))
+	  (is_gameMaster(caadr(code))))
 	{
-	  if ((is_defined_global(func)) && (is_immutable(global_slot(func))) && (initial_value(func) != sc->undefined))
+	  if ((is_defined_gameMaster(func)) && (is_immutable(global_slot(func))) && (initial_value(func) != sc->undefined))
 	    immutable_object_error_nr(sc, set_elist_3(sc, wrap_string(sc, "can't ~A ~S: it is immutable", 28), caller, func));
 
 	  if (!is_pair(cdadr(code)))                                             /* (define x (lambda . 1)) */
@@ -80593,7 +80593,7 @@ static void check_define(s7_scheme *sc)
 	    s7_warn(sc, 256, "%s: syntactic keywords tend to behave badly if redefined: %s\n", display(func), display_truncated(sc->code));
 	  set_local(func);
 	}
-      if ((is_defined_global(func)) && (is_immutable(global_slot(func))) && (initial_value(func) != sc->undefined))     /* (define (abs x) 1) after (immutable! abs) */
+      if ((is_defined_gameMaster(func)) && (is_immutable(global_slot(func))) && (initial_value(func) != sc->undefined))     /* (define (abs x) 1) after (immutable! abs) */
 	immutable_object_error_nr(sc, set_elist_3(sc, wrap_string(sc, "can't ~A ~S: it is immutable", 28), caller, func));
       if (starred)
 	set_cdar(code, check_lambda_star_args(sc, cdar(code), cdr(code), sc->code));
@@ -80643,7 +80643,7 @@ static bool op_define_unchecked(s7_scheme *sc)
 	  sc->cur_op = optimize_op(sc->code);
 	  return(true);
 	}
-      sc->value = (is_symbol(sc->code)) ? lookup_global(sc, sc->code) : sc->code;
+      sc->value = (is_symbol(sc->code)) ? lookup_gameMaster(sc, sc->code) : sc->code;
       sc->code = x;
     }
   else
@@ -80777,7 +80777,7 @@ static bool op_define_constant(s7_scheme *sc)
     }
   if ((is_symbol(car(code))) &&                /* (define-constant abs abs): "abs will not be touched" */
       (car(code) == cadr(code)) &&
-      (is_global(car(code))) &&                /* else (let iter ... (define-constant iter iter) ...) -> segfault on later calls */
+      (is_gameMaster(car(code))) &&                /* else (let iter ... (define-constant iter iter) ...) -> segfault on later calls */
       (is_null(cddr(code))))
     {
       s7_pointer sym = car(code);
@@ -81006,7 +81006,7 @@ static goto_t op_expansion(s7_scheme *sc)
 
       if (is_symbol(symbol)) /* maybe (#_cond-expand) etc */
 	{
-	  if ((is_global(symbol)) || (sc->curlet == sc->nil))
+	  if ((is_gameMaster(symbol)) || (sc->curlet == sc->nil))
 	    slot = global_slot(symbol);
 	  else slot = s7_slot(sc, symbol);
 	  sc->code = (is_slot(slot)) ? slot_value(slot) : sc->undefined;
@@ -81361,14 +81361,14 @@ static void check_cond(s7_scheme *sc)
 	      if (i == 2)
 		{
 		  p = caadr(code);
-		  if ((p == sc->T) || ((p == sc->else_symbol) && (is_global(sc->else_symbol))))
+		  if ((p == sc->T) || ((p == sc->else_symbol) && (is_gameMaster(sc->else_symbol))))
 		    pair_set_syntax_op(form, OP_COND_NA_2E);
 		}
 	      else
 		if (i == 3)
 		  {
 		    p = caaddr(code);
-		    if ((p == sc->T) || ((p == sc->else_symbol) && (is_global(sc->else_symbol))))
+		    if ((p == sc->T) || ((p == sc->else_symbol) && (is_gameMaster(sc->else_symbol))))
 		      pair_set_syntax_op(form, OP_COND_NA_3E);
 		  }}}
       else
@@ -81657,14 +81657,14 @@ static bool feed_to(s7_scheme *sc)
       clear_multiple_value(sc->args);
       if (is_symbol(cadr(sc->code)))
 	{
-	  sc->code = lookup_global(sc, cadr(sc->code));  /* car is => */
+	  sc->code = lookup_gameMaster(sc, cadr(sc->code));  /* car is => */
 	  return(true); /* goto APPLY */
 	}}
   else
     {
       if (is_symbol(cadr(sc->code)))
 	{
-	  sc->code = lookup_global(sc, cadr(sc->code));  /* car is => */
+	  sc->code = lookup_gameMaster(sc, cadr(sc->code));  /* car is => */
 	  sc->args = (needs_copied_args(sc->code)) ? list_1(sc, sc->value) : set_plist_1(sc, sc->value);
 	  /* it would be nice to see T_C_FUNCTION here and call apply_c_function_unopt, but that requires either a switch (to continue) or putting this in the eval function */
 	  return(true); /* goto APPLY */
@@ -89754,7 +89754,7 @@ static opt_pid_t opinit_if_a_a_opla_laq(s7_scheme *sc, s7_pointer code)
   tick_tc(sc, OP_RECUR_IF_A_A_opLA_LAq);
   if ((is_symbol(c_op)) &&
       ((is_slot(global_slot(c_op))) &&
-       ((is_global(c_op)) ||
+       ((is_gameMaster(c_op)) ||
 	(s7_slot(sc, c_op) == global_slot(c_op)))))
     {
       s7_pointer s_func = global_value(c_op);
@@ -90199,7 +90199,7 @@ static opt_pid_t opinit_if_a_a_opa_laq(s7_scheme *sc, s7_pointer code)
   s7_pointer c_op = car(caller);
   if ((is_symbol(c_op)) &&
       ((is_slot(global_slot(c_op))) &&
-       ((is_global(c_op)) ||
+       ((is_gameMaster(c_op)) ||
 	(s7_slot(sc, c_op) == global_slot(c_op)))))
     {
       s7_pointer s_func = global_value(c_op), slot = let_slots(sc->curlet);
@@ -91575,7 +91575,7 @@ static void op_apply_sa(s7_scheme *sc)
   sc->args = fx_call(sc, cdr(p));
   if (!s7_is_proper_list(sc, sc->args))
     error_nr(sc, sc->syntax_error_symbol, set_elist_2(sc, wrap_string(sc, "apply: improper list of arguments: ~S", 37), sc->args));
-  sc->code = lookup_global(sc, car(p));
+  sc->code = lookup_gameMaster(sc, car(p));
   if (needs_copied_args(sc->code))
     sc->args = copy_proper_list(sc, sc->args);
 }
@@ -91584,7 +91584,7 @@ static void op_apply_sl(s7_scheme *sc)
 {
   s7_pointer p = cdr(sc->code);
   sc->args = fx_call(sc, cdr(p));
-  sc->code = lookup_global(sc, car(p));
+  sc->code = lookup_gameMaster(sc, car(p));
 }
 
 static bool op_pair_pair(s7_scheme *sc)
@@ -91610,7 +91610,7 @@ static bool op_pair_sym(s7_scheme *sc)
       clear_optimize_op(sc->code);
       return(false);
     }
-  sc->value = lookup_global(sc, car(sc->code));
+  sc->value = lookup_gameMaster(sc, car(sc->code));
   return(true);
 }
 
@@ -91672,7 +91672,7 @@ static bool eval_args_no_eval_args(s7_scheme *sc)
     {
       sc->cur_op = syntax_opcode(sc->value);
       if ((is_symbol(car(sc->code))) &&  /* don't opt pair to syntax op if sc->value is actually an arg not the op! ((write and)) should not be op_and */
-	  ((car(sc->code) == syntax_symbol(sc->value)) || (lookup_global(sc, car(sc->code)) == sc->value)))
+	  ((car(sc->code) == syntax_symbol(sc->value)) || (lookup_gameMaster(sc, car(sc->code)) == sc->value)))
 	pair_set_syntax_op(sc->code, sc->cur_op);
       /* weird that sc->cur_op setting above seems ok, but OP_PAIR_PAIR hangs?? */
     }
@@ -92822,7 +92822,7 @@ static bool is_immutable_and_stable(s7_scheme *sc, s7_pointer func)
 {
   if (symbol_ctr(func) != 1) /* protect against (define-constant (p) (define-constant (p) ...)) */
     return(false);
-  if ((is_defined_global(func)) && (is_immutable_slot(global_slot(func))))
+  if ((is_defined_gameMaster(func)) && (is_immutable_slot(global_slot(func))))
     return(true);
   for (s7_pointer p = sc->curlet; p; p = let_outlet(p))
     if ((is_funclet(p)) && (funclet_function(p) != func))
@@ -95605,7 +95605,7 @@ static s7_pointer eval(s7_scheme *sc, opcode_t first_op)
 		  pair_set_syntax_op(sc->code, sc->cur_op);
 		  goto TOP_NO_POP;
 		}
-	      sc->value = lookup_global(sc, carc);
+	      sc->value = lookup_gameMaster(sc, carc);
 	      set_optimize_op(sc->code, OP_PAIR_SYM); /* mostly stuff outside functions (unopt) */
 	      goto EVAL_ARGS_TOP;
 	    }
@@ -97315,7 +97315,7 @@ static bool is_decodable(s7_scheme *sc, const s7_pointer p)
       {
 	s7_pointer sym = car(x);
 	if ((sym == p) ||
-	    ((is_defined_global(sym)) && (p == global_value(sym))))
+	    ((is_defined_gameMaster(sym)) && (p == global_value(sym))))
 	  return(true);
       }
 
@@ -98338,7 +98338,7 @@ static s7_pointer syntax(s7_scheme *sc, const char *name, opcode_t op, s7_pointe
   syntax_min_args(syn) = integer(min_args);
   syntax_max_args(syn) = integer(max_args);
   syntax_documentation(syn) = doc;
-  set_global_slot(x, make_semipermanent_slot(sc, x, syn));
+  set_gameMaster_slot(x, make_semipermanent_slot(sc, x, syn));
   set_initial_value(x, syn);  /* set_local_slot(x, global_slot(x)); */
   add_to_unlet(sc, x);
   set_type_bit(x, T_SYMBOL | T_SYNTACTIC | T_UNHEAP);
@@ -100305,7 +100305,7 @@ int main(int argc, char **argv)
  * ----------------------------------------------------
  *
  * snd-region|select: (since we can't check for consistency when set), should there be more elaborate writable checks for default-output-header|sample-type?
- * fx_chooser can't depend on is_defined_global because it sees args before possible local bindings, get rid of these if possible
+ * fx_chooser can't depend on is_defined_gameMaster because it sees args before possible local bindings, get rid of these if possible
  * the fx_tree->fx_tree_in etc routes are a mess (redundant and flags get set at pessimal times)
  * safe_do hop bit in other do cases and let: t826
  * tlimit: maybe_shadowed bit is set and hop=0 but it's being ignored??
