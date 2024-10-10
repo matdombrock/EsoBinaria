@@ -992,12 +992,6 @@ public:
             graph->setColor(_g.hasCodeErr() ? _colors["YELLOW"] : _colors["GREEN"]);
             graph->text(codePre, Vec2i(padX, _g.bottomBarPos.y + _g.cellSize + padY), _g.fontSize);
             int w = graph->textWidth(codePre, _g.fontSize);
-            //
-            // if (_g.hasCodeErr()) {
-            //     graph->setColor(_colors["YELLOW"]);
-            //     graph->text(_g.getCodeErr(), Vec2i(padX + w, _g.bottomBarPos.y + _g.cellSize + padY), _g.fontSize);
-            //     return;
-            // }
             std::string csMod = _g.getCodeString();
             if (_g.getActiveTestData() != nullptr) {
                 DBG("Active test data replace");
