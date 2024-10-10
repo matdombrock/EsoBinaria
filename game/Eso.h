@@ -88,6 +88,7 @@ public:
         if (type == CT_BLANK || type == CT_INA || type == CT_INB || type == CT_INC || type == CT_IND) {
             parenRight = !parenRight;
         }
+        // All OP tiles are locked to left paren
     }
     static std::string typeToString(CellType type) {
         switch (type) {
