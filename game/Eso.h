@@ -84,16 +84,19 @@ public:
         return type;
     }
     void cycleParens() {
-        if (parenLeft) {
-            parenLeft = false;
+        // Input tiles can only have right side parens
+        if (type == CT_INA || type == CT_INB || type == CT_INC || type == CT_IND) {
+            parenRight = !parenRight;
+        }
+        else if (!parenLeft && !parenRight) {
             parenRight = true;
         }
         else if (parenRight) {
             parenRight = false;
-            parenLeft = false;
-        }
-        else {
             parenLeft = true;
+        }
+        else{
+            parenLeft = false;
             parenRight = false;
         }
     }
@@ -1198,15 +1201,29 @@ public:
         for (int y = 0; y < gridSize.y; y++) {
             for (int x = 0; x < gridSize.x; x++) {
                 CellType cellType = cells[x][y].get();
+                // Auto parenthesize NOT
                 if (cellTypeLast == CT_NOT && cellType != CT_VOID) {
                     cells[x][y].parenRight = true;
                     cells[xOld][yOld].parenLeft = true;
                 }
+                // Auto left parenthesize OPs
+                if (cellType != CT_VOID 
+                    && cellType != CT_BLANK 
+                    && cellType != CT_INA 
+                    && cellType != CT_INB 
+                    && cellType != CT_INC 
+                    && cellType != CT_IND) 
+                {
+                    cells[x][y].parenLeft = true;
+                    cells[x][y].parenRight = false;
+                }
+                // Update last if not void
                 if (cellType != CT_VOID) {
                     cellTypeLast = cellType;
                     xOld = x;
                     yOld = y;
                 }
+
             }
         }
 
