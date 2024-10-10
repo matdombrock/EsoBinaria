@@ -84,20 +84,9 @@ public:
         return type;
     }
     void cycleParens() {
-        // Input tiles can only have right side parens
-        if (type == CT_INA || type == CT_INB || type == CT_INC || type == CT_IND) {
+        // Non OP tiles can only have right side parens
+        if (type == CT_BLANK || type == CT_INA || type == CT_INB || type == CT_INC || type == CT_IND) {
             parenRight = !parenRight;
-        }
-        else if (!parenLeft && !parenRight) {
-            parenRight = true;
-        }
-        else if (parenRight) {
-            parenRight = false;
-            parenLeft = true;
-        }
-        else{
-            parenLeft = false;
-            parenRight = false;
         }
     }
     static std::string typeToString(CellType type) {
