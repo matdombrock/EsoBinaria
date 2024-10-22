@@ -39,12 +39,12 @@ public:
             return;
         }
         if (center) {
-            int textWidth = graph->textWidth(text, fontSize);
+            int textWidth = graph->textWidth(text);
             Vec2i textPos = pos + Vec2i((size.x - textWidth) / 2, (size.y - fontSize) / 2);
-            graph->text(text, textPos, fontSize);
+            graph->text(text, textPos);
         }
         else {
-            graph->text(" " + text + " ", pos, fontSize);
+            graph->text(" " + text + " ", pos);
         }
     }
 };

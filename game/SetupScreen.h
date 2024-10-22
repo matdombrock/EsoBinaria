@@ -108,9 +108,11 @@ public:
         graph->tri(Vec2i(0, 0), Vec2i(_g.vu(2), 0), Vec2i(0, _g.vu(2)));
         
         graph->setColor(_colors["WHITE"]);
-        graph->text("   EsoMachina", Vec2i(_g.vu(0), _g.vu(0)), _g.fontSize * 4);
+        graph->setFont("HomeVideo.ttf", _g.fontSize * 4);
+        graph->text("   EsoMachina", Vec2i(_g.vu(0), _g.vu(0)));
         graph->setColor(_colors["WHITE"]);
-        graph->text(_g.getPuzzleString(), Vec2i(_g.vu(2), _g.vu(2)), _g.fontSize);
+        graph->setFont("HomeVideo.ttf", _g.fontSize);
+        graph->text(_g.getPuzzleString(), Vec2i(_g.vu(2), _g.vu(2)));
 
         // Draw cursor lines
         // graph->setColor(_colors["GREEN"], 128);

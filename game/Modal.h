@@ -61,7 +61,7 @@ public:
         graph->setColor(_colors["BG3"]);
         graph->rect(pos, Vec2i(WINDOW_SIZE.x / 2, WINDOW_SIZE.y / 4), true);
         graph->setColor(_colors["WHITE"]);
-        graph->text(title, pos + Vec2i(_g.vu(0.5f), _g.vu(0.5f)), _g.fontSize);
+        graph->text(title, pos + Vec2i(_g.vu(0.5f), _g.vu(0.5f)));
         em.render(graph);
     }
 };

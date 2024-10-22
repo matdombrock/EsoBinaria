@@ -53,8 +53,8 @@ public:
         if (_g.getScreen() != "puzzle") return;
         em.checkMouse();
         em.process();
-        std::string cs = Util::strReplace(Util::strReplace(_g.getCodeString(), " ", ""), "_", "");
-        std::string cso = Util::strReplace(Util::strReplace(codeStringOld, " ", ""), "_", "");
+        std::string cs = StringTools::replace(StringTools::replace(_g.getCodeString(), " ", ""), "_", "");
+        std::string cso = StringTools::replace(StringTools::replace(codeStringOld, " ", ""), "_", "");
         if (cs != cso) {
             _g.setCodeErr("");
             DBG("Retesting code");
@@ -84,15 +84,15 @@ public:
         em.render(graph);
         if (_g.hasCodeErr()) {
             graph->setColor(_colors["YELLOW"]);
-            graph->text("!! ERROR", Vec2i(pos.x + _g.vu(0.5f), pos.y - (_g.getTick()/4 % 8)), _g.fontSize);
+            graph->text("!! ERROR", Vec2i(pos.x + _g.vu(0.5f), pos.y - (_g.getTick()/4 % 8)));
         }
         else {
             graph->setColor(_colors["GRAY"]);
-            graph->text(_g.getPuzzleString(), Vec2i(pos.x + _g.vu(0.5f), pos.y), _g.fontSize);
+            graph->text(_g.getPuzzleString(), Vec2i(pos.x + _g.vu(0.5f), pos.y));
         }
         if (testFails == 0) {
             graph->setColor(_colors["GREEN"]);
-            graph->text("PASSED", Vec2i(_g.cellSize,_g.cellSize), _g.fontSize * 4);
+            graph->text("PASSED", Vec2i(_g.cellSize,_g.cellSize));
         }
     }
 };

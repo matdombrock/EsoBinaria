@@ -112,6 +112,55 @@ public:
 };
 
 //
+// String Tools
+//
+class StringTools {
+public:
+    static std::string toLowercase(const std::string& str) {
+        std::string out = str;
+        std::transform(out.begin(), out.end(), out.begin(), ::tolower);
+        return out;
+    }
+    static std::string toUppercase(const std::string& str) {
+        std::string out = str;
+        std::transform(out.begin(), out.end(), out.begin(), ::toupper);
+        return out;
+    }
+    static std::string replace(const std::string& str, const std::string& find, const std::string& replace) {
+        std::string out = str;
+        size_t pos = 0;
+        while ((pos = out.find(find, pos)) != std::string::npos) {
+            out.replace(pos, find.length(), replace);
+            pos += replace.length();
+        }
+        return out;
+    }
+    static bool contains(const std::string& str, const std::string& find) {
+        return str.find(find) != std::string::npos;
+    }
+    static int containsCount(const std::string& str, const std::string& find) {
+        int count = 0;
+        size_t pos = 0;
+        while ((pos = str.find(find, pos)) != std::string::npos) {
+            count++;
+            pos += find.length();
+        }
+        return count;
+    }
+    static std::vector<std::string> split(const std::string& str, const std::string& delimiter) {
+        std::vector<std::string> strings;
+        size_t pos = 0;
+        size_t prev = 0;
+        while ((pos = str.find(delimiter, prev)) != std::string::npos) {
+            strings.push_back(str.substr(prev, pos - prev));
+            prev = pos + delimiter.length();
+        }
+        strings.push_back(str.substr(prev));
+        return strings;
+    }
+};
+
+//
 // Input
 //
 class Input {
@@ -225,13 +274,26 @@ public:
         SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
         SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, alpha);
     }
-    void text(const std::string& text, Vec2i pos, int fontSize = 24, std::string fontName = "HomeVideo.ttf") {
+    void setFont(const std::string& fontName, int fontSize) {
+        DBG("Setting font");
         std::string basePath = SDL_GetBasePath();
         std::string fontPath = basePath + "assets/" + fontName;
-        TTF_Font* font = TTF_OpenFont(fontPath.c_str(), fontSize);
+        font = TTF_OpenFont(fontPath.c_str(), fontSize);
+        this->fontSize = fontSize;
         if (font == nullptr) {
-            std::cerr << "TTF_OpenFont: " << TTF_GetError() << std::endl;
+            std::cerr << "TTF_OpenFont Error: " << TTF_GetError() << std::endl;
+            exit(1);
             return;
+        }
+    }
+    void text(const std::string& text, Vec2i pos) {
+        if (text.length() == 0) {
+            DBG("Attempt to render Empty text");
+            return;
+        }
+        if (font == nullptr) {
+            std::cerr << "Font not set" << std::endl;
+            exit(1);
         }
         SDL_Color color;
         SDL_GetRenderDrawColor(renderer, &color.r, &color.g, &color.b, &color.a);
@@ -253,7 +315,59 @@ public:
         SDL_RenderCopy(renderer, texture, nullptr, &rect);
         SDL_FreeSurface(surface);
         SDL_DestroyTexture(texture);
-        TTF_CloseFont(font);
+        // TTF_CloseFont(font);
+    }
+    void textFmt(const std::string& text, Vec2i pos, int maxWidth = 1024) {
+        std::vector<std::string> words = StringTools::split(text, " ");
+        std::string line = "";
+        std::vector<std::string> lines;
+        for (std::string word : words) {
+            while (StringTools::contains(word, "\n")) {
+                std::string pre = word.substr(0, word.find("\n"));
+                lines.push_back(line + pre);
+                word = word.substr(word.find("\n") + 1);
+                line = "";
+            }
+            if (textWidth(line + word) >= maxWidth) {
+                lines.push_back(line);
+                line = "";
+            }
+            line += word + " ";
+        }
+        lines.push_back(line);
+        // Split by color codes
+        // Color code is <$RRGGBB$>
+        std::vector<std::vector<std::string>> coloredLines;
+        for (std::string line : lines) {
+            std::vector<std::string> colorChunks = StringTools::split(line, "<$");
+            coloredLines.push_back(colorChunks);
+        }
+
+        for (int i = 0; i < coloredLines.size(); i++) {
+            DBG("Line: " + std::to_string(i));
+            Vec2i linePos = Vec2i(pos.x, pos.y + i * fontSize);
+            for (int j = 0; j < coloredLines[i].size(); j++) {
+                std::string chunk = coloredLines[i][j];
+                if (chunk.length() == 0) continue;
+                if (chunk[6] == '$') {
+                    // Color code
+                    std::string colorCode = chunk.substr(0, 7);
+                    std::string textChunk = chunk.substr(8);
+                    Color color = Color(
+                        std::stoi(colorCode.substr(0, 2), nullptr, 16),
+                        std::stoi(colorCode.substr(2, 2), nullptr, 16),
+                        std::stoi(colorCode.substr(4, 2), nullptr, 16)
+                    );
+                    setColor(color);
+                    this->text(textChunk, linePos);
+                    linePos.x += textWidth(textChunk);
+                } 
+                else {
+                    this->text(chunk, linePos);
+                    linePos.x += textWidth(chunk);
+                }
+            }
+        }
     }
     void rect(Vec2i pos, Vec2i size, bool fill = true) {
         SDL_Rect rect = { pos.x, pos.y, size.x, size.y };
@@ -411,30 +525,22 @@ public:
     Vec2i getWindowSize() {
         return windowSize;
     }
-    int textWidth(const std::string& text, int fontSize = 24, std::string fontName = "HomeVideo.ttf") {
-        std::string basePath = SDL_GetBasePath();
-        std::string fontPath = basePath + "assets/" + fontName;
-        TTF_Font* font = TTF_OpenFont(fontPath.c_str(), fontSize);
+    int textWidth(const std::string& text) {
         if (font == nullptr) {
             std::cerr << "TTF_OpenFont: " << TTF_GetError() << std::endl;
-            return 0;
+            exit(1);
         }
         int width;
         TTF_SizeText(font, text.c_str(), &width, nullptr);
-        TTF_CloseFont(font);
         return width;
     }
-    int textHeight(const std::string& text, int fontSize = 24, std::string fontName = "HomeVideo.ttf") {
-        std::string basePath = SDL_GetBasePath();
-        std::string fontPath = basePath + "assets/" + fontName;
-        TTF_Font* font = TTF_OpenFont(fontPath.c_str(), fontSize);
+    int textHeight(const std::string& text) {
         if (font == nullptr) {
             std::cerr << "TTF_OpenFont: " << TTF_GetError() << std::endl;
-            return 0;
+            exit(1);
         }
         int height;
         TTF_SizeText(font, text.c_str(), nullptr, &height);
-        TTF_CloseFont(font);
         return height;
     }
     void tickUp() {
@@ -445,6 +551,8 @@ public:
     }
 private:
     int tick = 0;
+    TTF_Font* font;
+    int fontSize = 24;
     Vec2i windowSize;
     SDL_Renderer* renderer;
     SDL_Texture* spritesheet;
@@ -768,12 +876,12 @@ public:
         }
         graph->setColor(c);
         if (center) {
-            int textWidth = graph->textWidth(text, fontSize);
+            int textWidth = graph->textWidth(text);
             Vec2i textPos = pos + Vec2i((size.x - textWidth) / 2, (size.y - fontSize) / 2);
-            graph->text(text, textPos, fontSize);
+            graph->text(text, textPos);
         }
         else {
-            graph->text(text, pos, fontSize);
+            graph->text(text, pos);
         }
     }
 };
@@ -789,34 +897,6 @@ public:
     static void relativeMouse(bool relative = true) {
         SDL_SetRelativeMouseMode(relative ? SDL_TRUE : SDL_FALSE);
     }
-    static std::vector<std::string> splitString(const std::string& str, const std::string& delimiter) {
-        std::vector<std::string> strings;
-        size_t pos = 0;
-        size_t prev = 0;
-        while ((pos = str.find(delimiter, prev)) != std::string::npos) {
-            strings.push_back(str.substr(prev, pos - prev));
-            prev = pos + delimiter.length();
-        }
-        strings.push_back(str.substr(prev));
-        return strings;
-    }
-    static std::string toLowercase(const std::string& str) {
-        std::string out = str;
-        std::transform(out.begin(), out.end(), out.begin(), ::tolower);
-        return out;
-    }
-    static std::string strReplace(const std::string& str, const std::string fine, const std::string& replace) {
-        std::string out = str;
-        size_t pos = 0;
-        while ((pos = out.find(fine, pos)) != std::string::npos) {
-            out.replace(pos, fine.length(), replace);
-            pos += replace.length();
-        }
-        return out;
-    }
-    static bool stringContains(const std::string& str, const std::string& find) {
-        return str.find(find) != std::string::npos;
-    }
     static std::vector<bool> intToBits(int n, int bits) {
         std::vector<bool> out;
         for (int i = 0; i < bits; i++) {
@@ -829,7 +909,6 @@ public:
         return (1 << bits);
     }
 };
-
 
 //
 // Main class
@@ -934,6 +1013,8 @@ protected:
             exit(1);
         }
         graph->setRenderer(SDL_renderer);
+
+        graph->setFont("HomeVideo.ttf", 24);
 
         if (spriteSheetFile != "") {
             graph->loadSpritesheet("assets/" + spriteSheetFile);

@@ -33,12 +33,12 @@ public:
         std::string textMod = (state > 0 ? ">> " : "") + text;
         graph->setColor(*c);
         if (center) {
-            int textWidth = graph->textWidth(textMod, _g.fontSize);
+            int textWidth = graph->textWidth(textMod);
             Vec2i textPos = pos + Vec2i((size.x - textWidth) / 2, (size.y - _g.fontSize) / 2);
-            graph->text(textMod, textPos, _g.fontSize);
+            graph->text(textMod, textPos);
         }
         else {
-            graph->text(textMod, pos, _g.fontSize);
+            graph->text(textMod, pos);
         }
     }
     void onMouse(bool over) override {

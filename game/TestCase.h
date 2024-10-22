@@ -65,14 +65,14 @@ public:
     }
     bool check(std::string code) { 
         data.err = "";
-        code = Util::toLowercase(code);
-        code = Util::strReplace(code, "_", " ");
+        code = StringTools::toLowercase(code);
+        code = StringTools::replace(code, "_", " ");
         DBG("Code Check:");
         DBG(code);
-        if ((!Util::stringContains(code, "a") 
-            && !Util::stringContains(code, "b") 
-            && !Util::stringContains(code, "c") 
-            && !Util::stringContains(code, "d"))
+        if ((!StringTools::contains(code, "a") 
+            && !StringTools::contains(code, "b") 
+            && !StringTools::contains(code, "c") 
+            && !StringTools::contains(code, "d"))
             || code == "")
         {
             data.lastCheck = false;

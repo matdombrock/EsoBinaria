@@ -12,6 +12,7 @@ using namespace Imp;
 #include "BottomBar.h"
 #include "MainMenu.h"
 #include "SetupScreen.h"
+#include "HelpScreen.h"
 #include "_gameMaster.h"
 
 class App : public Imp::Main { 
@@ -23,6 +24,7 @@ public:
     BottomBar bottomBar;
     MainMenu mainMenu;
     SetupScreen setupScreen;
+    HelpScreen helpScreen;
     App() : Imp::Main("EsoMachina (v0.1-alpha)", WINDOW_SIZE, 60, "tiles.png") { 
         clearColor = Color(_colors["BG"]);
         entityMan.addEntity(&grid);
@@ -30,15 +32,18 @@ public:
         entityMan.addEntity(&testArea);
         entityMan.addEntity(&topBar);
         entityMan.addEntity(&setupScreen);
+        entityMan.addEntity(&helpScreen);
         entityMan.addEntity(&mainMenu);
         entityMan.addEntity(&cursor);
+
+        _g.setScreen("helpScreen");
     }
     ~App() {}
     void process() override {
         _input.poll();
-
         // Pause
         if (_input.keyOnce(SDLK_ESCAPE)) {
+            DBG("Hit ESC");
             _g.setScreen("mainMenu");
         }
 
