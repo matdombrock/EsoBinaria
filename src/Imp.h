@@ -274,7 +274,7 @@ public:
         SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
         SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, alpha);
     }
-    void setFont(const std::string& fontName, int fontSize) {
+    void setFont(const std::string& fontName, int fontSize = 24) {
         DBG("Setting font");
         std::string basePath = SDL_GetBasePath();
         std::string fontPath = basePath + "assets/" + fontName;
