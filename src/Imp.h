@@ -656,7 +656,6 @@ public:
         entities.push_back(entity);
         size_t index = entities.size() - 1;
         entity->init(index);
-        DBG("Added entity: " + entity->tag);
         return index;
     }
     void removeEntity(Entity* entity) {
