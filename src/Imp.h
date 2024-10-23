@@ -147,16 +147,32 @@ public:
         }
         return count;
     }
-    static std::vector<std::string> split(const std::string& str, const std::string& delimiter) {
-        std::vector<std::string> strings;
-        size_t pos = 0;
-        size_t prev = 0;
-        while ((pos = str.find(delimiter, prev)) != std::string::npos) {
-            strings.push_back(str.substr(prev, pos - prev));
-            prev = pos + delimiter.length();
+    // TODO: This code is sketchy
+    static std::vector<std::string> split(const std::string& str, const std::string& delimiter, bool cleanDelimiter = true) {
+        std::vector<std::string> tokens;
+        size_t start = 0;
+        size_t end = str.find(delimiter);
+        bool firstToken = true;
+        while (end != std::string::npos) {
+            std::string token = str.substr(start, end - start);
+            if (!token.empty() || !cleanDelimiter) {
+                if (!cleanDelimiter && !token.empty() && !firstToken) {
+                    token = delimiter + token;
+                }
+                tokens.push_back(token);
+            }
+            firstToken = false;
+            start = end + delimiter.length();
+            end = str.find(delimiter, start);
         }
-        strings.push_back(str.substr(prev));
-        return strings;
+        std::string token = str.substr(start);
+        if (!token.empty() || !cleanDelimiter) {
+            if (!cleanDelimiter && !token.empty() && !firstToken) {
+                token = delimiter + token;
+            }
+            tokens.push_back(token);
+        }
+        return tokens;
     }
 };
 
@@ -318,55 +334,61 @@ public:
         // TTF_CloseFont(font);
     }
     void textFmt(const std::string& text, Vec2i pos, int maxWidth = 1024) {
-        std::vector<std::string> words = StringTools::split(text, " ");
-        std::string line = "";
-        std::vector<std::string> lines;
-        for (std::string word : words) {
-            while (StringTools::contains(word, "\n")) {
-                std::string pre = word.substr(0, word.find("\n"));
-                lines.push_back(line + pre);
-                word = word.substr(word.find("\n") + 1);
-                line = "";
-            }
-            if (textWidth(line + word) >= maxWidth) {
-                lines.push_back(line);
-                line = "";
-            }
-            line += word + " ";
-        }
-        lines.push_back(line);
-        // Split by color codes
-        // Color code is <$RRGGBB$>
-        std::vector<std::vector<std::string>> coloredLines;
+        // Split by new lines
+        std::vector<std::string> lines = StringTools::split(text, "\n");
+        // Split by overflows
+        std::vector<std::string> linesOverflow = {};
+        int colorWidth = textWidth("<$RRGGBB$>");
         for (std::string line : lines) {
-            std::vector<std::string> colorChunks = StringTools::split(line, "<$");
-            coloredLines.push_back(colorChunks);
-        }
-
-        for (int i = 0; i < coloredLines.size(); i++) {
-            DBG("Line: " + std::to_string(i));
-            Vec2i linePos = Vec2i(pos.x, pos.y + i * fontSize);
-            for (int j = 0; j < coloredLines[i].size(); j++) {
-                std::string chunk = coloredLines[i][j];
-                if (chunk.length() == 0) continue;
-                if (chunk[6] == '$') {
-                    // Color code
-                    std::string colorCode = chunk.substr(0, 7);
-                    std::string textChunk = chunk.substr(8);
-                    Color color = Color(
-                        std::stoi(colorCode.substr(0, 2), nullptr, 16),
-                        std::stoi(colorCode.substr(2, 2), nullptr, 16),
-                        std::stoi(colorCode.substr(4, 2), nullptr, 16)
-                    );
-                    setColor(color);
-                    this->text(textChunk, linePos);
-                    linePos.x += textWidth(textChunk);
-                } 
+            std::string lineOverflow = "";
+            for (std::string word : StringTools::split(line, " ")) {
+                int colorCount = StringTools::containsCount(lineOverflow + word, "<$");
+                int  colorWidthTotal = colorCount * colorWidth;
+                int lineW = textWidth(lineOverflow + word);
+                if (lineW - colorWidthTotal > maxWidth) {
+                    linesOverflow.push_back(lineOverflow);
+                    lineOverflow = word + " ";
+                }
                 else {
-                    this->text(chunk, linePos);
-                    linePos.x += textWidth(chunk);
+                    lineOverflow += word + " ";
                 }
             }
+            linesOverflow.push_back(lineOverflow);
+        }
+
+        // Split each line into color chunks
+        std::vector<std::vector<std::string>> chunks = {};
+        for (std::string line : linesOverflow) {
+            std::vector<std::string> subChunks = StringTools::split(line, "<$", false);
+            chunks.push_back(subChunks);
+        }
+
+        // Render the text
+        int yOff = 0;
+        int xOff = 0;
+        for (std::vector<std::string> chunk : chunks) {
+            for (std::string subChunk : chunk) {
+                DBG("Subchunk: " + subChunk);
+                if (subChunk[0] == '<' && subChunk[1] == '$') {
+                    if (subChunk.length() >= 11) {
+                        // Color code
+                        std::string colorCode = subChunk.substr(2, 9);
+                        DBG(colorCode);
+                        Color color = Color(
+                            std::stoi(colorCode.substr(0, 2), nullptr, 16),
+                            std::stoi(colorCode.substr(2, 2), nullptr, 16),
+                            std::stoi(colorCode.substr(4, 2), nullptr, 16)
+                        );
+                        setColor(color);
+                        subChunk = subChunk.substr(10);
+                    }
+                    else continue;
+                }
+                this->text(subChunk, pos + Vec2i(xOff, yOff));
+                xOff += textWidth(subChunk);
+            }
+            xOff = 0;
+            yOff += fontSize;
         }
     }
     void rect(Vec2i pos, Vec2i size, bool fill = true) {
