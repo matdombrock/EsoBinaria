@@ -49,6 +49,7 @@ public:
         //     btnOk.available = true;
         //     btnCancel.available = true;
         // }
+        if (!show) return;
         if (!showCancel) {
             btnCancel.available = false;
         }

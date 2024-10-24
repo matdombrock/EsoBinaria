@@ -1024,7 +1024,7 @@ protected:
     bool pauseRenderer;
     void init(std::string spriteSheetFile = "") {
         DBG("Imp starting");
-        window = SDL_CreateWindow(windowTitle, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, windowSize.x, windowSize.y, SDL_WINDOW_SHOWN);
+        window = SDL_CreateWindow(windowTitle, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, windowSize.x, windowSize.y, SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL);
         if (window == nullptr) {
             std::cerr << "Window could not be created! SDL_Error: " << SDL_GetError() << std::endl;
             SDL_Quit();

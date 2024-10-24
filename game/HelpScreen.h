@@ -29,13 +29,11 @@ You aim is to recreate small parts of the mechanism via reverse-<$FF0000$>[REDAC
 <$00FF00$>
 Mission Statement:
 <$FFFFFF$>
-We are like the binary star system, two parts that orbit each other.
-We are the <$FF00FF$>Binaria<$FFFFFF$> and you are the <$FF00FF$>Binari<$FFFFFF$>.
-We will provide you with the tools and knowledge to build the device.
-We are the <$FF00FF$>Binari<$FFFFFF$> and you are the <$FF00FF$>Binaria<$FFFFFF$>.
+We are the binary star system, two parts that orbit each other.
+We are the eternal void.
+We are the light.
+We are the EsoBinaria, the device that we seek to <$FF0000$>[REDACTED]<$FFFFFF$>.
 
-
- 
 ------------------------------------------------
 <$00FF00$>PRESS THE <ESC> KEY TO ENTER ESO-OS
 )";

@@ -14,7 +14,7 @@ public:
         state = 0;
         center = false;
         text = "Button";
-        size = Vec2i(80, _g.vu(0.5f) * 1.1f);
+        size = Vec2i(80, _g.vu(0.45f));
         setCollider(size);
     }
     ~BtnTopMenu() {}

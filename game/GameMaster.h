@@ -24,6 +24,7 @@ public:
     }
     void setReset(bool reset) {
         this->reset = reset;
+        DBG("Reset: " + std::to_string(reset));
     }
     bool getReset() {
         return reset;
