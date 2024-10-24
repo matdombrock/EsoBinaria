@@ -15,7 +15,7 @@ using namespace Imp;
 #include "HelpScreen.h"
 #include "_gameMaster.h"
 
-#include "Sounds.h"
+#include "_sounds.h"
 #include "_fonts.h"
 
 

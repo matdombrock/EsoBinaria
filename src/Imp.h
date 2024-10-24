@@ -593,6 +593,7 @@ public:
     ~Sound() {
         if (sound != nullptr) {
             // WARN: Causes errors if sound is redefined
+            // WARN: AS happens in _sounds.h
             // Mix_FreeChunk(sound);
         }
     }

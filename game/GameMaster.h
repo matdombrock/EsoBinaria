@@ -6,7 +6,7 @@
 #include "../src/Imp.h"
 using namespace Imp;
 
-#include "Sounds.h"
+#include "_sounds.h"
 #include "Cell.h"
 #include "TestData.h"
 #include "_helpItems.h"
