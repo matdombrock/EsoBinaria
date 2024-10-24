@@ -4,18 +4,18 @@ using namespace Imp;
 #include "Modal.h"
 #include "_colors.h"
 #include "_gameMaster.h"
+#include "_fonts.h"
 
 class BtnTopMenu : public BtnText {
 public:
-    bool isHomeBtn;
+    bool isHomeBtn = false;
+    int fontSize = Fonts::small.size;
     BtnTopMenu() : BtnText() {
         tag = "btn";
         state = 0;
         center = false;
         text = "Button";
-        fontSize = _g.fontSize * 0.75f;
         size = Vec2i(80, fontSize * 1.1f);
-        isHomeBtn = false;
         setCollider(size);
     }
     ~BtnTopMenu() {}
@@ -40,12 +40,12 @@ public:
             return;
         }
         if (center) {
-            int textWidth = graph->textWidth(text);
+            int textWidth = graph->textWidth(text, &Fonts::small);
             Vec2i textPos = pos + Vec2i((size.x - textWidth) / 2, (size.y - fontSize) / 2);
-            graph->text(text, textPos);
+            graph->text(text, textPos, &Fonts::small);
         }
         else {
-            graph->text(" " + text + " ", pos);
+            graph->text(" " + text + " ", pos, &Fonts::small);
         }
     }
 };

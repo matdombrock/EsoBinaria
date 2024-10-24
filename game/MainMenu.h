@@ -3,6 +3,7 @@
 using namespace Imp;
 #include "_colors.h"
 #include "_gameMaster.h"
+#include "_fonts.h"
 
 class BtnMainMenu : public Entity {
 public:
@@ -33,12 +34,12 @@ public:
         std::string textMod = (state > 0 ? ">> " : "") + text;
         graph->setColor(*c);
         if (center) {
-            int textWidth = graph->textWidth(textMod);
+            int textWidth = graph->textWidth(textMod, &Fonts::medium);
             Vec2i textPos = pos + Vec2i((size.x - textWidth) / 2, (size.y - _g.fontSize) / 2);
-            graph->text(textMod, textPos);
+            graph->text(textMod, textPos, &Fonts::medium);
         }
         else {
-            graph->text(textMod, pos);
+            graph->text(textMod, pos, &Fonts::medium);
         }
     }
     void onMouse(bool over) override {
@@ -61,6 +62,7 @@ public:
     BtnMainMenu btnSettings;
     BtnMainMenu btnExit;
     Sprite sprBg;
+    Font font = Font("HomeVideo.ttf", _g.fontSize);
     MainMenu() : Entity() {
         tag = "menu";
 
@@ -93,7 +95,7 @@ public:
             // Sounds::menuTrack.stop();
             return;
         }
-        // Sounds::menuTrack.volume = 255;
+        Sounds::menuTrack.volume = 255;
         if (!Sounds::menuTrack.isPlaying()) Sounds::menuTrack.volume = 0;
         Sounds::menuTrack.volUp(4, 128);
         Sounds::menuTrack.play(true);
@@ -118,7 +120,7 @@ public:
         graph->setColor(_colors["BG"]);
         graph->rect(Vec2i(0, 0), WINDOW_SIZE);
         graph->setColor(_colors["WHITE"]);
-        graph->text("ESO-OS", Vec2i(20, 20));
+        graph->text("ESO-OS", Vec2i(20, 20), &Fonts::medium);
         em.render(graph);
         sprBg.render(graph, WINDOW_SIZE - Vec2i(WINDOW_SIZE.x/2, WINDOW_SIZE.x/2));
     }

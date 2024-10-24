@@ -15,6 +15,10 @@ using namespace Imp;
 #include "HelpScreen.h"
 #include "_gameMaster.h"
 
+#include "Sounds.h"
+#include "_fonts.h"
+
+
 class App : public Imp::Main { 
 public:
     Grid grid;
@@ -37,6 +41,9 @@ public:
         entityMan.addEntity(&cursor);
 
         _g.setScreen("helpScreen");
+
+        Sounds::init();
+        Fonts::init(_g.fontSize);
     }
     ~App() {}
     void process() override {

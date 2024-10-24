@@ -5,6 +5,7 @@ using namespace Imp;
 #include "_helpItems.h"
 #include "_colors.h"
 #include "_gameMaster.h"
+#include "_fonts.h"
 
 class BottomBar : public Entity {
 public:
@@ -135,24 +136,24 @@ public:
         graph->rect(Vec2i(0, _g.bottomBarPos.y + _g.cellSize), Vec2i(WINDOW_SIZE.x, _g.bottomBarSize.y - _g.cellSize), true);
         if (_g.getHelpItem() != nullptr) {
             graph->setColor(_colors["GREEN"]);
-            graph->text("Name: ", Vec2i(padX, _g.bottomBarPos.y + _g.cellSize + padY));
-            int w = graph->textWidth("Name: ");
+            graph->text("Name: ", Vec2i(padX, _g.bottomBarPos.y + _g.cellSize + padY), &Fonts::medium);
+            int w = graph->textWidth("Name: ", &Fonts::medium);
             graph->setColor(200, 200, 200);
-            graph->text(_g.getHelpItem()->title, Vec2i(padX + w, _g.bottomBarPos.y + _g.cellSize + padY));
-            w += graph->textWidth(_g.getHelpItem()->title);
+            graph->text(_g.getHelpItem()->title, Vec2i(padX + w, _g.bottomBarPos.y + _g.cellSize + padY), &Fonts::medium);
+            w += graph->textWidth(_g.getHelpItem()->title, &Fonts::medium);
             graph->setColor(_colors["GRAY"]);
-            graph->text(" (" + _g.getHelpItem()->key + ")", Vec2i(padX + w, _g.bottomBarPos.y + _g.cellSize + padY));
+            graph->text(" (" + _g.getHelpItem()->key + ")", Vec2i(padX + w, _g.bottomBarPos.y + _g.cellSize + padY), &Fonts::medium);
 
             graph->setColor(_colors["GREEN"]);
-            graph->text("Info: ", Vec2i(padX, _g.bottomBarPos.y + _g.cellSize + _g.fontSize + padY));
-            w = graph->textWidth("Info: ");
+            graph->text("Info: ", Vec2i(padX, _g.bottomBarPos.y + _g.cellSize + _g.fontSize + padY), &Fonts::medium);
+            w = graph->textWidth("Info: ", &Fonts::medium);
             graph->setColor(200, 200, 200);
-            graph->text(_g.getHelpItem()->desc, Vec2i(padX + w, _g.bottomBarPos.y + _g.cellSize + _g.fontSize + padY));
+            graph->text(_g.getHelpItem()->desc, Vec2i(padX + w, _g.bottomBarPos.y + _g.cellSize + _g.fontSize + padY), &Fonts::medium);
         }
         else if (_g.getCodeString().length() > 0) {
             std::string codePre = _g.hasCodeErr() ? "!!" :">> ";
             graph->setColor(_g.hasCodeErr() ? _colors["YELLOW"] : _colors["GREEN"]);
-            graph->text(codePre, Vec2i(padX, _g.bottomBarPos.y + _g.cellSize + padY));
+            graph->text(codePre, Vec2i(padX, _g.bottomBarPos.y + _g.cellSize + padY), &Fonts::medium);
             std::string csMod = _g.getCodeString();
             if (_g.getActiveTestData() != nullptr) {
                 DBG("Active test data replace");
@@ -174,20 +175,20 @@ public:
                 p3 = split[2];
             }
             // 
-            int p0w = graph->textWidth(codePre);
-            int p1w = graph->textWidth(p1);
-            int p2w = graph->textWidth(p2);
+            int p0w = graph->textWidth(codePre, &Fonts::medium);
+            int p1w = graph->textWidth(p1, &Fonts::medium);
+            int p2w = graph->textWidth(p2, &Fonts::medium);
             if (p1.length() > 0) {
                 graph->setColor(_colors["GRAY"]);
-                graph->text(p1, Vec2i(padX + p0w, _g.bottomBarPos.y + _g.cellSize + padY));
+                graph->text(p1, Vec2i(padX + p0w, _g.bottomBarPos.y + _g.cellSize + padY), &Fonts::medium);
             }
             if (p2.length() > 0) {
                 graph->setColor(_colors["GREEN"]);
-                graph->text(p2, Vec2i(padX + p0w + p1w, _g.bottomBarPos.y + _g.cellSize + padY));
+                graph->text(p2, Vec2i(padX + p0w + p1w, _g.bottomBarPos.y + _g.cellSize + padY), &Fonts::medium);
             }
             if (p3.length() > 0) {
                 graph->setColor(_colors["GRAY"]);
-                graph->text(p3, Vec2i(padX + p0w + p1w + p2w, _g.bottomBarPos.y + _g.cellSize + padY));
+                graph->text(p3, Vec2i(padX + p0w + p1w + p2w, _g.bottomBarPos.y + _g.cellSize + padY), &Fonts::medium);
             }
         }
     }

@@ -244,6 +244,25 @@ Input _input;
 //
 // Graphics
 //
+
+class Font {
+public:
+    TTF_Font* data;
+    int size;
+    Font(const std::string& fontName = "", int fontSize = 24) {
+        if (fontName.empty()) return;
+        std::string basePath = SDL_GetBasePath();
+        std::string fontPath = basePath + "assets/" + fontName;
+        data = TTF_OpenFont(fontPath.c_str(), fontSize);
+        this->size = fontSize;
+        if (data == nullptr) {
+            std::cerr << "TTF_OpenFont Error: " << TTF_GetError() << std::endl;
+            exit(1);
+            return;
+        }
+    }
+};
+
 class Graphics {
 public:
     int fps = 60;
@@ -287,19 +306,7 @@ public:
         SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
         SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, alpha);
     }
-    void setFont(const std::string& fontName, int fontSize = 24) {
-        DBG("Setting font");
-        std::string basePath = SDL_GetBasePath();
-        std::string fontPath = basePath + "assets/" + fontName;
-        font = TTF_OpenFont(fontPath.c_str(), fontSize);
-        this->fontSize = fontSize;
-        if (font == nullptr) {
-            std::cerr << "TTF_OpenFont Error: " << TTF_GetError() << std::endl;
-            exit(1);
-            return;
-        }
-    }
-    void text(const std::string& text, Vec2i pos) {
+    void text(const std::string& text, Vec2i pos, Font* font) {
         if (text.length() == 0) {
             // DBG("Attempt to render Empty text");
             return;
@@ -310,7 +317,7 @@ public:
         }
         SDL_Color color;
         SDL_GetRenderDrawColor(renderer, &color.r, &color.g, &color.b, &color.a);
-        SDL_Surface* surface = TTF_RenderText_Solid(font, text.c_str(), color);
+        SDL_Surface* surface = TTF_RenderText_Solid(font->data, text.c_str(), color);
         if (surface == nullptr) {
             std::cerr << "TTF_RenderText_Solid: " << TTF_GetError() << std::endl;
             return;
@@ -330,18 +337,18 @@ public:
         SDL_DestroyTexture(texture);
         // TTF_CloseFont(font);
     }
-    void textFmt(const std::string& text, Vec2i pos, int maxWidth = 1024) {
+    void textFmt(const std::string& text, Vec2i pos, Font* font, int maxWidth = 1024) {
         // Split by new lines
         std::vector<std::string> lines = StringTools::split(text, "\n");
         // Split by overflows
         std::vector<std::string> linesOverflow = {};
-        int colorWidth = textWidth("<$RRGGBB$>");
+        int colorWidth = textWidth("<$RRGGBB$>", font);
         for (std::string line : lines) {
             std::string lineOverflow = "";
             for (std::string word : StringTools::split(line, " ")) {
                 int colorCount = StringTools::containsCount(lineOverflow + word, "<$");
                 int  colorWidthTotal = colorCount * colorWidth;
-                int lineW = textWidth(lineOverflow + word);
+                int lineW = textWidth(lineOverflow + word, font);
                 if (lineW - colorWidthTotal > maxWidth) {
                     linesOverflow.push_back(lineOverflow);
                     lineOverflow = word + " ";
@@ -379,11 +386,11 @@ public:
                     }
                     else continue;
                 }
-                this->text(subChunk, pos + Vec2i(xOff, yOff));
-                xOff += textWidth(subChunk);
+                this->text(subChunk, pos + Vec2i(xOff, yOff), font);
+                xOff += textWidth(subChunk, font);
             }
             xOff = 0;
-            yOff += fontSize;
+            yOff += font->size;
         }
     }
     void rect(Vec2i pos, Vec2i size, bool fill = true) {
@@ -542,22 +549,22 @@ public:
     Vec2i getWindowSize() {
         return windowSize;
     }
-    int textWidth(const std::string& text) {
+    int textWidth(const std::string& text, Font* font) {
         if (font == nullptr) {
             std::cerr << "TTF_OpenFont: " << TTF_GetError() << std::endl;
             exit(1);
         }
         int width;
-        TTF_SizeText(font, text.c_str(), &width, nullptr);
+        TTF_SizeText(font->data, text.c_str(), &width, nullptr);
         return width;
     }
-    int textHeight(const std::string& text) {
+    int textHeight(const std::string& text, Font* font) {
         if (font == nullptr) {
             std::cerr << "TTF_OpenFont: " << TTF_GetError() << std::endl;
             exit(1);
         }
         int height;
-        TTF_SizeText(font, text.c_str(), nullptr, &height);
+        TTF_SizeText(font->data, text.c_str(), nullptr, &height);
         return height;
     }
     void tickUp() {
@@ -568,8 +575,6 @@ public:
     }
 private:
     int tick = 0;
-    TTF_Font* font;
-    int fontSize = 24;
     Vec2i windowSize;
     SDL_Renderer* renderer;
     SDL_Texture* spritesheet;
@@ -588,16 +593,18 @@ public:
     ~Sound() {
         if (sound != nullptr) {
             // WARN: Causes errors if sound is redefined
-            Mix_FreeChunk(sound);
+            // Mix_FreeChunk(sound);
         }
     }
     void set(std::string path) {
         channel = -1;
-        if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
-            std::cerr << "SDL_mixer could not initialize! SDL_mixer Error: " << Mix_GetError() << std::endl;
-            DBG("Cant initialize SDL_mixer");
-            return;
-        }
+
+        //  if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
+        //     std::cerr << "SDL_mixer could not initialize! SDL_mixer Error: " << Mix_GetError() << std::endl;
+        //     DBG("Cant initialize SDL_mixer");
+        //     exit(1);
+        // }
+
         std::string basePath = SDL_GetBasePath();
         if (basePath.empty()) {
             std::cerr << "SDL_GetBasePath failed!" << std::endl;
@@ -609,12 +616,14 @@ public:
         if (sound == nullptr) {
             std::cerr << "Mix_LoadWAV: " << Mix_GetError() << std::endl;
             DBG("Cant load sound: " + fullPath);
+            exit(1);
         }
         else {
             DBG("Sound loaded: " + fullPath);
         }
     }
     void play(bool ifNotPlaying = false) {
+        // return;
         if (sound == nullptr) {
             DBG("Sound not set");
             return;
@@ -880,7 +889,7 @@ public:
 class BtnText : public Btn {
 public:
     std::string text = "Button";
-    Uint8 fontSize = 24;
+    Font font = Font("HomeVideo.ttf", 24);
     BtnText() : Btn() {}
     ~BtnText() {}
     void render(Graphics* graph) override {
@@ -893,12 +902,12 @@ public:
         }
         graph->setColor(c);
         if (center) {
-            int textWidth = graph->textWidth(text);
-            Vec2i textPos = pos + Vec2i((size.x - textWidth) / 2, (size.y - fontSize) / 2);
-            graph->text(text, textPos);
+            int textWidth = graph->textWidth(text, &font);
+            Vec2i textPos = pos + Vec2i((size.x - textWidth) / 2, (size.y - font.size) / 2);
+            graph->text(text, textPos, &font);
         }
         else {
-            graph->text(text, pos);
+            graph->text(text, pos, &font);
         }
     }
 };
@@ -1026,9 +1035,13 @@ protected:
             SDL_Quit();
             exit(1);
         }
+        SDL_Init(SDL_INIT_AUDIO);
+        if (Mix_OpenAudio(48000, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
+            std::cerr << "SDL_mixer could not initialize! SDL_mixer Error: " << Mix_GetError() << std::endl;
+            DBG("Cant initialize SDL_mixer");
+            exit(1);
+        }
         graph->setRenderer(SDL_renderer);
-
-        graph->setFont("HomeVideo.ttf", 24);
 
         if (spriteSheetFile != "") {
             graph->loadSpritesheet("assets/" + spriteSheetFile);

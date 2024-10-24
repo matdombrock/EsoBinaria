@@ -3,6 +3,7 @@
 using namespace Imp;
 #include "_colors.h"
 #include "_gameMaster.h"
+#include "_fonts.h"
 
 class Modal : public Entity {
 public:
@@ -14,6 +15,7 @@ public:
     BtnText btnCancel;
     EntityManager em;
     bool show;
+    Font font = Font("HomeVideo.ttf", _g.fontSize);
     Modal() : Entity() {
         tag = "modal";
         pos = WINDOW_SIZE / 4;
@@ -61,7 +63,7 @@ public:
         graph->setColor(_colors["BG3"]);
         graph->rect(pos, Vec2i(WINDOW_SIZE.x / 2, WINDOW_SIZE.y / 4), true);
         graph->setColor(_colors["WHITE"]);
-        graph->text(title, pos + Vec2i(_g.vu(0.5f), _g.vu(0.5f)));
+        graph->text(title, pos + Vec2i(_g.vu(0.5f), _g.vu(0.5f)), &Fonts::medium);
         em.render(graph);
     }
 };

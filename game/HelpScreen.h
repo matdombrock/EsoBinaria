@@ -3,6 +3,7 @@
 using namespace Imp;
 #include "_colors.h"
 #include "_gameMaster.h"
+#include "_fonts.h"
 
 
 class HelpScreen : public Entity {
@@ -11,6 +12,7 @@ public:
     std::string text;
     Sprite sprWiz = Sprite(Vec2i(0, 224), Vec2i(32,32), Vec2i(_g.vu(2), _g.vu(2)));
     Sound sndType = Sound("1.wav");
+    Font font = Font("HomeVideo.ttf", 24);
     HelpScreen() : Entity() {
         tag = "helpScreen";
         sprWiz.setAnimation({Vec2i(0, 224), Vec2i(32, 224)}, 4);
@@ -63,6 +65,6 @@ Objective:
             sndType.stop();
         }
         std::string textTrunc = text.substr(0, pos);
-        graph->textFmt(textTrunc, Vec2i(_g.vu(1), _g.vu(2)), WINDOW_SIZE.x - _g.vu(2));
+        graph->textFmt(textTrunc, Vec2i(_g.vu(1), _g.vu(2)), &Fonts::small, WINDOW_SIZE.x - _g.vu(2));
     }
 };

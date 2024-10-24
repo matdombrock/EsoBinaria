@@ -3,6 +3,7 @@
 using namespace Imp;
 #include "_colors.h"
 #include "_gameMaster.h"
+#include "_fonts.h"
 
 class BtnNub : public Btn {
 public:
@@ -35,6 +36,8 @@ public:
     BtnText btnMedium;
     BtnText btnHard;
     BtnText btnStart;
+    Font font = Font("HomeVideo.ttf", _g.fontSize);
+    Font fontLrg = Font("HomeVideo.ttf", _g.fontSize * 4);
     SetupScreen() : Entity() {
         tag = "setupScreen";
         for (int i = 0; i < 256; i++) {
@@ -108,11 +111,9 @@ public:
         graph->tri(Vec2i(0, 0), Vec2i(_g.vu(2), 0), Vec2i(0, _g.vu(2)));
         
         graph->setColor(_colors["WHITE"]);
-        graph->setFont("HomeVideo.ttf", _g.fontSize * 4);
-        graph->text("   EsoBinaria", Vec2i(_g.vu(0), _g.vu(0)));
+        graph->text("   EsoBinaria", Vec2i(_g.vu(0), _g.vu(0)), &Fonts::large);
         graph->setColor(_colors["WHITE"]);
-        graph->setFont("HomeVideo.ttf", _g.fontSize);
-        graph->text(_g.getPuzzleString(), Vec2i(_g.vu(2), _g.vu(2)));
+        graph->text(_g.getPuzzleString(), Vec2i(_g.vu(2), _g.vu(2)), &Fonts::medium);
 
         // Draw cursor lines
         // graph->setColor(_colors["GREEN"], 128);

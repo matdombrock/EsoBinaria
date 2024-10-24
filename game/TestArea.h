@@ -5,6 +5,7 @@ using namespace Imp;
 #include "TestCase.h"
 #include "_colors.h"
 #include "_gameMaster.h"
+#include "_fonts.h"
 
 class TestArea : public Entity {
 public:
@@ -14,6 +15,7 @@ public:
     int testWinWidth;
     std::vector<TestCase> tests;
     std::string codeStringOld;
+    Font font = Font("HomeVideo.ttf", _g.fontSize);
     TestArea() : Entity() {
         tag = "testScreen";
         
@@ -84,15 +86,15 @@ public:
         em.render(graph);
         if (_g.hasCodeErr()) {
             graph->setColor(_colors["YELLOW"]);
-            graph->text("!! ERROR", Vec2i(pos.x + _g.vu(0.5f), pos.y - (_g.getTick()/4 % 8)));
+            graph->text("!! ERROR", Vec2i(pos.x + _g.vu(0.5f), pos.y - (_g.getTick()/4 % 8)), &Fonts::medium);
         }
         else {
             graph->setColor(_colors["GRAY"]);
-            graph->text(_g.getPuzzleString(), Vec2i(pos.x + _g.vu(0.5f), pos.y));
+            graph->text(_g.getPuzzleString(), Vec2i(pos.x + _g.vu(0.5f), pos.y), &Fonts::medium);
         }
         if (testFails == 0) {
             graph->setColor(_colors["GREEN"]);
-            graph->text("PASSED", Vec2i(_g.cellSize,_g.cellSize));
+            graph->text("PASSED", Vec2i(_g.cellSize,_g.cellSize), &Fonts::medium);
         }
     }
 };
