@@ -182,8 +182,6 @@ public:
 class Input {
 public:
     Input() {
-        keyState = SDL_GetKeyboardState(NULL);
-        mouseState = SDL_GetMouseState(&mouseX, &mouseY);
         poll();
     }
     ~Input() {}
@@ -233,13 +231,14 @@ public:
         return out;
     }
 private:
-    const Uint8* keyState;
-    Uint8 keyStatePrev[512];
-    int mouseX;
-    int mouseY;
-    Uint32 mouseState;
-    Uint32 mouseStatePrev;
+    const Uint8* keyState = SDL_GetKeyboardState(NULL);
+    Uint8 keyStatePrev[512] = {};
+    int mouseX = 0;
+    int mouseY = 0;
+    Uint32 mouseState = SDL_GetMouseState(&mouseX, &mouseY);
+    Uint32 mouseStatePrev = 0;
 };
+// Declare global input
 Input _input;
 
 //
@@ -248,9 +247,7 @@ Input _input;
 class Graphics {
 public:
     int fps = 60;
-    Graphics(Vec2i windowSize) : renderer(nullptr){
-        this->windowSize = windowSize;
-    }
+    Graphics(Vec2i windowSize) : renderer(nullptr), windowSize(windowSize) {}
     ~Graphics() {}
     void setRenderer(SDL_Renderer* renderer) {
         this->renderer = renderer;
@@ -581,14 +578,11 @@ private:
 class Sound {
 public:
     Mix_Chunk* sound;
-    int channel;
-    int volume;
-    int pan[2];
+    int channel = -1;
+    int volume = MIX_MAX_VOLUME / 2;
+    int pan[2] = { 255, 255 };
     std::string tag;
     Sound(std::string path = "") {
-        pan[0] = 255;
-        pan[1] = 255;
-        volume = MIX_MAX_VOLUME / 2;
         if (path != "") set(path);
     }
     ~Sound() {
@@ -663,13 +657,9 @@ public:
     Vec2i size;
     Vec2i sheetPos;
     Vec2i spriteSize;
-    int fps;
+    int fps = 0;
     Sprite(Vec2i sheetPos = Vec2i(0,0), Vec2i spriteSize = Vec2i(16,16), Vec2i size = Vec2i(64,64)) 
-        : size(size), sheetPos(sheetPos), spriteSize(spriteSize) 
-    {
-        fps = 0;
-        isAnimated = false;
-    }
+        : size(size), sheetPos(sheetPos), spriteSize(spriteSize) {}
     ~Sprite() {}
     void set(Vec2i sheetPos, Vec2i spriteSize, Vec2i size) {
         this->sheetPos = sheetPos;
@@ -703,8 +693,8 @@ public:
         graph->sprite(sheetPosTemp, pos, spriteSize, size, flipX, flipY);
     }
 private:
-    std::vector<Vec2i> frames;
-    bool isAnimated;
+    std::vector<Vec2i> frames = {};
+    bool isAnimated = false;
 };
 
 //
@@ -738,13 +728,12 @@ public:
 //
 class Entity {
 public:
-    std::string tag;
+    std::string tag = "none";
     Vec2i pos;
     BoxCollider* collider;
     int zindex = 0;
     bool colliderEnabled = false;
     Entity(){
-        tag = "none";
         collider = new BoxCollider(pos, Vec2i(0, 0));
     }
     ~Entity(){}
@@ -784,13 +773,13 @@ public:
     // Called every frame when mouse is over
     virtual void onMouseOver() {}
 private:
-    int id;
+    int id = -1;
 };
 
 typedef std::vector<std::pair<int, int>> CollisionPair;
 class EntityManager {
 public:
-    std::vector<Entity*> entities;
+    std::vector<Entity*> entities = {};
     EntityManager() {}
     ~EntityManager() {}
     void init() {}
@@ -854,18 +843,14 @@ public:
 //
 class Btn : public Entity {
 public:
-    Vec2i size;
-    Uint8 state;
-    bool center;
-    bool available;
+    Vec2i size = Vec2i(80, 24);
+    Uint8 state = 0;
+    bool center = false;
+    bool available = true;
     std::function<void()> onClick;
     std::function<void()> onHover;
     Btn() : Entity() {
         tag = "btn";
-        state = 0;
-        center = false;
-        available = true;
-        size = Vec2i(80, 24);
         setCollider(size);
     }
     ~Btn() {}
@@ -893,12 +878,9 @@ public:
 
 class BtnText : public Btn {
 public:
-    std::string text;
-    Uint8 fontSize;
-    BtnText() : Btn() {
-        text = "Button";
-        fontSize = 24;
-    }
+    std::string text = "Button";
+    Uint8 fontSize = 24;
+    BtnText() : Btn() {}
     ~BtnText() {}
     void render(Graphics* graph) override {
         if (!available) return;
@@ -949,20 +931,17 @@ public:
 //
 class Main {
 public:
-    bool shouldQuit;
+    bool shouldQuit = false;
     Main(const char *windowTitle = "Imp", 
-        Vec2i windowSize = Vec2i(800, 600),
+        Vec2i windowSize = {800, 600},
         int fps = 60,
-        std::string spriteSheet = "")
+        std::string spriteSheet = ""
+    ) 
+        : fps(fps), windowTitle(windowTitle), windowSize(windowSize), graph(new Graphics(windowSize))
     {
         DBG("Imp constructed");
         // Set random seed
         srand(static_cast<unsigned int>(time(0)));
-        pauseRenderer = false;
-        this->fps = fps;
-        this->windowTitle = windowTitle;
-        this->windowSize = windowSize;
-        graph = new Graphics(windowSize);
         init(spriteSheet);
     }
     ~Main() {
