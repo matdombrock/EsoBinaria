@@ -80,7 +80,7 @@ public:
         graph->setColor(_colors["BG"]);
         graph->rect(Vec2i(0, 0), WINDOW_SIZE);
         graph->setColor(_colors["WHITE"]);
-        graph->text("ESOMachina", Vec2i(20, 20));
+        graph->text("ESO-OS", Vec2i(20, 20));
         em.render(graph);
         sprBg.render(graph, WINDOW_SIZE - Vec2i(WINDOW_SIZE.x/2, WINDOW_SIZE.x/2));
         sprWiz.render(graph, Vec2i(0, WINDOW_SIZE.y - 256));

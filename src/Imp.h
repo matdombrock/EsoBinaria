@@ -304,7 +304,7 @@ public:
     }
     void text(const std::string& text, Vec2i pos) {
         if (text.length() == 0) {
-            DBG("Attempt to render Empty text");
+            // DBG("Attempt to render Empty text");
             return;
         }
         if (font == nullptr) {
@@ -368,12 +368,10 @@ public:
         int xOff = 0;
         for (std::vector<std::string> chunk : chunks) {
             for (std::string subChunk : chunk) {
-                DBG("Subchunk: " + subChunk);
                 if (subChunk[0] == '<' && subChunk[1] == '$') {
                     if (subChunk.length() >= 11) {
                         // Color code
                         std::string colorCode = subChunk.substr(2, 9);
-                        DBG(colorCode);
                         Color color = Color(
                             std::stoi(colorCode.substr(0, 2), nullptr, 16),
                             std::stoi(colorCode.substr(2, 2), nullptr, 16),
