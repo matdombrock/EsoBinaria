@@ -587,7 +587,8 @@ public:
     }
     ~Sound() {
         if (sound != nullptr) {
-            // Mix_FreeChunk(sound);
+            // WARN: Causes errors if sound is redefined
+            Mix_FreeChunk(sound);
         }
     }
     void set(std::string path) {
