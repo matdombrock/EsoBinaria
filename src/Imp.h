@@ -148,7 +148,7 @@ public:
         return count;
     }
     // TODO: This code is sketchy
-    static std::vector<std::string> split(const std::string& str, const std::string& delimiter, bool cleanDelimiter = true) {
+    static std::vector<std::string> splitSketch(const std::string& str, const std::string& delimiter, bool cleanDelimiter = true) {
         std::vector<std::string> tokens;
         size_t start = 0;
         size_t end = str.find(delimiter);
@@ -172,6 +172,18 @@ public:
             }
             tokens.push_back(token);
         }
+        return tokens;
+    }
+    static std::vector<std::string> split(const std::string& str, std::string delimiter) {
+        std::vector<std::string> tokens;
+        size_t start = 0;
+        size_t end = str.find(delimiter);
+        while (end != std::string::npos) {
+            tokens.push_back(str.substr(start, end - start));
+            start = end + 1;
+            end = str.find(delimiter, start);
+        }
+        tokens.push_back(str.substr(start));
         return tokens;
     }
 };
@@ -363,7 +375,7 @@ public:
         // Split each line into color chunks
         std::vector<std::vector<std::string>> chunks = {};
         for (std::string line : linesOverflow) {
-            std::vector<std::string> subChunks = StringTools::split(line, "<$", false);
+            std::vector<std::string> subChunks = StringTools::splitSketch(line, "<$", false);
             chunks.push_back(subChunks);
         }
 

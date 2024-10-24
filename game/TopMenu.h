@@ -9,13 +9,12 @@ using namespace Imp;
 class BtnTopMenu : public BtnText {
 public:
     bool isHomeBtn = false;
-    int fontSize = Fonts::small.size;
     BtnTopMenu() : BtnText() {
         tag = "btn";
         state = 0;
         center = false;
         text = "Button";
-        size = Vec2i(80, fontSize * 1.1f);
+        size = Vec2i(80, _g.vu(0.5f) * 1.1f);
         setCollider(size);
     }
     ~BtnTopMenu() {}
@@ -41,7 +40,7 @@ public:
         }
         if (center) {
             int textWidth = graph->textWidth(text, &Fonts::small);
-            Vec2i textPos = pos + Vec2i((size.x - textWidth) / 2, (size.y - fontSize) / 2);
+            Vec2i textPos = pos + Vec2i((size.x - textWidth) / 2, (size.y - _g.vu(0.5f)) / 2);
             graph->text(text, textPos, &Fonts::small);
         }
         else {
@@ -82,34 +81,35 @@ public:
         btnFile.onClick = [this]() {
             activeTopMenu = "btnFile";
             btnNew.available = true;
-            btnReset.available = true;
             btnSave.available = true;
             btnLoad.available = true;
         };
         btnFile.tag = "btnFile";
-        btnFile.fontSize = _g.fontSize * 0.75f;
         btnFile.available = true;
         btnFile.text = "FILE";
         btnFile.pos = Vec2i(_g.vu(0.15f) + _g.vu(0.75f), 4);
         em.addEntity(&btnFile);
+
+        btnEdit.onClick = [this]() {
+            activeTopMenu = "btnEdit";
+            btnReset.available = true;
+        };
+        btnEdit.tag = "btnEdit";
+        btnEdit.available = true;
+        btnEdit.text = "EDIT";
+        btnEdit.pos = Vec2i(_g.vu(0.15f) + _g.vu(2.25f), 4);
+        em.addEntity(&btnEdit);
 
         btnTools.onClick = [this]() {
             activeTopMenu = "btnTools";
             btnTests.available = true;
         };
         btnTools.tag = "btnTools";
-        btnTools.fontSize = _g.fontSize * 0.75f;
         btnTools.available = true;
         btnTools.text = "TOOL";
-        btnTools.pos = Vec2i(_g.vu(0.15f) + _g.vu(2.25f), 4);
+        btnTools.pos = Vec2i(_g.vu(0.15f) + _g.vu(3.75f), 4);
         em.addEntity(&btnTools);
 
-        btnEdit.tag = "btnEdit";
-        btnEdit.fontSize = _g.fontSize * 0.75f;
-        btnEdit.available = true;
-        btnEdit.text = "EDIT";
-        btnEdit.pos = Vec2i(_g.vu(0.15f) + _g.vu(3.75f), 4);
-        em.addEntity(&btnEdit);
 
         // File menu
         btnNew.tag = "btnNew";
@@ -122,22 +122,8 @@ public:
         };
         btnNew.available = false;
         btnNew.text = "NEW";
-        btnNew.fontSize = _g.fontSize * 0.75f;
         btnNew.pos = Vec2i(btnFile.pos.x, btnFile.pos.y + _g.vu(0.5f));
         em.addEntity(&btnNew);
-
-        btnReset.onClick = [this]() { 
-            modal.onOk = [&]() {
-                _g.setReset(true); 
-            };
-            modal.title = "Reset?";
-            modal.show = true;
-        };
-        btnReset.available = false;
-        btnReset.text = "RESET";
-        btnReset.fontSize = _g.fontSize * 0.75f;
-        btnReset.pos = Vec2i(btnFile.pos.x, btnFile.pos.y + _g.vu(1));
-        em.addEntity(&btnReset);
 
         btnSave.onClick = [this]() { 
             modal.onOk = [&]() {
@@ -149,8 +135,7 @@ public:
         };
         btnSave.available = false;
         btnSave.text = "SAVE";
-        btnSave.fontSize = _g.fontSize * 0.75f;
-        btnSave.pos = Vec2i(btnFile.pos.x, btnFile.pos.y + _g.vu(1.5f));
+        btnSave.pos = Vec2i(btnFile.pos.x, btnFile.pos.y + _g.vu(1));
         em.addEntity(&btnSave);
 
         btnLoad.onClick = [this]() { 
@@ -162,17 +147,28 @@ public:
         };
         btnLoad.available = false;
         btnLoad.text = "LOAD";
-        btnLoad.fontSize = _g.fontSize * 0.75f;
-        btnLoad.pos = Vec2i(btnFile.pos.x, btnFile.pos.y + _g.vu(2));
+        btnLoad.pos = Vec2i(btnFile.pos.x, btnFile.pos.y + _g.vu(1.5f));
         em.addEntity(&btnLoad);
 
         // Tools menu
         btnTests.onClick = []() { DBG("TESTS"); _g.toggleTests(); };
         btnTests.available = false;
         btnTests.text = "TESTS";
-        btnTests.fontSize = _g.fontSize * 0.75f;
         btnTests.pos = Vec2i(btnTools.pos.x, btnTools.pos.y + _g.vu(0.5f));
         em.addEntity(&btnTests);
+
+        // Edit menu
+        btnReset.onClick = [this]() { 
+            modal.onOk = [&]() {
+                _g.setReset(true); 
+            };
+            modal.title = "Reset?";
+            modal.show = true;
+        };
+        btnReset.available = false;
+        btnReset.text = "RESET";
+        btnReset.pos = Vec2i(btnEdit.pos.x, btnEdit.pos.y + _g.vu(0.5f));
+        em.addEntity(&btnReset);
 
         em.addEntity(&modal);
     }
@@ -187,12 +183,14 @@ public:
         em.process();
         if (activeTopMenu != "btnFile") {
             btnNew.available = false;
-            btnReset.available = false;
             btnSave.available = false;
             btnLoad.available = false;
         }
         if (activeTopMenu != "btnTools") {
             btnTests.available = false;
+        }
+        if (activeTopMenu != "btnEdit") {
+            btnReset.available = false;
         }
     }
     void render(Graphics* graph) override {
@@ -206,6 +204,9 @@ public:
         }
         if (activeTopMenu == "btnTools") {
             graph->rect(Vec2i(btnTools.pos.x, height), Vec2i(120, 120));
+        }
+        if (activeTopMenu == "btnEdit") {
+            graph->rect(Vec2i(btnEdit.pos.x, height), Vec2i(120, 120));
         }
         
         em.render(graph);

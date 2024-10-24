@@ -27,11 +27,14 @@ To do this we must understand how it works.
 We have a tome documenting its inputs and outputs but no instructions for how to build the device.
 You aim is to recreate small parts of the mechanism via reverse-<$FF0000$>[REDACTED]<$FFFFFF$>.
 <$00FF00$>
-Objective:
+Mission Statement:
 <$FFFFFF$>
-- Each puzzle involves creating a solution that satisfies a set of test cases.
-- The solution is a function that takes N inputs (A, B, C) and returns a single output.
-- The function can be any combination of AND, OR, NOT, XOR, NAND, NOR, and XNOR gates.
+We are like the binary star system, two parts that orbit each other.
+We are the <$FF00FF$>Binaria<$FFFFFF$> and you are the <$FF00FF$>Binari<$FFFFFF$>.
+We will provide you with the tools and knowledge to build the device.
+We are the <$FF00FF$>Binari<$FFFFFF$> and you are the <$FF00FF$>Binaria<$FFFFFF$>.
+
+
  
 ------------------------------------------------
 <$00FF00$>PRESS THE <ESC> KEY TO ENTER ESO-OS
