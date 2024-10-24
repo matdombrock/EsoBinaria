@@ -8,7 +8,7 @@ using namespace Imp;
 #include "Grid.h"
 #include "TestArea.h"
 #include "Cursor.h"
-#include "TopBar.h"
+#include "TopMenu.h"
 #include "BottomBar.h"
 #include "MainMenu.h"
 #include "SetupScreen.h"
@@ -20,7 +20,7 @@ public:
     Grid grid;
     TestArea testArea;
     Cursor cursor;
-    TopBar topBar;
+    TopMenu TopMenu;
     BottomBar bottomBar;
     MainMenu mainMenu;
     SetupScreen setupScreen;
@@ -30,7 +30,7 @@ public:
         entityMan.addEntity(&grid);
         entityMan.addEntity(&bottomBar);
         entityMan.addEntity(&testArea);
-        entityMan.addEntity(&topBar);
+        entityMan.addEntity(&TopMenu);
         entityMan.addEntity(&setupScreen);
         entityMan.addEntity(&helpScreen);
         entityMan.addEntity(&mainMenu);
