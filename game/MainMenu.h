@@ -12,7 +12,6 @@ public:
     BtnMainMenu btnNew;
     BtnMainMenu btnSettings;
     BtnMainMenu btnExit;
-    Sprite sprWiz;
     Sprite sprBg;
     MainMenu() : Entity() {
         tag = "menu";
@@ -38,10 +37,6 @@ public:
         em.addEntity(&btnExit);
 
         sprBg = Sprite(Vec2i(176, 176), Vec2i(96, 96), Vec2i(WINDOW_SIZE.x/2, WINDOW_SIZE.x/2));\
-
-        sprWiz = Sprite(Vec2i(0, 224), Vec2i(32,32), Vec2i(256, 256));
-        // sprWiz.setAnimation({Vec2i(0, 224), Vec2i(32, 224)}, 4);
-        
     }
     ~MainMenu() {}
     void process() override {
@@ -83,6 +78,5 @@ public:
         graph->text("ESO-OS", Vec2i(20, 20));
         em.render(graph);
         sprBg.render(graph, WINDOW_SIZE - Vec2i(WINDOW_SIZE.x/2, WINDOW_SIZE.x/2));
-        sprWiz.render(graph, Vec2i(0, WINDOW_SIZE.y - 256));
     }
 };

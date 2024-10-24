@@ -584,17 +584,19 @@ public:
     int channel;
     int volume;
     int pan[2];
-    Sound(const std::string& path = "") {
+    std::string tag;
+    Sound(std::string path = "") {
         pan[0] = 255;
         pan[1] = 255;
         volume = MIX_MAX_VOLUME / 2;
         if (path != "") set(path);
     }
     ~Sound() {
-        Mix_FreeChunk(sound);
-        Mix_CloseAudio();
+        if (sound != nullptr) {
+            // Mix_FreeChunk(sound);
+        }
     }
-    void set(const std::string& path) {
+    void set(std::string path) {
         channel = -1;
         if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
             std::cerr << "SDL_mixer could not initialize! SDL_mixer Error: " << Mix_GetError() << std::endl;
@@ -602,14 +604,26 @@ public:
             return;
         }
         std::string basePath = SDL_GetBasePath();
+        if (basePath.empty()) {
+            std::cerr << "SDL_GetBasePath failed!" << std::endl;
+            DBG("Can't get base path");
+            return;
+        }
         std::string fullPath = basePath + "assets/" + path;
         sound = Mix_LoadWAV(fullPath.c_str());
         if (sound == nullptr) {
             std::cerr << "Mix_LoadWAV: " << Mix_GetError() << std::endl;
             DBG("Cant load sound: " + fullPath);
         }
+        else {
+            DBG("Sound loaded: " + fullPath);
+        }
     }
     void play(bool ifNotPlaying = false) {
+        if (sound == nullptr) {
+            DBG("Sound not set");
+            return;
+        }
         if (ifNotPlaying && isPlaying()) return;
         Mix_VolumeChunk(sound, volume);
         channel = Mix_PlayChannel(-1, sound, 0);

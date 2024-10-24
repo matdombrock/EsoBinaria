@@ -1,4 +1,4 @@
-// ESOMachina - A simple tile-based visual programming game
+// EsoBinaria - A simple tile-based visual programming game
 #include <map>
 
 #include "../lib/s7/s7.h"
@@ -25,7 +25,7 @@ public:
     MainMenu mainMenu;
     SetupScreen setupScreen;
     HelpScreen helpScreen;
-    App() : Imp::Main("EsoMachina (v0.1-alpha)", WINDOW_SIZE, 60, "tiles.png") { 
+    App() : Imp::Main("EsoBinaria (v0.1-alpha)", WINDOW_SIZE, 60, "tiles.png") { 
         clearColor = Color(_colors["BG"]);
         entityMan.addEntity(&grid);
         entityMan.addEntity(&bottomBar);

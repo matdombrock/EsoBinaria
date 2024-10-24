@@ -1,5 +1,5 @@
-# EsoMachina
-EsoMachina is a tile-based visual programming game where players solve puzzles by arranging and configuring various logic gates and components. The goal is to manipulate inputs and outputs to achieve specific conditions or results, using a grid-based interface. Players can interact with different game elements such as buttons, menus, and sprites to navigate through levels and challenges. The game features a main menu, setup screens, and various in-game entities to provide an engaging and educational experience in logical thinking and problem-solving.
+# EsoBinaria
+EsoBinaria is a tile-based visual programming game where players solve puzzles by arranging and configuring various logic gates and components. The goal is to manipulate inputs and outputs to achieve specific conditions or results, using a grid-based interface. Players can interact with different game elements such as buttons, menus, and sprites to navigate through levels and challenges. The game features a main menu, setup screens, and various in-game entities to provide an engaging and educational experience in logical thinking and problem-solving.
 
 ## Tiles
 

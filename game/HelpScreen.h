@@ -9,16 +9,18 @@ class HelpScreen : public Entity {
 public:
     EntityManager em;
     std::string text;
-    Sprite sprWiz;
+    Sprite sprWiz = Sprite(Vec2i(0, 224), Vec2i(32,32), Vec2i(_g.vu(2), _g.vu(2)));
+    Sound sndType = Sound("1.wav");
     HelpScreen() : Entity() {
         tag = "helpScreen";
-        sprWiz = Sprite(Vec2i(0, 224), Vec2i(32,32), Vec2i(_g.vu(2), _g.vu(2)));
+        sprWiz.setAnimation({Vec2i(0, 224), Vec2i(32, 224)}, 4);
+        // sndType.set("1.wav");
         text = R"(<$FFFF00$>>> New e-Hail: <<: 
 <$00FF00$>
 Welcome:
 <$FFFFFF$>
-You have been accepted into the <$FF00FF$>EsoMachina Research Program<$FFFFFF$>.
-Our goal here is to <$FF0000$>[REDACTED]<$FFFFFF$> the EsoMachina device.
+You have been accepted into the <$FF00FF$>EsoBinaria Research Program<$FFFFFF$>.
+Our goal here is to <$FF0000$>[REDACTED]<$FFFFFF$> the EsoBinaria device.
 To do this we must understand how it works.
 We have a tome documenting its inputs and outputs but no instructions for how to build the device.
 You aim is to recreate small parts of the mechanism via reverse-<$FF0000$>[REDACTED]<$FFFFFF$>.
@@ -43,13 +45,7 @@ Objective:
         graph->rect(Vec2i(0, 0), WINDOW_SIZE, true);
         graph->setColor(_colors["BG"], 128);
         graph->rect(Vec2i(_g.vu(0.5f), _g.vu(0.5f)), WINDOW_SIZE - Vec2i(_g.vu(1), _g.vu(1)), true);
-        // (_g.getTick()/16) % 2 == 0 ? graph->setColor(_colors["YELLOW"]) : graph->setColor(_colors["RED"]);
         graph->setColor(_colors["YELLOW"]);
-        // graph->rect(
-        //     Vec2i(WINDOW_SIZE.x - _g.vu(2) - _g.vu(0.25f), _g.vu(0.75f)), 
-        //     Vec2i(_g.vu(1.5f), _g.vu(1.5f)),
-        //     true
-        // );
         int rad = (_g.getTick()/16) % 2 == 0 ? _g.vu(0.7f) : _g.vu(0.75f);
         graph->circle(
             Vec2i(WINDOW_SIZE.x - _g.vu(2) - _g.vu(0.25f) + _g.vu(0.75f), _g.vu(0.75f) + _g.vu(0.75f)),
@@ -59,8 +55,13 @@ Objective:
         sprWiz.render(graph, Vec2i(WINDOW_SIZE.x - _g.vu(2) - _g.vu(0.5f), _g.vu(0.5f)));
 
         graph->setColor(_colors["GREEN"]);
-        int pos = std::min((_g.getTick()/3)*3, (int)(text.length() - 1));
-
+        int pos = std::min((_g.getTick()/3)*3, (int)text.length() - 1);
+        if (pos < (int)text.length() - 1) {
+            sndType.play(true);
+        }
+        else {
+            sndType.stop();
+        }
         std::string textTrunc = text.substr(0, pos);
         graph->textFmt(textTrunc, Vec2i(_g.vu(1), _g.vu(2)), WINDOW_SIZE.x - _g.vu(2));
     }

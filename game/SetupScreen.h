@@ -109,7 +109,7 @@ public:
         
         graph->setColor(_colors["WHITE"]);
         graph->setFont("HomeVideo.ttf", _g.fontSize * 4);
-        graph->text("   EsoMachina", Vec2i(_g.vu(0), _g.vu(0)));
+        graph->text("   EsoBinaria", Vec2i(_g.vu(0), _g.vu(0)));
         graph->setColor(_colors["WHITE"]);
         graph->setFont("HomeVideo.ttf", _g.fontSize);
         graph->text(_g.getPuzzleString(), Vec2i(_g.vu(2), _g.vu(2)));
