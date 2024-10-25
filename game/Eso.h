@@ -46,10 +46,15 @@ public:
         Fonts::init(_g.fontSize);
     }
     ~App() {}
+    void render(Graphics* g) override {
+        // if (_g.getTick() % 1 == 0) {
+            g->fxScanLines(_g.getTick());
+        // }
+        
+    }
     void process() override {
-        _input.poll();
         // Pause
-        if (_input.keyOnce(SDLK_ESCAPE)) {
+        if (_input.keyOnce(SDLK_ESCAPE) || _input.keyOnce(SDLK_BACKQUOTE)) {
             DBG("Hit ESC");
             _g.setScreen("mainMenu");
         }

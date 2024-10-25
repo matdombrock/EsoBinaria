@@ -199,9 +199,11 @@ public:
     ~Input() {}
     void poll() {
         for (int i = 0; i < 512; i++) {
+            // if (keyStatePrev[i] != keyState[i]) DBG("Key changed " + std::to_string(i) + " " + std::to_string(keyState[i]));
             keyStatePrev[i] = keyState[i];
         }
         SDL_PumpEvents();
+        // keyState = SDL_GetKeyboardState(NULL);
 
         mouseStatePrev = mouseState;
         mouseState = SDL_GetMouseState(&mouseX, &mouseY);
@@ -220,6 +222,7 @@ public:
         return keyState[SDL_GetScancodeFromKey(keyCode)];
     }
     bool keyOnce(SDL_Keycode keyCode) {
+        DBG(keyState[SDL_GetScancodeFromKey(keyCode)] && !keyStatePrev[SDL_GetScancodeFromKey(keyCode)]);
         return keyState[SDL_GetScancodeFromKey(keyCode)] && !keyStatePrev[SDL_GetScancodeFromKey(keyCode)];
     }
     bool anyKey() {
@@ -584,6 +587,70 @@ public:
     }
     int getTick() {
         return tick;
+    }
+    void fxInvert() {
+        int width, height;
+        SDL_GetRendererOutputSize(renderer, &width, &height);
+
+        SDL_Surface* surface = SDL_CreateRGBSurfaceWithFormat(0, width, height, 32, SDL_PIXELFORMAT_RGBA32);
+        SDL_RenderReadPixels(renderer, nullptr, surface->format->format, surface->pixels, surface->pitch);
+
+        Uint32* pixels = (Uint32*)surface->pixels;
+        for (int y = 0; y < height; ++y) {
+            for (int x = 0; x < width; ++x) {
+                Uint32 pixel = pixels[y * width + x];
+                Uint8 r, g, b, a;
+                SDL_GetRGBA(pixel, surface->format, &r, &g, &b, &a);
+
+                // Apply a simple effect (e.g., invert colors)
+                r = 255 - r;
+                g = 255 - g;
+                b = 255 - b;
+
+                pixels[y * width + x] = SDL_MapRGBA(surface->format, r, g, b, a);
+            }
+        }
+
+        SDL_Texture* newTexture = SDL_CreateTextureFromSurface(renderer, surface);
+        SDL_FreeSurface(surface);
+
+        // Render the new texture
+        SDL_SetRenderTarget(renderer, nullptr);
+        SDL_RenderCopy(renderer, newTexture, nullptr, nullptr);
+        SDL_DestroyTexture(newTexture);
+    }
+    void fxScanLines(int tick){
+        int width, height;
+        SDL_GetRendererOutputSize(renderer, &width, &height);
+
+        SDL_Surface* surface = SDL_CreateRGBSurfaceWithFormat(0, width, height, 32, SDL_PIXELFORMAT_RGBA32);
+        SDL_RenderReadPixels(renderer, nullptr, surface->format->format, surface->pixels, surface->pitch);
+
+        Uint32* pixels = (Uint32*)surface->pixels;
+        for (int y = 0; y < height; ++y) {
+            for (int x = 0; x < width; ++x) {
+                Uint32 pixel = pixels[y * width + x];
+                Uint8 r, g, b, a;
+                SDL_GetRGBA(pixel, surface->format, &r, &g, &b, &a);
+                
+                float f = 0.9f;
+                if ((y + (tick / 8)) % 8 >= 6) {
+                    r = g * f;
+                    g = b * f;
+                    b = r * f;
+                }
+
+                pixels[y * width + x] = SDL_MapRGBA(surface->format, r, g, b, a);
+            }
+        }
+
+        SDL_Texture* newTexture = SDL_CreateTextureFromSurface(renderer, surface);
+        SDL_FreeSurface(surface);
+
+        // Render the new texture
+        SDL_SetRenderTarget(renderer, nullptr);
+        SDL_RenderCopy(renderer, newTexture, nullptr, nullptr);
+        SDL_DestroyTexture(newTexture);
     }
 private:
     int tick = 0;
@@ -974,6 +1041,14 @@ public:
     void loop()
     {
         frameStart = SDL_GetTicks();
+        _input.poll();
+        while (SDL_PollEvent(&event) != 0) {
+            if (event.type == SDL_QUIT) {
+                shouldQuit = true;
+                quit();
+                return;
+            }
+        }
         entityMan.checkMouse();
         entityMan.checkCollisions();
         entityMan.process();
@@ -985,13 +1060,6 @@ public:
             render(graph);
             SDL_RenderPresent(SDL_renderer);
             graph->tickUp();   
-        }
-        while (SDL_PollEvent(&event) != 0) {
-            if (event.type == SDL_QUIT) {
-                shouldQuit = true;
-                quit();
-                return;
-            }
         }
         // Handle focus
         if ((SDL_GetWindowFlags(window) & SDL_WINDOW_INPUT_FOCUS) == 0) {
