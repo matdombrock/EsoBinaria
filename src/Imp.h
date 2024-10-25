@@ -1,12 +1,17 @@
 #pragma once
 
-#include <SDL.h>
 #include <iostream>
 #include <string>
+#include <fstream>
+#include <sstream>
+#include <iostream>
+#include <SDL.h>
 #include <SDL_ttf.h>
 #include <SDL_image.h>
 #include <SDL_mixer.h>
+#include <GL/glew.h>
 
+#define TRAP __builtin_trap()
 #define PI 3.14159265358979323846f
 
 namespace Imp {
@@ -720,6 +725,72 @@ private:
     bool isAnimated = false;
 };
 
+#include <GL/glew.h>
+
+class ShaderProgram {
+public:
+    GLuint ID;
+    ShaderProgram() : ID(0) {}
+    void load(const std::string& vertexPath, const std::string& fragmentPath) {
+        std::string basePath = SDL_GetBasePath();
+        std::string vertexCode = loadShaderSource(basePath + vertexPath);
+        std::string fragmentCode = loadShaderSource(basePath + fragmentPath);
+
+        GLuint vertexShader = compileShader(vertexCode, GL_VERTEX_SHADER);
+        GLuint fragmentShader = compileShader(fragmentCode, GL_FRAGMENT_SHADER);
+
+        ID = linkProgram(vertexShader, fragmentShader);
+    }
+
+    void use() {
+        glUseProgram(ID);
+    }
+
+private:
+    std::string loadShaderSource(const std::string& filePath) {
+        std::ifstream shaderFile(filePath);
+        std::stringstream shaderStream;
+        shaderStream << shaderFile.rdbuf();
+        return shaderStream.str();
+    }
+    GLuint compileShader(const std::string& source, GLenum type) {
+        GLuint shader = glCreateShader(type);
+        const char* shaderCode = source.c_str();
+        glShaderSource(shader, 1, &shaderCode, nullptr);
+        glCompileShader(shader);
+
+        GLint success;
+        glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
+        if (!success) {
+            GLchar infoLog[512];
+            glGetShaderInfoLog(shader, 512, nullptr, infoLog);
+            std::cerr << "ERROR::SHADER::COMPILATION_FAILED\n" << infoLog << std::endl;
+        }
+
+        return shader;
+    }
+
+    GLuint linkProgram(GLuint vertexShader, GLuint fragmentShader) {
+        GLuint program = glCreateProgram();
+        glAttachShader(program, vertexShader);
+        glAttachShader(program, fragmentShader);
+        glLinkProgram(program);
+
+        GLint success;
+        glGetProgramiv(program, GL_LINK_STATUS, &success);
+        if (!success) {
+            GLchar infoLog[512];
+            glGetProgramInfoLog(program, 512, nullptr, infoLog);
+            std::cerr << "ERROR::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
+        }
+
+        glDeleteShader(vertexShader);
+        glDeleteShader(fragmentShader);
+
+        return program;
+    }
+};
+
 //
 // Collision
 //
@@ -981,9 +1052,9 @@ public:
         if (!pauseRenderer) {
             graph->setColor(clearColor);
             graph->clear();
-            entityMan.render(graph);
+            // entityMan.render(graph);
             render(graph);
-            SDL_RenderPresent(SDL_renderer);
+            //SDL_RenderPresent(SDL_renderer);
             graph->tickUp();   
         }
         while (SDL_PollEvent(&event) != 0) {
@@ -1015,6 +1086,8 @@ public:
         }
     }
 protected:
+    SDL_Window* window;
+    SDL_Renderer* SDL_renderer;
     EntityManager entityMan;
     const char* windowTitle;
     Vec2i windowSize;
@@ -1030,9 +1103,30 @@ protected:
             SDL_Quit();
             exit(1);
         }
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+
+        SDL_GLContext glContext = SDL_GL_CreateContext(window);
+        if (glContext == nullptr) {
+            std::cerr << "OpenGL context could not be created! SDL_Error: " << SDL_GetError() << std::endl;
+            SDL_DestroyWindow(window);
+            SDL_Quit();
+            exit(1);
+        }
+
         SDL_renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
         if (SDL_renderer == nullptr) {
             std::cerr << "Renderer could not be created! SDL_Error: " << SDL_GetError() << std::endl;
+            SDL_GL_DeleteContext(glContext);
+            SDL_DestroyWindow(window);
+            SDL_Quit();
+            exit(1);
+        }
+
+        if (glewInit() != GLEW_OK) {
+            std::cerr << "Failed to initialize GLEW" << std::endl;
+            SDL_GL_DeleteContext(glContext);
             SDL_DestroyWindow(window);
             SDL_Quit();
             exit(1);
@@ -1077,8 +1171,6 @@ protected:
     }
 
 private:
-    SDL_Window* window;
-    SDL_Renderer* SDL_renderer;
     Graphics* graph;
     int frameDelay;
     int frameStart;
