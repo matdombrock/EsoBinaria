@@ -1076,14 +1076,11 @@ public:
 //
 // Storage
 //
-
+#ifndef __EMSCRIPTEN__
 class Store {
 public:
     Store() {
         read();
-#ifdef __EMSCRIPTEN__
-        isEmScipten = true;
-#endif
     }
     ~Store() {}
     void setString(std::string key, std::string value) {
@@ -1115,7 +1112,6 @@ public:
         return data[key] == "true";
     }
 private:
-    bool isEmScipten = false;
     std::map<std::string, std::string> data;
     void write() {
         std::ofstream file(basePath + "store.txt");
@@ -1141,6 +1137,56 @@ private:
         file.close();
     }
 };
+#else
+class Store {
+public:
+    Store() {
+        read();
+    }
+    ~Store() {}
+    void setString(std::string key, std::string value) {
+        EM_ASM({
+            localStorage.setItem(UTF8ToString($0), UTF8ToString($1));
+        }, key.c_str(), value.c_str());
+    }
+    void setInt(std::string key, int value) {
+        setString(key, std::to_string(value));
+    }
+    void setFloat(std::string key, float value) {
+        setString(key, std::to_string(value));
+    }
+    void setBool(std::string key, bool value) {
+        setString(key, value ? "true" : "false");
+    }
+    std::string getString(std::string key) {
+        char* value = (char*)EM_ASM_INT({
+            var value = localStorage.getItem(UTF8ToString($0));
+            if (value === null) return 0;
+            var lengthBytes = lengthBytesUTF8(value) + 1;
+            var stringOnWasmHeap = _malloc(lengthBytes);
+            stringToUTF8(value, stringOnWasmHeap, lengthBytes);
+            return stringOnWasmHeap;
+        }, key.c_str());
+        std::string result = value ? std::string(value) : "";
+        free(value);
+        return result;
+    }
+    int getInt(std::string key) {
+        return std::stoi(getString(key));
+    }
+    float getFloat(std::string key) {
+        return std::stof(getString(key));
+    }
+    bool getBool(std::string key) {
+        return getString(key) == "true";
+    }
+private:
+    void read() {
+        // No need to read from file, data is already in localStorage
+    }
+};
+#endif
+
 //
 // Main class
 //
