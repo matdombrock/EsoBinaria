@@ -72,7 +72,7 @@ public:
         height = _g.vu(0.5f);
 
         btnHome.isHomeBtn = true;
-        btnHome.onClick = []() { _g.setScreen("mainMenu"); };
+        btnHome.onClick = []() { _g.setScreen(SCN_MAIN_MENU); };
         btnHome.available = true;
         btnHome.pos = Vec2i(_g.vu(0.25f), 4);
         btnHome.setCollider(Vec2i(_g.vu(0.25f), height));
@@ -115,7 +115,7 @@ public:
         btnNew.tag = "btnNew";
         btnNew.onClick = [this]() {
             modal.onOk = [&]() {
-                _g.setScreen("puzzleSetup");
+                _g.setScreen(SCN_PUZZLE_SETUP);
             };
             modal.title = "New Puzzle?";
             modal.show = true;
@@ -174,7 +174,7 @@ public:
     }
     ~TopMenu() {}
     void process() override {
-        if (_g.getScreen() != "puzzle") return;
+        if (_g.getScreen() != SCN_PUZZLE) return;
         // Clear if nothing is clicked
         if (_input.mouseKeyOnce(SDL_BUTTON_LEFT)) {
             activeTopMenu = "";
@@ -194,7 +194,7 @@ public:
         }
     }
     void render(Graphics* graph) override {
-        if (_g.getScreen() != "puzzle") return;
+        if (_g.getScreen() != SCN_PUZZLE) return;
         graph->setColor(_colors["BG3"]);
         graph->rect(Vec2i(0, 0), Vec2i(WINDOW_SIZE.x, height));
         

@@ -90,7 +90,7 @@ public:
     }
     ~MainMenu() {}
     void process() override {
-        if (_g.getScreen() != "mainMenu") {
+        if (_g.getScreen() != SCN_MAIN_MENU) {
             Sounds::menuTrack.volDown(4, 8);
             // Sounds::menuTrack.stop();
             return;
@@ -102,21 +102,21 @@ public:
         em.process();
         em.checkMouse();
         if (btnResume.isClicked()) {
-            _g.setScreen("puzzle");
+            _g.setScreen(SCN_PUZZLE);
         }
         if (btnRestart.isClicked()) {
             _g.setReset(true);
-            _g.setScreen("puzzle");
+            _g.setScreen(SCN_PUZZLE);
         }
         if (btnNew.isClicked()) {
-            _g.setScreen("puzzleSetup");
+            _g.setScreen(SCN_PUZZLE_SETUP);
         }
         if (btnExit.isClicked()) {
             _g.setQuit(true);
         }
     }
     void render(Graphics* graph) override {
-        if (_g.getScreen() != "mainMenu") return;
+        if (_g.getScreen() != SCN_MAIN_MENU) return;
         graph->setColor(_colors["BG"]);
         graph->rect(Vec2i(0, 0), WINDOW_SIZE);
         graph->setColor(_colors["WHITE"]);

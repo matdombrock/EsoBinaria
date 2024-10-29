@@ -52,7 +52,7 @@ public:
         check();
     }
     void process() {
-        if (_g.getScreen() != "puzzle") return;
+        if (_g.getScreen() != SCN_PUZZLE) return;
         em.checkMouse();
         em.process();
         std::string cs = StringTools::replace(StringTools::replace(_g.getCodeString(), " ", ""), "_", "");
@@ -82,7 +82,7 @@ public:
         }
     }
     void render(Graphics* graph) {
-        if (_g.getScreen() != "puzzle") return;
+        if (_g.getScreen() != SCN_PUZZLE) return;
         em.render(graph);
         if (_g.hasCodeErr()) {
             graph->setColor(_colors["YELLOW"]);

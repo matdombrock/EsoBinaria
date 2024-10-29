@@ -65,7 +65,7 @@ public:
         }
     }
     void process() override {
-        if (_g.getScreen() != "puzzle") return;
+        if (_g.getScreen() != SCN_PUZZLE) return;
         mousePos = _input.mousePos();
         mousePosCell = mousePos / _g.cellSize;
         // Update lastMouse array with the most recent mousePosCell value
@@ -208,7 +208,7 @@ public:
         _g.setCodeString(codeStringNew);
     }
     void render(Graphics* graph) override {
-        if (_g.getScreen() != "puzzle") return;
+        if (_g.getScreen() != SCN_PUZZLE) return;
         // Drag grid bg
         graph->setColor(_colors["BG2"]);
         for (int x = 0; x < WINDOW_SIZE.x; x += _g.cellSize) {

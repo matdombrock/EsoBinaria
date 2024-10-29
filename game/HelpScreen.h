@@ -40,10 +40,10 @@ We are the EsoBinaria, the device that we seek to <$FF0000$>[REDACTED]<$FFFFFF$>
     }
     ~HelpScreen() {}
     void process() override {
-        if (_g.getScreen() != tag) return;
+        if (_g.getScreen() != SCN_HELP) return;
     }
     void render(Graphics* graph) override {
-        if (_g.getScreen() != tag) return;
+        if (_g.getScreen() != SCN_HELP) return;
         graph->setColor(_colors["BG3"]);
         graph->rect(Vec2i(0, 0), WINDOW_SIZE, true);
         graph->setColor(_colors["BG"], 128);

@@ -119,13 +119,13 @@ public:
     }
     ~BottomBar() {}
     void process() override {
-        if (_g.getScreen() != "puzzle") return;
+        if (_g.getScreen() != SCN_PUZZLE) return;
         _g.setHelpItem(nullptr);
         em.checkMouse();
         em.process();
     }
     void render(Graphics* graph) override {
-        if (_g.getScreen() != "puzzle") return;
+        if (_g.getScreen() != SCN_PUZZLE) return;
         graph->setColor(_colors["BG3"]);
         graph->rect(_g.bottomBarPos, _g.bottomBarSize);
         em.render(graph);

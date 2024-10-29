@@ -39,7 +39,7 @@ public:
         entityMan.addEntity(&mainMenu);
         entityMan.addEntity(&cursor);
 
-        _g.setScreen("helpScreen");
+        _g.setScreen(SCN_HELP);
 
         Sounds::init();
         Fonts::init(_g.fontSize);
@@ -52,7 +52,7 @@ public:
         // Pause
         if (_input.keyOnce(SDLK_ESCAPE) || _input.keyOnce(SDLK_BACKQUOTE)) {
             DBG("Hit ESC");
-            _g.setScreen("mainMenu");
+            _g.setScreen(SCN_PUZZLE_SETUP);
         }
 
         if (_g.getReset()) {

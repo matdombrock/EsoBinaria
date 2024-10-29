@@ -13,6 +13,13 @@ using namespace Imp;
 
 #define WINDOW_SIZE Vec2i(1024, 768)
 
+enum ScreenName {
+    SCN_PUZZLE_SETUP,
+    SCN_PUZZLE,
+    SCN_HELP,
+    SCN_MAIN_MENU
+};
+
 class GameMaster {
 public:
     const int fontSize = WINDOW_SIZE.x / 32;
@@ -62,10 +69,10 @@ public:
     int getTick() {
         return tick;
     }
-    void setScreen(std::string screen) {
-        activeScreen = screen;
+    void setScreen(ScreenName screenName) {
+        activeScreen = screenName;
     }
-    std::string getScreen() {
+    ScreenName getScreen() {
         return activeScreen;
     }
     void setPuzzleBits(int bits) {
@@ -122,7 +129,7 @@ private:
     int puzzleBits = 3;
     int puzzleNum = 255;
     char puzzleChallenge = 'e';
-    std::string activeScreen = "puzzleSetup";
+    ScreenName activeScreen = SCN_PUZZLE_SETUP;
     bool showTests = true;
     bool reset = false;
     bool quit = false;

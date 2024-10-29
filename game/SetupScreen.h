@@ -79,13 +79,13 @@ public:
         btnStart.text = "START";
         btnStart.onClick = [](){
             _g.setReset(true);
-            _g.setScreen("puzzle");
+            _g.setScreen(SCN_PUZZLE);
         };
         em.addEntity(&btnStart);
     }
     ~SetupScreen() {}
     void process() override {
-        if (_g.getScreen() != "puzzleSetup") return;
+        if (_g.getScreen() != SCN_PUZZLE_SETUP) return;
         int maxLevel = _g.getPuzzleChallenge() == 'e' ? 4 : _g.getPuzzleChallenge() == 'm' ? 64 : 256;
         for (int i = 0; i < 256; i++) {
             btnsLvl[i].available = true;
@@ -100,7 +100,7 @@ public:
         em.checkMouse();
     }
     void render(Graphics* graph) override {
-        if (_g.getScreen() != "puzzleSetup") return;
+        if (_g.getScreen() != SCN_PUZZLE_SETUP) return;
         graph->setColor(_colors["BG"]);
         graph->rect(Vec2i(0, 0), WINDOW_SIZE);
         
