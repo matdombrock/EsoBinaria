@@ -121,14 +121,14 @@ public:
         return activeTestData;
     }
     std::string getPuzzleString() {
-        return std::to_string(puzzleBits) + "." + std::to_string(puzzleNum) + puzzleChallenge;
+        return std::to_string(puzzleBits) + "." + puzzleChallenge + std::to_string(puzzleNum);
     }
 private:
     CellType activeTile = CT_VOID;
     TestData* activeTestData = nullptr;
     int tick = 0;
     int puzzleBits = 3;
-    int puzzleNum = 255;
+    int puzzleNum = 0;
     char puzzleChallenge = 'e';
     ScreenName activeScreen = SCN_PUZZLE_SETUP;
     bool showTests = true;

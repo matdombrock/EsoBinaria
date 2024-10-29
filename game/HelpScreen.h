@@ -41,6 +41,9 @@ We are the EsoBinaria, the device that we seek to <$FF0000$>[REDACTED]<$FFFFFF$>
     ~HelpScreen() {}
     void process() override {
         if (_g.getScreen() != SCN_HELP) return;
+        if (_input.keyOnce(SDLK_ESCAPE)) {
+            _g.setScreen(SCN_PUZZLE);
+        }
     }
     void render(Graphics* graph) override {
         if (_g.getScreen() != SCN_HELP) return;

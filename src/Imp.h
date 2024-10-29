@@ -318,7 +318,7 @@ class ScreenFX {
 public:
     ScreenFX(){}
     ~ScreenFX() {}
-    void render(SDL_Renderer* renderer, int tick, float p1, float p2, float p3) {
+    void render(SDL_Renderer* renderer, int tick, float mix, float p1, float p2, float p3) {
         SDL_GetRendererOutputSize(renderer, &width, &height);
         surface = SDL_CreateRGBSurfaceWithFormat(0, width, height, 32, SDL_PIXELFORMAT_RGBA32);
         SDL_RenderReadPixels(renderer, nullptr, surface->format->format, surface->pixels, surface->pitch);
@@ -336,7 +336,13 @@ public:
                 props.p2 = p2;
                 props.p3 = p3;
                 props.pixels = pixels;
+                Uint8 ri = r;
+                Uint8 gi = g;
+                Uint8 bi = b;
                 renderPixel(&r, &g, &b, &a, props);
+                r = (r * mix) + (ri * (1.0f - mix));
+                g = (g * mix) + (gi * (1.0f - mix));
+                b = (b * mix) + (bi * (1.0f - mix));
                 pixels[y * width + x] = SDL_MapRGBA(surface->format, r, g, b, a);
             }
         }
@@ -376,19 +382,63 @@ protected:
     }
 };
 
+// class FXScanlines2 : public ScreenFX {
+// protected:
+//     void renderPixel(Uint8 *r, Uint8 *g, Uint8 *b, Uint8 *a, ScreenFXProps props) override {
+//         float f = 0.9f;
+//         int mod = props.y + (props.tick * 4);
+//         int scanSize = width * 2;
+//         if (mod %  scanSize >= scanSize - 8) {
+//             Uint32 pixel = props.pixels[props.y * width + props.x + (mod % 8)];
+//             Uint8 r1, g1, b1, a1;
+//             SDL_GetRGBA(pixel, surface->format, &r1, &g1, &b1, &a1);
+//             *r = b1 * f;
+//             *g = r1 * f;
+//             *b = g1 * f;
+//         }
+//     }
+// };
+
 class FXScanlines2 : public ScreenFX {
 protected:
     void renderPixel(Uint8 *r, Uint8 *g, Uint8 *b, Uint8 *a, ScreenFXProps props) override {
         float f = 0.9f;
-        int mod = props.y + (props.tick * 4);
-        int scanSize = width * 2;
-        if (mod %  scanSize >= scanSize - 8) {
-            Uint32 pixel = props.pixels[props.y * width + props.x + (mod % 8)];
+        int scanSpeed = 4;
+        float scanTime = 1.0f;
+        
+        int mod = props.y + (props.tick * scanSpeed);
+        int scanSize = height * scanTime;
+        int subScanSize = scanSize / 128;
+        if (mod % scanSize >= scanSize - subScanSize) {
+            Uint32 pixel = props.pixels[props.y * width + props.x + (mod % subScanSize)];
             Uint8 r1, g1, b1, a1;
             SDL_GetRGBA(pixel, surface->format, &r1, &g1, &b1, &a1);
             *r = b1 * f;
             *g = r1 * f;
             *b = g1 * f;
+        }
+        f=0.8f;
+        mod = props.y + (props.tick * (scanSpeed/4));
+        if (mod % (subScanSize * 8) >= (subScanSize * 7.5f)) {
+            Uint8 rt = *r;
+            Uint8 gt = *g;
+            Uint8 bt = *b;
+            *r = bt;
+            *g = rt;
+            *b = gt;
+        }
+        if (mod % (subScanSize * 2) >= subScanSize) {
+            Uint8 rt = *r;
+            Uint8 gt = *g;
+            Uint8 bt = *b;
+            *r = rt * f;
+            *g = gt * f;
+            *b = bt * f;
+        }
+        if (std::rand() % 5000 < 1) {
+            *r = std::max(200 - *r, 0);
+            *g = std::max(256 - *g, 0);
+            *b = std::max(200 - *b, 0);
         }
     }
 };
@@ -713,16 +763,16 @@ public:
     int getTick() {
         return tick;
     }
-    void fxApply(FXName name, int tick, float p1 = 0.0f, float p2 = 0.0f, float p3 = 0.0f) {
+    void fxApply(FXName name, int tick, float mix = 1.0f, float p1 = 0.0f, float p2 = 0.0f, float p3 = 0.0f) {
         switch(name) {
             case FX_INVERT:
-                fxInvert.render(renderer, tick, p1, p2, p3);
+                fxInvert.render(renderer, tick, mix, p1, p2, p3);
                 break;
             case FX_SCANLINES:
-                fxScanlines.render(renderer, tick, p1, p2, p3);
+                fxScanlines.render(renderer, tick, mix, p1, p2, p3);
                 break;
             case FX_SCANLINES2:
-                fxScanlines2.render(renderer, tick, p1, p2, p3);
+                fxScanlines2.render(renderer, tick, mix, p1, p2, p3);
                 break;
         }
     }

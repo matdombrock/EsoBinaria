@@ -39,7 +39,7 @@ public:
         entityMan.addEntity(&mainMenu);
         entityMan.addEntity(&cursor);
 
-        if (_g.store.getBool("firstStart")) {
+        if (_g.store.getBool("first_start")) {
             _g.setScreen(SCN_PUZZLE_SETUP);
         } else {
             _g.setScreen(SCN_HELP);
@@ -48,18 +48,27 @@ public:
         Sounds::init();
         Fonts::init(_g.fontSize);
 
-        _g.store.setBool("firstStart", true);
+        _g.store.setBool("first_start", true);
+        // Set some DBG flags
+        _g.store.setBool("unlocked_medium", true);
+        _g.store.setBool("unlocked_hard", true);
+        _g.store.setBool("settings_scanlines_disable", false);
+        _g.store.setBool("completed_lvl_3.e0", true);
+        _g.store.setBool("completed_lvl_3.e1", true);
     }
     ~App() {}
     void render(Graphics* g) override {
-        // g->fxApply(FX_SCANLINES2, _g.getTick());
+        if (_g.store.getBool("settings_scanlines_disable")) return;
+        float amt = std::sin(_g.getTick() / 128.0f) * 0.5f + 0.5f;
+        amt *= 0.75f;
+        g->fxApply(FX_SCANLINES2, _g.getTick(), amt);
     }
     void process() override {
         // Pause
-        if (_input.keyOnce(SDLK_ESCAPE) || _input.keyOnce(SDLK_BACKQUOTE)) {
-            DBG("Hit ESC");
-            _g.setScreen(SCN_PUZZLE_SETUP);
-        }
+        // if (_input.keyOnce(SDLK_ESCAPE) || _input.keyOnce(SDLK_BACKQUOTE)) {
+        //     DBG("Hit ESC");
+        //     _g.setScreen(SCN_PUZZLE_SETUP);
+        // }
 
         if (_g.getReset()) {
             _g.setReset(false);

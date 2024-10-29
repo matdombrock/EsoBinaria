@@ -42,19 +42,22 @@ public:
 
         highlightCellTypeStr = "CLEAR";
         helpString = "";
+
+        reset();
+
         DBG("Grid started");
 
         // DBG basic test
-        cells[3][3].set(CT_NOT);
-        cells[3][3].parenLeft = true;
-        cells[4][3].set(CT_OR);
-        cells[4][3].parenLeft = true;
-        cells[5][3].set(CT_INA);
-        cells[6][3].set(CT_INB);
-        cells[7][3].set(CT_INC);
-        cells[7][3].parenRight = true;
-        cells[8][3].set(CT_BLANK);
-        cells[8][3].parenRight = true;
+        // cells[3][3].set(CT_NOT);
+        // cells[3][3].parenLeft = true;
+        // cells[4][3].set(CT_OR);
+        // cells[4][3].parenLeft = true;
+        // cells[5][3].set(CT_INA);
+        // cells[6][3].set(CT_INB);
+        // cells[7][3].set(CT_INC);
+        // cells[7][3].parenRight = true;
+        // cells[8][3].set(CT_BLANK);
+        // cells[8][3].parenRight = true;
     }
     ~Grid() {}
     void reset() {
@@ -62,6 +65,16 @@ public:
             for (int y = 0; y < gridSize.y; y++) {
                 cells[x][y].set(CT_VOID);
             }
+        }
+        // 0 place B
+        // 1 place NOT
+        if (_g.getPuzzleNum() == 1 && _g.getPuzzleChallenge() == 'e') {
+            cells[6][4].set(CT_INA);
+        }
+        // 2 place A
+        // 3 place NOT
+        if (_g.getPuzzleNum() == 2 && _g.getPuzzleChallenge() == 'e') {
+            cells[6][4].set(CT_NOT);
         }
     }
     void process() override {
@@ -290,15 +303,15 @@ public:
         }
 
         // Draw static noise
-        if (_g.getTick() % 2 == 0) {
-            int staticSize = _g.cellSize / 32;
-            graph->setColor(_colors["YELLOW"], 64);
-            for (int i = 0; i < WINDOW_SIZE.size2d()/(staticSize * (_g.hasCodeErr() ? 128 : 1024)); i++) {
-                int x = rand() % WINDOW_SIZE.x;
-                int y = rand() % WINDOW_SIZE.y;
-                graph->rect(Vec2i(x, y), Vec2i(staticSize, staticSize));
-            }
-        }
+        // if (_g.getTick() % 2 == 0) {
+        //     int staticSize = _g.cellSize / 32;
+        //     graph->setColor(_colors["YELLOW"], 64);
+        //     for (int i = 0; i < WINDOW_SIZE.size2d()/(staticSize * (_g.hasCodeErr() ? 128 : 1024)); i++) {
+        //         int x = rand() % WINDOW_SIZE.x;
+        //         int y = rand() % WINDOW_SIZE.y;
+        //         graph->rect(Vec2i(x, y), Vec2i(staticSize, staticSize));
+        //     }
+        // }
 
         // Draw opposite scans
         // graph->setColor(_colors["GREEN"], 32);
@@ -308,10 +321,10 @@ public:
         // }
 
         // Draw scanlines
-        graph->setColor(_colors["GREEN"],32);
-        for (int y = 0; y < WINDOW_SIZE.y; y += _g.cellSize) {
-            int yy = y + sin(y + (_g.getTick()/6) * 0.1) * _g.cellSize;
-            graph->line(Vec2i(0, yy), Vec2i(WINDOW_SIZE.x, yy));
-        }
+        // graph->setColor(_colors["GREEN"],32);
+        // for (int y = 0; y < WINDOW_SIZE.y; y += _g.cellSize) {
+        //     int yy = y + sin(y + (_g.getTick()/6) * 0.1) * _g.cellSize;
+        //     graph->line(Vec2i(0, yy), Vec2i(WINDOW_SIZE.x, yy));
+        // }
     }
 };

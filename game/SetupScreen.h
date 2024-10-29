@@ -7,19 +7,19 @@ using namespace Imp;
 
 class BtnNub : public Btn {
 public:
-    int index;
+    int index = 0;
+    bool completed = false;
     BtnNub() : Btn() {
         tag = "nub";
-        index = 0;
         size = Vec2i(_g.vu(0.25f), _g.vu(0.25f));
         setCollider(Vec2i(_g.cellSize / 2, _g.cellSize / 2));
     }
     ~BtnNub() {}
     void render(Graphics* graph) override {
         if (!available) return;
-        graph->setColor(state ? _colors["GREEN"] : _colors["GRAY"]);
+        graph->setColor(state ? _colors["YELLOW"] : completed ? _colors["GREEN"] : _colors["GRAY"]);
         if (_g.getPuzzleNum() == index) {
-            graph->setColor(_colors["YELLOW"]);
+            graph->setColor(_colors["RED"]);
         }
         // graph->rect(pos, size, true);
         graph->tri(pos, pos + Vec2i(size.x, 0), pos + Vec2i(0, size.y), _g.getTick() * (index/256.0f) / 512.0f);
@@ -46,6 +46,7 @@ public:
             x *= _g.vu(0.5f);
             y *= _g.vu(0.5f);
             btnsLvl[i].pos = Vec2i(_g.vu(2), _g.vu(3)) + Vec2i(x,y);
+            btnsLvl[i].available = false;
             btnsLvl[i].onClick = [i](){
                 DBG("Clicked: " + std::to_string(i));
                 _g.setPuzzleNum(i);
@@ -66,14 +67,18 @@ public:
         btnMedium.onClick = [](){
             _g.setPuzzleChallenge('m');
         };
-        em.addEntity(&btnMedium);
+        if (_g.store.getBool("unlocked_medium")) {
+            em.addEntity(&btnMedium);
+        }
 
         btnHard.pos = Vec2i(_g.vu(10), _g.vu(2) + _g.vu(2));
         btnHard.text = "ARCH";
         btnHard.onClick = [](){
             _g.setPuzzleChallenge('h');
         };
-        em.addEntity(&btnHard);
+        if (_g.store.getBool("unlocked_hard")) {
+            em.addEntity(&btnHard);
+        }
 
         btnStart.pos = Vec2i(_g.vu(10), _g.vu(2) + _g.vu(3));
         btnStart.text = "START";
@@ -86,12 +91,16 @@ public:
     ~SetupScreen() {}
     void process() override {
         if (_g.getScreen() != SCN_PUZZLE_SETUP) return;
-        int maxLevel = _g.getPuzzleChallenge() == 'e' ? 4 : _g.getPuzzleChallenge() == 'm' ? 64 : 256;
+        char challenge = _g.getPuzzleChallenge();
+        int maxLevel = challenge == 'e' ? 4 : _g.getPuzzleChallenge() == 'm' ? 64 : 256;
         for (int i = 0; i < 256; i++) {
             btnsLvl[i].available = true;
             if (btnsLvl[i].index >= maxLevel) {
                 btnsLvl[i].available = false;
+                continue;
             }
+            std::string boolStr = "completed_lvl_3." + std::string(1, challenge) + std::to_string(i);
+            btnsLvl[i].completed = _g.store.getBool(boolStr);
         }
         if (_g.getPuzzleNum() >= maxLevel) {
             _g.setPuzzleNum(maxLevel - 1);
@@ -113,7 +122,7 @@ public:
         graph->setColor(_colors["WHITE"]);
         graph->text("   EsoBinaria", Vec2i(_g.vu(0), _g.vu(0)), &Fonts::large);
         graph->setColor(_colors["WHITE"]);
-        graph->text(_g.getPuzzleString(), Vec2i(_g.vu(2), _g.vu(2)), &Fonts::medium);
+        graph->text(_g.getPuzzleString() + (_g.store.getBool("completed_lvl_"+_g.getPuzzleString()) ? " - KNOWN" : " - ENIGMA"), Vec2i(_g.vu(2), _g.vu(2)), &Fonts::medium);
 
         // Draw cursor lines
         // graph->setColor(_colors["GREEN"], 128);
@@ -148,16 +157,5 @@ public:
         // Draw triangle in bottom right corner
         graph->setColor(_colors["BG"]);
         graph->tri(Vec2i(WINDOW_SIZE.x, WINDOW_SIZE.y), Vec2i(WINDOW_SIZE.x, WINDOW_SIZE.y - _g.vu(6)), Vec2i(WINDOW_SIZE.x - _g.vu(6), WINDOW_SIZE.y));
-
-        // Draw static noise
-        if (_g.getTick() % 2 == 0) {
-            int staticSize = _g.cellSize / 32;
-            graph->setColor(_colors["YELLOW"],128);
-            for (int i = 0; i < WINDOW_SIZE.size2d()/(staticSize * 1024); i++) {
-                int x = rand() % WINDOW_SIZE.x;
-                int y = rand() % WINDOW_SIZE.y;
-                graph->rect(Vec2i(x, y), Vec2i(staticSize, staticSize));
-            }
-        }
     }
 };
