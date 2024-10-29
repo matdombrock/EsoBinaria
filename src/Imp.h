@@ -5,20 +5,28 @@
 #include <algorithm>
 #include <functional>
 #include <vector> 
+#include <cmath>
+#include <map>
+#include <fstream>
+#ifdef __EMSCRIPTEN__
+    #include <emscripten.h>
+#endif
 #if defined(__APPLE__)
-#include <SDL.h>
-#include <SDL_ttf.h>
-#include <SDL_image.h>
-#include <SDL_mixer.h>
+    #include <SDL.h>
+    #include <SDL_ttf.h>
+    #include <SDL_image.h>
+    #include <SDL_mixer.h>
 #else
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_ttf.h>
-#include <SDL2/SDL_image.h>
-#include <SDL2/SDL_mixer.h>
+    #include <SDL2/SDL.h>
+    #include <SDL2/SDL_ttf.h>
+    #include <SDL2/SDL_image.h>
+    #include <SDL2/SDL_mixer.h>
 #endif
 #define PI 3.14159265358979323846f
 
 namespace Imp {
+
+const std::string basePath = SDL_GetBasePath();
 
 //
 // DEBUG
@@ -274,7 +282,6 @@ public:
     int size;
     Font(const std::string& fontName = "", int fontSize = 24) {
         if (fontName.empty()) return;
-        std::string basePath = SDL_GetBasePath();
         std::string fontPath = basePath + "assets/" + fontName;
         data = TTF_OpenFont(fontPath.c_str(), fontSize);
         this->size = fontSize;
@@ -394,7 +401,6 @@ public:
         this->renderer = renderer;
     }
     bool loadSpritesheet(const std::string& path) {
-        std::string basePath = SDL_GetBasePath();
         std::string spritePath = basePath + "assets/" + path;
         SDL_Surface* surface = IMG_Load(spritePath.c_str());
         if (!surface) {
@@ -742,13 +748,6 @@ public:
         //     DBG("Cant initialize SDL_mixer");
         //     exit(1);
         // }
-
-        std::string basePath = SDL_GetBasePath();
-        if (basePath.empty()) {
-            std::cerr << "SDL_GetBasePath failed!" << std::endl;
-            DBG("Can't get base path");
-            return;
-        }
         std::string fullPath = basePath + "assets/" + path;
         sound = Mix_LoadWAV(fullPath.c_str());
         if (sound == nullptr) {
@@ -1074,6 +1073,74 @@ public:
     }
 };
 
+//
+// Storage
+//
+
+class Store {
+public:
+    Store() {
+        read();
+#ifdef __EMSCRIPTEN__
+        isEmScipten = true;
+#endif
+    }
+    ~Store() {}
+    void setString(std::string key, std::string value) {
+        data[key] = value;
+        write();
+    }
+    void setInt(std::string key, int value) {
+        data[key] = std::to_string(value);
+        write();
+    }
+    void setFloat(std::string key, float value) {
+        data[key] = std::to_string(value);
+        write();
+    }
+    void setBool(std::string key, bool value) {
+        data[key] = value ? "true" : "false";
+        write();
+    }
+    std::string getString(std::string key) {
+        return data[key];
+    }
+    int getInt(std::string key) {
+        return std::stoi(data[key]);
+    }
+    float getFloat(std::string key) {
+        return std::stof(data[key]);
+    }
+    bool getBool(std::string key) {
+        return data[key] == "true";
+    }
+private:
+    bool isEmScipten = false;
+    std::map<std::string, std::string> data;
+    void write() {
+        std::ofstream file(basePath + "store.txt");
+        for (auto const& [key, val] : data) {
+            file << key << "=" << val << std::endl;
+        }
+        file.close();
+    }
+    void read() {
+        std::ifstream file(basePath + "store.txt");
+        if (!file.is_open()) {
+            std::cerr << "Store file not found:" << std::endl;
+            std::cerr << basePath + "store.txt" << std::endl;
+            return;
+        }
+        std::string line;
+        while (std::getline(file, line)) {
+            std::vector<std::string> parts = StringTools::split(line, "=");
+            if (parts.size() == 2) {
+                data[parts[0]] = parts[1];
+            }
+        }
+        file.close();
+    }
+};
 //
 // Main class
 //

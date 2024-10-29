@@ -26,6 +26,7 @@ public:
     const int cellSize = WINDOW_SIZE.x / 16;
     const Vec2i bottomBarSize = Vec2i(WINDOW_SIZE.x, cellSize * 3);
     const Vec2i bottomBarPos = Vec2i(0, WINDOW_SIZE.y - bottomBarSize.y);
+    Store store;
     int vu(float val) {
         return (int)(val * cellSize);
     }

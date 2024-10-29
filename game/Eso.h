@@ -39,10 +39,16 @@ public:
         entityMan.addEntity(&mainMenu);
         entityMan.addEntity(&cursor);
 
-        _g.setScreen(SCN_HELP);
+        if (_g.store.getBool("firstStart")) {
+            _g.setScreen(SCN_PUZZLE_SETUP);
+        } else {
+            _g.setScreen(SCN_HELP);
+        }
 
         Sounds::init();
         Fonts::init(_g.fontSize);
+
+        _g.store.setBool("firstStart", true);
     }
     ~App() {}
     void render(Graphics* g) override {
