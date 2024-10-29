@@ -219,9 +219,18 @@ public:
             if (keyStatePrev[i] != keyState[i]) DBG("Key changed " + std::to_string(i) + " " + std::to_string(keyState[i]));
             keyStatePrev[i] = keyState[i];
         }
-        SDL_PumpEvents();
-        // keyState = SDL_GetKeyboardState(NULL);
-
+        // SDL_PumpEvents();
+        SDL_Event event;
+        while (SDL_PollEvent(&event)) {
+            SDL_Scancode scancode = SDL_GetScancodeFromKey(event.key.keysym.sym);
+            if (event.type == SDL_KEYDOWN)    keyState[scancode] = 1;
+            else if (event.type == SDL_KEYUP) keyState[scancode] = 0;
+            if (event.type == SDL_QUIT) {
+                DBG("SDL Quit event");
+                exit(0);
+                return;
+            }
+        }
         mouseStatePrev = mouseState;
         mouseState = SDL_GetMouseState(&mouseX, &mouseY);
         // DBG((int)keyState[ SDL_SCANCODE_W ]);
@@ -239,7 +248,8 @@ public:
         return keyState[SDL_GetScancodeFromKey(keyCode)];
     }
     bool keyOnce(SDL_Keycode keyCode) {
-        return keyState[SDL_GetScancodeFromKey(keyCode)] && !keyStatePrev[SDL_GetScancodeFromKey(keyCode)];
+        SDL_Scancode scancode = SDL_GetScancodeFromKey(keyCode);
+        return keyState[scancode] && !keyStatePrev[scancode];
     }
     bool anyKey() {
         for (int i = 0; i < 512; i++) {
@@ -262,8 +272,8 @@ public:
         return out;
     }
 private:
-    const Uint8* keyState = SDL_GetKeyboardState(NULL);
-    Uint8 keyStatePrev[512] = {};
+    Uint8 keyState[512] = {0};
+    Uint8 keyStatePrev[512] = {0};
     int mouseX = 0;
     int mouseY = 0;
     Uint32 mouseState = SDL_GetMouseState(&mouseX, &mouseY);
@@ -1222,13 +1232,13 @@ public:
     {
         frameStart = SDL_GetTicks();
         _input.poll();
-        while (SDL_PollEvent(&event) != 0) {
-            if (event.type == SDL_QUIT) {
-                shouldQuit = true;
-                quit();
-                return;
-            }
-        }
+        // while (SDL_PollEvent(&event) != 0) {
+        //     if (event.type == SDL_QUIT) {
+        //         shouldQuit = true;
+        //         quit();
+        //         return;
+        //     }
+        // }
         entityMan.checkMouse();
         entityMan.checkCollisions();
         entityMan.process();
