@@ -216,7 +216,7 @@ public:
     ~Input() {}
     void poll() {
         for (int i = 0; i < 512; i++) {
-            // if (keyStatePrev[i] != keyState[i]) DBG("Key changed " + std::to_string(i) + " " + std::to_string(keyState[i]));
+            if (keyStatePrev[i] != keyState[i]) DBG("Key changed " + std::to_string(i) + " " + std::to_string(keyState[i]));
             keyStatePrev[i] = keyState[i];
         }
         SDL_PumpEvents();
@@ -1111,6 +1111,10 @@ public:
     bool getBool(std::string key) {
         return data[key] == "true";
     }
+    void clear() {
+        data.clear();
+        write();
+    }
 private:
     std::map<std::string, std::string> data;
     void write() {
@@ -1179,6 +1183,11 @@ public:
     }
     bool getBool(std::string key) {
         return getString(key) == "true";
+    }
+    void clear() {
+        EM_ASM(
+            localStorage.clear();
+        );
     }
 private:
     void read() {
@@ -1263,7 +1272,11 @@ protected:
     bool pauseRenderer;
     void init(std::string spriteSheetFile = "") {
         DBG("Imp starting");
-        window = SDL_CreateWindow(windowTitle, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, windowSize.x, windowSize.y, SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL);
+        if (basePath.empty()) {
+            DBG("Base path not set");
+            exit(1);
+        }
+        window = SDL_CreateWindow(windowTitle, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, windowSize.x, windowSize.y, SDL_WINDOW_SHOWN);
         if (window == nullptr) {
             std::cerr << "Window could not be created! SDL_Error: " << SDL_GetError() << std::endl;
             SDL_Quit();

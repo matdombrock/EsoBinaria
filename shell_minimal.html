@@ -34,10 +34,13 @@
       var Module = {
         print: (function() {
           var element = document.getElementById('output');
-            var urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.has('debug')) {
-              element.style = 'display: block;';
-            }
+          var urlParams = new URLSearchParams(window.location.search);
+          if (urlParams.has('debug')) {
+            element.style = 'display: block;';
+          }
+          if (urlParams.has('clearData')) {
+            localStorage.clear();
+          }
           if (element) element.value = ''; // clear browser cache
           return (...args) => {
             var text = args.join(' ');

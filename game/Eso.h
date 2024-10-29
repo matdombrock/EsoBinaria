@@ -52,7 +52,7 @@ public:
     }
     ~App() {}
     void render(Graphics* g) override {
-        g->fxApply(FX_SCANLINES2, _g.getTick());
+        // g->fxApply(FX_SCANLINES2, _g.getTick());
     }
     void process() override {
         // Pause
