@@ -48,7 +48,7 @@ public:
     ~App() {}
     void render(Graphics* g) override {
         // if (_g.getTick() % 1 == 0) {
-            g->fxScanLines(_g.getTick());
+            g->fxScanLines2(_g.getTick());
         // }
         
     }
