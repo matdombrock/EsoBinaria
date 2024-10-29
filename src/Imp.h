@@ -231,7 +231,6 @@ public:
         return keyState[SDL_GetScancodeFromKey(keyCode)];
     }
     bool keyOnce(SDL_Keycode keyCode) {
-        DBG(keyState[SDL_GetScancodeFromKey(keyCode)] && !keyStatePrev[SDL_GetScancodeFromKey(keyCode)]);
         return keyState[SDL_GetScancodeFromKey(keyCode)] && !keyStatePrev[SDL_GetScancodeFromKey(keyCode)];
     }
     bool anyKey() {
@@ -1125,7 +1124,6 @@ public:
     }
     void loop()
     {
-        DBG("Loop");
         frameStart = SDL_GetTicks();
         _input.poll();
         while (SDL_PollEvent(&event) != 0) {
