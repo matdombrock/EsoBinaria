@@ -46,10 +46,7 @@ public:
     }
     ~App() {}
     void render(Graphics* g) override {
-        // if (_g.getTick() % 1 == 0) {
-            g->fxScanLines2(_g.getTick());
-        // }
-        
+        g->fxApply(FX_SCANLINES2, _g.getTick());
     }
     void process() override {
         // Pause

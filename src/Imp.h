@@ -286,46 +286,108 @@ public:
     }
 };
 
+class ScreenFXProps {   
+public:
+    int tick = 0;
+    int x = 0;
+    int y = 0;
+    float p1 = 0.0f;
+    float p2 = 0.0f;
+    float p3 = 0.0f;
+    Uint32* pixels;
+};
+
 class ScreenFX {
 public:
-    ScreenFX(SDL_Renderer* renderer) : renderer(renderer) {
+    ScreenFX(){}
+    ~ScreenFX() {}
+    void render(SDL_Renderer* renderer, int tick, float p1, float p2, float p3) {
         SDL_GetRendererOutputSize(renderer, &width, &height);
         surface = SDL_CreateRGBSurfaceWithFormat(0, width, height, 32, SDL_PIXELFORMAT_RGBA32);
-    }
-    ~ScreenFX() {}
-    void render() {
         SDL_RenderReadPixels(renderer, nullptr, surface->format->format, surface->pixels, surface->pitch);
         Uint32* pixels = (Uint32*)surface->pixels;
         for (int y = 0; y < height; ++y) {
             for (int x = 0; x < width; ++x) {
-                Uint32 pixel = pixels[y * width + x];
+                Uint32 pixel= pixels[y * width + x];
                 Uint8 r, g, b, a;
                 SDL_GetRGBA(pixel, surface->format, &r, &g, &b, &a);
-
-                renderPixel(a, y, &r, &g, &b, &a);
-
+                ScreenFXProps props;
+                props.tick = tick;
+                props.x = x;
+                props.y = y;
+                props.p1 = p1;
+                props.p2 = p2;
+                props.p3 = p3;
+                props.pixels = pixels;
+                renderPixel(&r, &g, &b, &a, props);
                 pixels[y * width + x] = SDL_MapRGBA(surface->format, r, g, b, a);
             }
         }
         SDL_Texture* newTexture = SDL_CreateTextureFromSurface(renderer, surface);
         SDL_FreeSurface(surface);
-
         // Render the new texture
         SDL_SetRenderTarget(renderer, nullptr);
         SDL_RenderCopy(renderer, newTexture, nullptr, nullptr);
         SDL_DestroyTexture(newTexture);
     }
 protected:
-    virtual void renderPixel(int x, int y, Uint8 *r, Uint8 *g, Uint8 *b, Uint8 *a) {}
+    virtual void renderPixel(Uint8 *r, Uint8 *g, Uint8 *b, Uint8 *a, ScreenFXProps props) {}
     int width, height;
     SDL_Renderer* renderer;
     SDL_Surface* surface;
+};
 
+class FXInvert : public ScreenFX {
+protected:
+    void renderPixel(Uint8 *r, Uint8 *g, Uint8 *b, Uint8 *a, ScreenFXProps props) override {
+        *r = 255 - *r;
+        *g = 255 - *g;
+        *b = 255 - *b;
+    }
+};
+
+class FXScanlines : public ScreenFX {
+protected:
+    void renderPixel(Uint8 *r, Uint8 *g, Uint8 *b, Uint8 *a, ScreenFXProps props) override {
+        float f = 0.9f;
+        int mod = props.y + (props.tick / 16);
+        if (mod % 32 >= 24) {
+            *r = *r * f;
+            *g = *g * f;
+            *b = *b * f;
+        }
+    }
+};
+
+class FXScanlines2 : public ScreenFX {
+protected:
+    void renderPixel(Uint8 *r, Uint8 *g, Uint8 *b, Uint8 *a, ScreenFXProps props) override {
+        float f = 0.9f;
+        int mod = props.y + (props.tick * 4);
+        int scanSize = width * 2;
+        if (mod %  scanSize >= scanSize - 8) {
+            Uint32 pixel = props.pixels[props.y * width + props.x + (mod % 8)];
+            Uint8 r1, g1, b1, a1;
+            SDL_GetRGBA(pixel, surface->format, &r1, &g1, &b1, &a1);
+            *r = b1 * f;
+            *g = r1 * f;
+            *b = g1 * f;
+        }
+    }
+};
+
+enum FXName {
+    FX_INVERT,
+    FX_SCANLINES,
+    FX_SCANLINES2
 };
 
 class Graphics {
 public:
     int fps = 60;
+    FXInvert fxInvert;
+    FXScanlines fxScanlines;
+    FXScanlines2 fxScanlines2;
     Graphics(Vec2i windowSize) : renderer(nullptr), windowSize(windowSize) {}
     ~Graphics() {}
     void setRenderer(SDL_Renderer* renderer) {
@@ -635,106 +697,18 @@ public:
     int getTick() {
         return tick;
     }
-    void fxInvert() {
-        int width, height;
-        SDL_GetRendererOutputSize(renderer, &width, &height);
-
-        SDL_Surface* surface = SDL_CreateRGBSurfaceWithFormat(0, width, height, 32, SDL_PIXELFORMAT_RGBA32);
-        SDL_RenderReadPixels(renderer, nullptr, surface->format->format, surface->pixels, surface->pitch);
-
-        Uint32* pixels = (Uint32*)surface->pixels;
-        for (int y = 0; y < height; ++y) {
-            for (int x = 0; x < width; ++x) {
-                Uint32 pixel = pixels[y * width + x];
-                Uint8 r, g, b, a;
-                SDL_GetRGBA(pixel, surface->format, &r, &g, &b, &a);
-
-                // Apply a simple effect (e.g., invert colors)
-                r = 255 - r;
-                g = 255 - g;
-                b = 255 - b;
-
-                pixels[y * width + x] = SDL_MapRGBA(surface->format, r, g, b, a);
-            }
+    void fxApply(FXName name, int tick, float p1 = 0.0f, float p2 = 0.0f, float p3 = 0.0f) {
+        switch(name) {
+            case FX_INVERT:
+                fxInvert.render(renderer, tick, p1, p2, p3);
+                break;
+            case FX_SCANLINES:
+                fxScanlines.render(renderer, tick, p1, p2, p3);
+                break;
+            case FX_SCANLINES2:
+                fxScanlines2.render(renderer, tick, p1, p2, p3);
+                break;
         }
-
-        SDL_Texture* newTexture = SDL_CreateTextureFromSurface(renderer, surface);
-        SDL_FreeSurface(surface);
-
-        // Render the new texture
-        SDL_SetRenderTarget(renderer, nullptr);
-        SDL_RenderCopy(renderer, newTexture, nullptr, nullptr);
-        SDL_DestroyTexture(newTexture);
-    }
-    void fxScanLines(int tick){
-        int width, height;
-        SDL_GetRendererOutputSize(renderer, &width, &height);
-
-        SDL_Surface* surface = SDL_CreateRGBSurfaceWithFormat(0, width, height, 32, SDL_PIXELFORMAT_RGBA32);
-        SDL_RenderReadPixels(renderer, nullptr, surface->format->format, surface->pixels, surface->pitch);
-
-        Uint32* pixels = (Uint32*)surface->pixels;
-        for (int y = 0; y < height; ++y) {
-            for (int x = 0; x < width; ++x) {
-                Uint32 pixel = pixels[y * width + x];
-                Uint8 r, g, b, a;
-                SDL_GetRGBA(pixel, surface->format, &r, &g, &b, &a);
-                
-                float f = 0.9f;
-                int mod = y + (tick / 16);
-                if (mod % 32 >= 24) {
-                    r = r * f;
-                    g = g * f;
-                    b = b * f;
-                }
-                pixels[y * width + x] = SDL_MapRGBA(surface->format, r, g, b, a);
-            }
-        }
-
-        SDL_Texture* newTexture = SDL_CreateTextureFromSurface(renderer, surface);
-        SDL_FreeSurface(surface);
-
-        // Render the new texture
-        SDL_SetRenderTarget(renderer, nullptr);
-        SDL_RenderCopy(renderer, newTexture, nullptr, nullptr);
-        SDL_DestroyTexture(newTexture);
-    }
-    void fxScanLines2(int tick){
-        int width, height;
-        SDL_GetRendererOutputSize(renderer, &width, &height);
-
-        SDL_Surface* surface = SDL_CreateRGBSurfaceWithFormat(0, width, height, 32, SDL_PIXELFORMAT_RGBA32);
-        SDL_RenderReadPixels(renderer, nullptr, surface->format->format, surface->pixels, surface->pitch);
-
-        Uint32* pixels = (Uint32*)surface->pixels;
-        for (int y = 0; y < height; ++y) {
-            for (int x = 0; x < width; ++x) {
-                Uint32 pixel = pixels[y * width + x];
-                Uint8 r, g, b, a;
-                SDL_GetRGBA(pixel, surface->format, &r, &g, &b, &a);
-                
-                float f = 0.9f;
-                int mod = y + (tick * 4);
-                int scanSize = getWindowSize().y * 2;
-                if (mod %  scanSize >= scanSize - 8) {
-                    Uint32 pixel = pixels[y * width + x + (mod % 8)];
-                    Uint8 r1, g1, b1, a1;
-                    SDL_GetRGBA(pixel, surface->format, &r1, &g1, &b1, &a1);
-                    r = b1 * f;
-                    g = r1 * f;
-                    b = g1 * f;
-                }
-                pixels[y * width + x] = SDL_MapRGBA(surface->format, r, g, b, a);
-            }
-        }
-
-        SDL_Texture* newTexture = SDL_CreateTextureFromSurface(renderer, surface);
-        SDL_FreeSurface(surface);
-
-        // Render the new texture
-        SDL_SetRenderTarget(renderer, nullptr);
-        SDL_RenderCopy(renderer, newTexture, nullptr, nullptr);
-        SDL_DestroyTexture(newTexture);
     }
 private:
     int tick = 0;
