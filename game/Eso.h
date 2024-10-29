@@ -24,7 +24,7 @@ public:
     Grid grid;
     TestArea testArea;
     Cursor cursor;
-    TopMenu TopMenu;
+    TopMenu topMenu;
     BottomBar bottomBar;
     MainMenu mainMenu;
     SetupScreen setupScreen;
@@ -34,7 +34,7 @@ public:
         entityMan.addEntity(&grid);
         entityMan.addEntity(&bottomBar);
         entityMan.addEntity(&testArea);
-        entityMan.addEntity(&TopMenu);
+        entityMan.addEntity(&topMenu);
         entityMan.addEntity(&setupScreen);
         entityMan.addEntity(&helpScreen);
         entityMan.addEntity(&mainMenu);

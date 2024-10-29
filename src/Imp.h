@@ -1,12 +1,21 @@
 #pragma once
 
-#include <SDL.h>
 #include <iostream>
 #include <string>
+#include <algorithm>
+#include <functional>
+#include <vector> 
+#if defined(__APPLE__)
+#include <SDL.h>
 #include <SDL_ttf.h>
 #include <SDL_image.h>
 #include <SDL_mixer.h>
-
+#else
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_ttf.h>
+#include <SDL2/SDL_image.h>
+#include <SDL2/SDL_mixer.h>
+#endif
 #define PI 3.14159265358979323846f
 
 namespace Imp {
@@ -287,7 +296,9 @@ public:
         this->renderer = renderer;
     }
     bool loadSpritesheet(const std::string& path) {
-        SDL_Surface* surface = IMG_Load(path.c_str());
+        std::string basePath = SDL_GetBasePath();
+        std::string spritePath = basePath + "assets/" + path;
+        SDL_Surface* surface = IMG_Load(spritePath.c_str());
         if (!surface) {
             std::cerr << "IMG_Load: " << IMG_GetError() << std::endl;
             DBG("Cant load image");
@@ -1040,6 +1051,7 @@ public:
     }
     void loop()
     {
+        DBG("Loop");
         frameStart = SDL_GetTicks();
         _input.poll();
         while (SDL_PollEvent(&event) != 0) {
@@ -1125,7 +1137,7 @@ protected:
         graph->setRenderer(SDL_renderer);
 
         if (spriteSheetFile != "") {
-            graph->loadSpritesheet("assets/" + spriteSheetFile);
+            graph->loadSpritesheet(spriteSheetFile);
             DBG("Loaded spritesheet: " + spriteSheetFile);
         }
         shouldQuit = false;

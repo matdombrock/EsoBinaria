@@ -8,10 +8,7 @@
 #include <stdio.h>
 #include <iostream>
 
-#ifndef APP
-    #define APP "../examples/Basic.h"
-#endif
-#include APP
+#include "../game/Eso.h"
 
 #ifdef __EMSCRIPTEN__
     #include <emscripten.h>
