@@ -52,7 +52,6 @@ public:
                 if (onHover != nullptr) onHover();
             }
             if (state == 1 && oldState == 0) {
-                DBG("play ");
                 sndTick.play();
             }
             return;

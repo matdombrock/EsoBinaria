@@ -4,41 +4,23 @@ using namespace Imp;
 #include "_colors.h"
 #include "_gameMaster.h"
 #include "_fonts.h"
+#include "_text.h"
 
 
-class HelpScreen : public Entity {
+class EmailScreen : public Entity {
 public:
     EntityManager em;
     std::string text;
     Sprite sprWiz = Sprite(Vec2i(0, 224), Vec2i(32,32), Vec2i(_g.vu(2), _g.vu(2)));
     Sound sndType = Sound("1.wav");
     Font font = Font("HomeVideo.ttf", 24);
-    HelpScreen() : Entity() {
-        tag = "helpScreen";
+    EmailScreen() : Entity() {
+        tag = "EmailScreen";
         sprWiz.setAnimation({Vec2i(0, 224), Vec2i(32, 224)}, 4);
         // sndType.set("1.wav");
-        text = R"(<$FFFF00$>>> New e-Hail: <<: 
-<$00FF00$>
-Welcome:
-<$FFFFFF$>
-You have been accepted into the <$FF00FF$>EsoBinaria Research Program<$FFFFFF$>.
-Our goal here is to <$FF0000$>[REDACTED]<$FFFFFF$> the EsoBinaria device.
-To do this we must understand how it works.
-We have a tome documenting its inputs and outputs but no instructions for how to build the device.
-You aim is to recreate small parts of the mechanism via reverse-<$FF0000$>[REDACTED]<$FFFFFF$>.
-<$00FF00$>
-Mission Statement:
-<$FFFFFF$>
-We are the binary star system, two parts that orbit each other.
-We are the eternal void.
-We are the light.
-We are the EsoBinaria, the device that we seek to <$FF0000$>[REDACTED]<$FFFFFF$>.
-
-------------------------------------------------
-<$00FF00$>PRESS THE <ESC> KEY TO ENTER ESO-OS
-)";
+        text = Text::introEmail;
     }
-    ~HelpScreen() {}
+    ~EmailScreen() {}
     void process() override {
         if (_g.getScreen() != SCN_HELP) return;
         if (_input.keyOnce(SDLK_ESCAPE)) {
@@ -61,7 +43,7 @@ We are the EsoBinaria, the device that we seek to <$FF0000$>[REDACTED]<$FFFFFF$>
         sprWiz.render(graph, Vec2i(WINDOW_SIZE.x - _g.vu(2) - _g.vu(0.5f), _g.vu(0.5f)));
 
         graph->setColor(_colors["GREEN"]);
-        int pos = std::min((_g.getTick()/3)*3, (int)text.length() - 1);
+        int pos = std::min((_g.getTick()/3)*6, (int)text.length() - 1);
         if (pos < (int)text.length() - 1) {
             sndType.play(true);
         }

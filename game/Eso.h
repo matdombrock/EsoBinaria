@@ -12,7 +12,7 @@ using namespace Imp;
 #include "BottomBar.h"
 #include "MainMenu.h"
 #include "SetupScreen.h"
-#include "HelpScreen.h"
+#include "EmailScreen.h"
 #include "_gameMaster.h"
 #include "_sounds.h"
 #include "_fonts.h"
@@ -27,7 +27,7 @@ public:
     BottomBar bottomBar;
     MainMenu mainMenu;
     SetupScreen setupScreen;
-    HelpScreen helpScreen;
+    EmailScreen EmailScreen;
     App() : Imp::Main("EsoBinaria (v0.1-alpha)", WINDOW_SIZE, 60, "tiles.png") { 
         clearColor = Color(_colors["BG"]);
         entityMan.addEntity(&grid);
@@ -35,11 +35,11 @@ public:
         entityMan.addEntity(&testArea);
         entityMan.addEntity(&topMenu);
         entityMan.addEntity(&setupScreen);
-        entityMan.addEntity(&helpScreen);
+        entityMan.addEntity(&EmailScreen);
         entityMan.addEntity(&mainMenu);
         entityMan.addEntity(&cursor);
 
-        if (_g.store.getBool("first_start")) {
+        if (_g.store.getBool("email_intro")) {
             _g.setScreen(SCN_PUZZLE_SETUP);
         } else {
             _g.setScreen(SCN_HELP);
@@ -48,7 +48,7 @@ public:
         Sounds::init();
         Fonts::init(_g.fontSize);
 
-        _g.store.setBool("first_start", true);
+        _g.store.setBool("email_intro", true);
         // Set some DBG flags
         _g.store.setBool("unlocked_medium", true);
         _g.store.setBool("unlocked_hard", true);
