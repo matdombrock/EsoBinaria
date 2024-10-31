@@ -255,12 +255,14 @@ public:
         for (int i = 0; i < 512; i++) {
             if (keyState[i]) return true;
         }
+        if (mouseState) return true;
         return false;
     }
-    bool anyKeyDown() {
+    bool anyKeyOnce() {
         for (int i = 0; i < 512; i++) {
             if (keyState[i] && !keyStatePrev[i]) return true;
         }
+        if (mouseState && (mouseStatePrev != mouseState)) return true;
         return false;
     }
     Vec2i wasd() {

@@ -115,7 +115,7 @@ public:
         graph->setColor(_colors["BG"]);
         graph->rect(Vec2i(0, 0), WINDOW_SIZE);
         
-        graph->setColor(_colors["YELLOW"],180);
+        graph->setColor(_colors["BG2"],180);
         graph->rect(Vec2i(0, 0), Vec2i(WINDOW_SIZE.x, _g.fontSize * 4));
         // Draw tri in top left
         graph->setColor(_colors["BG"]);

@@ -11,6 +11,7 @@ std::map<std::string, Color> _colors = {
     {"GREEN", Color(94,180,93)},
     {"YELLOW", Color(238,198,75)},
     {"RED", Color(186,89,90)},
+    {"BLUE", Color(77,151,120)},
     {"GRAY", Color(155,155,155)},
     {"WHITE", Color(255,255,255)},
 };

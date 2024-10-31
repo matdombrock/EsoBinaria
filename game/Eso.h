@@ -13,6 +13,7 @@ using namespace Imp;
 #include "MainMenu.h"
 #include "SetupScreen.h"
 #include "EmailScreen.h"
+#include "Huk.h"
 #include "_gameMaster.h"
 #include "_sounds.h"
 #include "_fonts.h"
@@ -25,6 +26,7 @@ public:
     Cursor cursor;
     TopMenu topMenu;
     BottomBar bottomBar;
+    Huk huk;
     MainMenu mainMenu;
     SetupScreen setupScreen;
     EmailScreen EmailScreen;
@@ -34,6 +36,7 @@ public:
         entityMan.addEntity(&bottomBar);
         entityMan.addEntity(&testArea);
         entityMan.addEntity(&topMenu);
+        entityMan.addEntity(&huk);
         entityMan.addEntity(&setupScreen);
         entityMan.addEntity(&EmailScreen);
         entityMan.addEntity(&mainMenu);
@@ -64,16 +67,11 @@ public:
         g->fxApply(FX_SCANLINES2, _g.getTick(), amt);
     }
     void process() override {
-        // Pause
-        // if (_input.keyOnce(SDLK_ESCAPE) || _input.keyOnce(SDLK_BACKQUOTE)) {
-        //     DBG("Hit ESC");
-        //     _g.setScreen(SCN_PUZZLE_SETUP);
-        // }
-
         if (_g.getReset()) {
             _g.setReset(false);
             grid.reset();
             testArea.reset();
+            huk.reset();
         }
         if (_g.getQuit()) {
             exit(0);
