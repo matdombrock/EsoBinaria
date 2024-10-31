@@ -125,7 +125,7 @@ public:
         else {
             sprFalse.render(graph, Vec2i(pos.x + ce + x + hoverMod, pos.y));
         }
-        if (data.err != "") _g.setCodeErr(data.err);
+        // if (data.err != "") _g.setCodeErr(data.err);
     }
     void onMouse(bool over) override {
         if (!show) return;
@@ -142,7 +142,30 @@ public:
     }
 private:
     s7_scheme* s7;
+    static s7_pointer wrapperErrorHandler(s7_scheme *sc, s7_pointer args) {
+        s7_pointer error_message = s7_car(args);
+        std::string errStr = s7_object_to_c_string(sc, error_message);
+        DBG("Error Handler: " + errStr);
+        if (StringTools::contains(errStr, "missing close paren")) _g.setCodeErr("Missing close paren");
+        else if (StringTools::contains(errStr, "not: not enough arguments")) _g.setCodeErr("Not missing input");
+        else if (StringTools::contains(errStr, "xor: not enough arguments")) _g.setCodeErr("XOR missing input(s)");
+        else if (StringTools::contains(errStr, "nand: not enough arguments")) _g.setCodeErr("NAND missing input(s)");
+        else if (StringTools::contains(errStr, "nor: not enough arguments")) _g.setCodeErr("NOR missing input(s)");
+        else if (StringTools::contains(errStr, "xnor: not enough arguments")) _g.setCodeErr("XNOR missing input(s)");
+        else _g.setCodeErr("Unknown error");
+        return s7_nil(sc);
+    }
     std::string evalScheme(const std::string& expr) {
+        s7_define_function(s7, "error-handler", wrapperErrorHandler, 1, 0, false, "Error handler");
+        std::string errorHandleScheme = R"(
+(set! (hook-functions *error-hook*)                    
+  (list (lambda (hook)                                 
+    (error-handler                               
+      (apply format #f (hook 'data)))          
+    ;;(set! (hook 'result) 'our-error)
+    )))
+)";
+        s7_eval_c_string(s7, errorHandleScheme.c_str());
         s7_pointer result = s7_eval_c_string(s7, expr.c_str());
         return s7_object_to_c_string(s7, result);
     }

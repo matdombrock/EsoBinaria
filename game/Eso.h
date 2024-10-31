@@ -28,7 +28,7 @@ public:
     MainMenu mainMenu;
     SetupScreen setupScreen;
     EmailScreen EmailScreen;
-    App() : Imp::Main("EsoBinaria (v0.1-alpha)", WINDOW_SIZE, 60, "tiles.png") { 
+    App() : Imp::Main("EsoBinaria (v0.1-alpha)", WINDOW_SIZE, 120, "tiles.png") { 
         clearColor = Color(_colors["BG"]);
         entityMan.addEntity(&grid);
         entityMan.addEntity(&bottomBar);

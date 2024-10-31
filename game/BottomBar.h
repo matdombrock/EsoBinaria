@@ -150,6 +150,10 @@ public:
             graph->setColor(200, 200, 200);
             graph->text(_g.getHelpItem()->desc, Vec2i(padX + w, _g.bottomBarPos.y + _g.cellSize + _g.fontSize + padY), &Fonts::medium);
         }
+        else if (_g.hasCodeErr() && !StringTools::contains(_g.getCodeString(), "_")) {
+            graph->setColor(_colors["YELLOW"]);
+            graph->text("!! Code Error: " + _g.getCodeErr(), Vec2i(padX, _g.bottomBarPos.y + _g.cellSize + padY), &Fonts::medium);
+        }
         else if (_g.getCodeString().length() > 0) {
             std::string codePre = _g.hasCodeErr() ? "!!" :">> ";
             graph->setColor(_g.hasCodeErr() ? _colors["YELLOW"] : _colors["GREEN"]);
