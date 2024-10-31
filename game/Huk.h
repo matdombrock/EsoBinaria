@@ -25,16 +25,16 @@ public:
             show = true;
             hasShown = true;
             if (_g.getPuzzleNum() == 0) {
-                messages = {Text::huk0a, Text::huk0b, Text::huk0c, Text::huk0d, Text::huk0e, Text::huk0f, Text::huk0g};
+                messages = {Text::huk0a, Text::huk0b, Text::huk0c, Text::huk0d, Text::huk0e, Text::huk0f, Text::huk0g, Text::huk0h, Text::huk0i, Text::huk0j, Text::huk0k};
             }
             if (_g.getPuzzleNum() == 1) {
-                messages = {Text::huk1a, Text::huk1b};
+                messages = {Text::huk1a, Text::huk1b, Text::huk1c, Text::huk1d, Text::huk1e, Text::huk1f, Text::huk1g, Text::huk1h, Text::huk1i, Text::huk1j, Text::huk1k};
             }
             if (_g.getPuzzleNum() == 2) {
-                messages = {Text::huk2a, Text::huk2b};
+                messages = {Text::huk2a, Text::huk2b, Text::huk2c, Text::huk2d, Text::huk2e, Text::huk2f};
             }
             if (_g.getPuzzleNum() == 3) {
-                messages = {Text::huk3a, Text::huk3b};
+                messages = {Text::huk3a, Text::huk3b, Text::huk3c, Text::huk3d, Text::huk3e, Text::huk3f};
             }
         }
         if (!show) return;

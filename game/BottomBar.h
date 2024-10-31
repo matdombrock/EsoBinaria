@@ -195,5 +195,9 @@ public:
                 graph->text(p3, Vec2i(padX + p0w + p1w + p2w, _g.bottomBarPos.y + _g.cellSize + padY), &Fonts::medium);
             }
         }
+        else {
+            graph->setColor(_colors["GRAY"]);
+            graph->text(">> No ESOP to display...", Vec2i(padX, _g.bottomBarPos.y + _g.cellSize + padY), &Fonts::medium);
+        }
     }
 };

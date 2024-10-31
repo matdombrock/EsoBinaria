@@ -71,11 +71,14 @@ public:
         if (_g.getPuzzleNum() == 1 && _g.getPuzzleChallenge() == 'e') {
             cells[6][4].set(CT_INA);
         }
-        // 2 place A
-        // 3 place NOT
+        // 2 remove tiles
         if (_g.getPuzzleNum() == 2 && _g.getPuzzleChallenge() == 'e') {
             cells[6][4].set(CT_NOT);
+            cells[2][2].set(CT_INC);
+            cells[3][4].set(CT_INB);
+            cells[4][7].set(CT_BLANK);
         }
+        // 3 solo
     }
     void process() override {
         if (_g.getScreen() != SCN_PUZZLE) return;
