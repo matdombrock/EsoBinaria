@@ -8,11 +8,13 @@ using namespace Imp;
 
 class Huk : public Entity {
     Sprite spr = Sprite(Vec2i(64, 224), Vec2i(32,32), Vec2i(_g.vu(2), _g.vu(2)));
+    Sound sndNext = Sound("wiggle1.wav");
     bool show = false;
 public:
     Huk() : Entity() {
         tag = "huk";
-        // spr.setAnimation({Vec2i(0, 0), Vec2i(32, 0)}, 4);
+        spr.setAnimation({Vec2i(64, 224), Vec2i(96, 224)}, 8);
+        sndNext.volume = 32;
     }
     ~Huk() {}
     void reset() {
@@ -24,6 +26,7 @@ public:
         if (!hasShown && _g.getPuzzleBits() == 3 && _g.getPuzzleChallenge() == 'e') {
             show = true;
             hasShown = true;
+            _g.setHukActive(true);
             if (_g.getPuzzleNum() == 0) {
                 messages = {Text::huk0a, Text::huk0b, Text::huk0c, Text::huk0d, Text::huk0e, Text::huk0f, Text::huk0g, Text::huk0h, Text::huk0i, Text::huk0j, Text::huk0k};
             }
@@ -42,8 +45,9 @@ public:
             messageIndex++;
             if (messageIndex >= messages.size()) {
                 show = false;
+                _g.setHukActive(false);
             }
-            // show = false;
+            else sndNext.play();
         }
     }
     void render(Graphics* graph) override {

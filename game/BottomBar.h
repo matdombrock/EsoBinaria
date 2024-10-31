@@ -120,6 +120,7 @@ public:
     ~BottomBar() {}
     void process() override {
         if (_g.getScreen() != SCN_PUZZLE) return;
+        if (_g.getHukActive()) return;
         _g.setHelpItem(nullptr);
         em.checkMouse();
         em.process();

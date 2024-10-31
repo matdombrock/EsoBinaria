@@ -126,6 +126,12 @@ public:
     std::string getPuzzleStringDynamic(int puzzleBits, char puzzleChallenge, int puzzleNum) {
         return std::to_string(puzzleBits) + "." + puzzleChallenge + std::to_string(puzzleNum);
     }
+    void setHukActive(bool active) {
+        hukActive = active;
+    }
+    bool getHukActive() {
+        return hukActive;
+    }
 private:
     CellType activeTile = CT_VOID;
     TestData* activeTestData = nullptr;
@@ -137,6 +143,7 @@ private:
     bool showTests = true;
     bool reset = false;
     bool quit = false;
+    bool hukActive = false;
     std::string codeErr = "";
     std::string codeString = "";
     HelpItem* helpItem = nullptr;

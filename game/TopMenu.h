@@ -175,6 +175,7 @@ public:
     ~TopMenu() {}
     void process() override {
         if (_g.getScreen() != SCN_PUZZLE) return;
+        if (_g.getHukActive()) return;
         // Clear if nothing is clicked
         if (_input.mouseKeyOnce(SDL_BUTTON_LEFT)) {
             activeTopMenu = "";

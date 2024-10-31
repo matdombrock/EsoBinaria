@@ -789,6 +789,7 @@ class Sound {
 public:
     Mix_Chunk* sound;
     int channel = -1;
+    // Max volume is 128
     int volume = MIX_MAX_VOLUME / 2;
     int pan[2] = { 255, 255 };
     std::string tag;
