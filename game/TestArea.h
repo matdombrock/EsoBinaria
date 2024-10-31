@@ -3,6 +3,7 @@
 #include "../src/Imp.h"
 using namespace Imp;
 #include "TestCase.h"
+#include "Modal.h"
 #include "_colors.h"
 #include "_gameMaster.h"
 #include "_fonts.h"
@@ -16,6 +17,8 @@ public:
     std::vector<TestCase> tests;
     std::string codeStringOld;
     Font font = Font("HomeVideo.ttf", _g.fontSize);
+    Modal modal;
+    bool shownPassModal = false;
     TestArea() : Entity() {
         tag = "testScreen";
         
@@ -28,6 +31,8 @@ public:
         for (int i = 0; i < tests.size(); i++) {
             em.addEntity(&tests[i]);
         }
+
+        em.addEntity(&modal);
     }
     ~TestArea() {}
     int check() {
@@ -93,8 +98,17 @@ public:
             graph->text(_g.getPuzzleString(), Vec2i(pos.x + _g.vu(0.5f), pos.y), &Fonts::medium);
         }
         if (testFails == 0) {
-            graph->setColor(_colors["GREEN"]);
-            graph->text("PASSED", Vec2i(_g.cellSize,_g.cellSize), &Fonts::medium);
+            graph->setColor(_colors["GREEN"], 128);
+            graph->text("PASSED", Vec2i(_g.cellSize,_g.cellSize), &Fonts::large);
+            if (!shownPassModal) {
+                modal.onOk = [&]() {
+                    _g.setScreen(SCN_PUZZLE_SETUP);
+                };
+                modal.title = "Passed!";
+                modal.show = true;
+                shownPassModal = true;
+            }
         }
+        else shownPassModal = false;
     }
 };
