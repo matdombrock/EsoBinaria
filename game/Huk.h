@@ -14,7 +14,7 @@ public:
     Huk() : Entity() {
         tag = "huk";
         spr.setAnimation({Vec2i(64, 224), Vec2i(96, 224)}, 8);
-        sndNext.volume = 32;
+        sndNext.volume = 8;
     }
     ~Huk() {}
     void reset() {

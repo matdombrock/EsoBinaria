@@ -27,6 +27,12 @@ public:
     const Vec2i bottomBarSize = Vec2i(WINDOW_SIZE.x, cellSize * 3);
     const Vec2i bottomBarPos = Vec2i(0, WINDOW_SIZE.y - bottomBarSize.y);
     Store store;
+    GameMaster() {
+        std::string puzzleChallengeString = store.getString("puzzleChallenge");
+        puzzleChallengeString.length() > 0 ? puzzleChallenge = puzzleChallengeString[0] : puzzleChallenge = 'e';
+        puzzleNum = store.getInt("puzzleNum");
+        DBG("Loaded Current Puzzle: " + getPuzzleString());
+    }
     int vu(float val) {
         return (int)(val * cellSize);
     }
@@ -91,15 +97,22 @@ public:
     }
     void setPuzzleNum(int num) {
         puzzleNum = num;
+        store.setInt("puzzleNum", num);
     }
     int getPuzzleNum() {
         return puzzleNum;
     }
     void setPuzzleChallenge(char challenge) {
         puzzleChallenge = challenge;
+        store.setString("puzzleChallenge", std::string(1, challenge));
     }
     char getPuzzleChallenge() {
         return puzzleChallenge;
+    }
+    void setPuzzleData(int bits, char challenge, int num) {
+        puzzleBits = bits;
+        setPuzzleChallenge(challenge);
+        setPuzzleNum(num);
     }
     void setActiveTile(CellType type, bool playSound = true, bool autoVoid = true) {
         if (type == CT_IND && puzzleBits < 4) {

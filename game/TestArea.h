@@ -102,7 +102,29 @@ public:
             graph->text("PASSED", Vec2i(_g.cellSize,_g.cellSize), &Fonts::large);
             if (!shownPassModal) {
                 modal.onOk = [&]() {
-                    _g.setScreen(SCN_PUZZLE_SETUP);
+                    int bits = _g.getPuzzleBits();
+                    char challenge = _g.getPuzzleChallenge();
+                    int num = _g.getPuzzleNum();
+                    num++;
+                    if (challenge == 'e') {
+                        if (num >= 4) {
+                            num = 0;
+                            challenge = 'm';
+                        }
+                    }
+                    else if (challenge == 'm') {
+                        if (num >= 64) {
+                            num = 0;
+                            challenge = 'h';
+                        }
+                    }
+                    else if (challenge == 'h') {
+                        _g.setScreen(SCN_PUZZLE_SETUP);
+                        return;
+                    }
+                    _g.setPuzzleData(bits, challenge, num);
+                    _g.setReset(true);
+                    _g.setScreen(SCN_PUZZLE);
                 };
                 modal.title = "Passed!";
                 modal.show = true;

@@ -1163,15 +1163,19 @@ public:
         write();
     }
     std::string getString(std::string key) {
+        if (data.find(key) == data.end()) return "";
         return data[key];
     }
     int getInt(std::string key) {
+        if (data.find(key) == data.end()) return 0;
         return std::stoi(data[key]);
     }
     float getFloat(std::string key) {
+        if (data.find(key) == data.end()) return 0.0f;
         return std::stof(data[key]);
     }
     bool getBool(std::string key) {
+        if (data.find(key) == data.end()) return false;
         return data[key] == "true";
     }
     void clear() {

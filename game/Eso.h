@@ -30,6 +30,7 @@ public:
     MainMenu mainMenu;
     SetupScreen setupScreen;
     EmailScreen EmailScreen;
+    Sound mainMusic = Sound("main.mp3");
     App() : Imp::Main("EsoBinaria (v0.1-alpha)", WINDOW_SIZE, 120, "tiles.png") { 
         clearColor = Color(_colors["BG"]);
         entityMan.addEntity(&grid);
@@ -78,6 +79,8 @@ public:
         }
 
         _g.incTick();
+
+        mainMusic.play(true);
     }
     void onLostFocus() override {
         pauseRenderer = true;
