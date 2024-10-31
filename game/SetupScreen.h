@@ -67,18 +67,14 @@ public:
         btnMedium.onClick = [](){
             _g.setPuzzleChallenge('m');
         };
-        if (_g.store.getBool("unlocked_medium")) {
-            em.addEntity(&btnMedium);
-        }
+        em.addEntity(&btnMedium);
 
         btnHard.pos = Vec2i(_g.vu(10), _g.vu(2) + _g.vu(2));
         btnHard.text = "ARCH";
         btnHard.onClick = [](){
             _g.setPuzzleChallenge('h');
         };
-        if (_g.store.getBool("unlocked_hard")) {
-            em.addEntity(&btnHard);
-        }
+        em.addEntity(&btnHard);
 
         btnStart.pos = Vec2i(_g.vu(10), _g.vu(2) + _g.vu(3));
         btnStart.text = "START";
@@ -99,11 +95,17 @@ public:
                 btnsLvl[i].available = false;
                 continue;
             }
-            std::string boolStr = "completed_lvl_3." + std::string(1, challenge) + std::to_string(i);
-            btnsLvl[i].completed = _g.store.getBool(boolStr);
+            std::string puzzleStr = "completed_lvl_" + _g.getPuzzleStringDynamic(3, challenge, i);
+            btnsLvl[i].completed = _g.store.getBool(puzzleStr);
         }
         if (_g.getPuzzleNum() >= maxLevel) {
             _g.setPuzzleNum(maxLevel - 1);
+        }
+        if (_g.store.getBool("unlocked_medium")) {
+            btnMedium.available = true;
+        }
+        if (_g.store.getBool("unlocked_hard")) {
+            btnHard.available = true;
         }
         em.process();
         em.checkMouse();

@@ -53,8 +53,8 @@ public:
         _g.store.setBool("unlocked_medium", true);
         _g.store.setBool("unlocked_hard", true);
         _g.store.setBool("settings_scanlines_disable", false);
-        _g.store.setBool("completed_lvl_3.e0", true);
-        _g.store.setBool("completed_lvl_3.e1", true);
+        // _g.store.setBool("completed_lvl_3.e0", true);
+        // _g.store.setBool("completed_lvl_3.e1", true);
     }
     ~App() {}
     void render(Graphics* g) override {

@@ -123,6 +123,9 @@ public:
     std::string getPuzzleString() {
         return std::to_string(puzzleBits) + "." + puzzleChallenge + std::to_string(puzzleNum);
     }
+    std::string getPuzzleStringDynamic(int puzzleBits, char puzzleChallenge, int puzzleNum) {
+        return std::to_string(puzzleBits) + "." + puzzleChallenge + std::to_string(puzzleNum);
+    }
 private:
     CellType activeTile = CT_VOID;
     TestData* activeTestData = nullptr;

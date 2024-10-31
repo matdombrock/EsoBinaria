@@ -108,6 +108,7 @@ public:
                 modal.show = true;
                 shownPassModal = true;
             }
+            _g.store.setBool("completed_lvl_" + _g.getPuzzleString(), true);
         }
         else shownPassModal = false;
     }
