@@ -66,6 +66,8 @@ public:
         float amt = std::sin(_g.getTick() / 128.0f) * 0.5f + 0.5f;
         amt *= 0.75f;
         g->fxApply(FX_SCANLINES2, _g.getTick(), amt);
+        g->setColor(128, 96, 255, 32);
+        g->rect(Vec2i(0, 0), WINDOW_SIZE);
     }
     void process() override {
         if (_g.getReset()) {

@@ -384,23 +384,6 @@ protected:
     }
 };
 
-// class FXScanlines2 : public ScreenFX {
-// protected:
-//     void renderPixel(Uint8 *r, Uint8 *g, Uint8 *b, Uint8 *a, ScreenFXProps props) override {
-//         float f = 0.9f;
-//         int mod = props.y + (props.tick * 4);
-//         int scanSize = width * 2;
-//         if (mod %  scanSize >= scanSize - 8) {
-//             Uint32 pixel = props.pixels[props.y * width + props.x + (mod % 8)];
-//             Uint8 r1, g1, b1, a1;
-//             SDL_GetRGBA(pixel, surface->format, &r1, &g1, &b1, &a1);
-//             *r = b1 * f;
-//             *g = r1 * f;
-//             *b = g1 * f;
-//         }
-//     }
-// };
-
 class FXScanlines2 : public ScreenFX {
 protected:
     void renderPixel(Uint8 *r, Uint8 *g, Uint8 *b, Uint8 *a, ScreenFXProps props) override {
@@ -442,13 +425,15 @@ protected:
             *g = std::max(256 - *g, 0);
             *b = std::max(200 - *b, 0);
         }
+        *r = std::min((int)(*r * 1.2f), 255);
+        *b = std::min((int)(*b * 1.1f), 255);
     }
 };
 
 enum FXName {
     FX_INVERT,
     FX_SCANLINES,
-    FX_SCANLINES2
+    FX_SCANLINES2,
 };
 
 class Graphics {
@@ -822,7 +807,7 @@ public:
             DBG("Sound loaded: " + fullPath);
         }
     }
-    void play(int channel = -1, bool ifNotPlaying = false) {
+    void play(int channel = 4, bool ifNotPlaying = false) {
         // return;
         this->channel = channel;
         if (sound == nullptr) {

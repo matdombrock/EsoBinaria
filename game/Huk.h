@@ -14,7 +14,7 @@ public:
     Huk() : Entity() {
         tag = "huk";
         spr.setAnimation({Vec2i(64, 224), Vec2i(96, 224)}, 8);
-        sndNext.volume = 8;
+        sndNext.volume = 16;
     }
     ~Huk() {}
     void reset() {
@@ -27,6 +27,7 @@ public:
             show = true;
             hasShown = true;
             _g.setHukActive(true);
+            sndNext.play();
             if (_g.getPuzzleNum() == 0) {
                 messages = {Text::huk0a, Text::huk0b, Text::huk0c, Text::huk0d, Text::huk0e, Text::huk0f, Text::huk0g, Text::huk0h, Text::huk0i, Text::huk0j, Text::huk0k};
             }
@@ -54,11 +55,11 @@ public:
         if (!show) return;
         int topY = WINDOW_SIZE.y - _g.vu(8);
         graph->setColor(_colors["GRAY"]);
-        graph->rect(Vec2i(0, topY), Vec2i(WINDOW_SIZE.x, _g.vu(4)));
+        graph->rect(Vec2i(0 + _g.vu(0.25f), topY), Vec2i(WINDOW_SIZE.x - _g.vu(0.5f), _g.vu(4)));
         graph->setColor(_colors["BG3"]);
         float inOff = _g.vu(0.1f);
         float inOff2 = inOff * 2;
-        graph->rect(Vec2i(inOff, topY + inOff), Vec2i(WINDOW_SIZE.x - inOff2, _g.vu(4) - inOff2));
+        graph->rect(Vec2i(inOff + _g.vu(0.25f), topY + inOff), Vec2i(WINDOW_SIZE.x - inOff2 - _g.vu(0.5f), _g.vu(4) - inOff2));
         
         graph->setColor(_colors["BLUE"]);
         inOff = _g.vu(0.25f) + _g.vu(0.01f * ((_g.getTick() / 2) % 16));
@@ -70,7 +71,7 @@ public:
         if (messageIndex == messages.size() - 1) {
             graph->setColor(_colors["YELLOW"]);
         }
-        graph->textFmt(messages[messageIndex], Vec2i(_g.vu(2), topY + _g.vu(0.5f)), &Fonts::medium, WINDOW_SIZE.x - _g.vu(2.25f));
+        graph->textFmt(messages[messageIndex], Vec2i(_g.vu(2), topY + _g.vu(0.5f)), &Fonts::medium, WINDOW_SIZE.x - _g.vu(2.5f));
     }
 private:
     std::vector<std::string> messages = {};
