@@ -80,7 +80,7 @@ public:
 
         _g.incTick();
 
-        mainMusic.play(true);
+        mainMusic.play(0, true);
     }
     void onLostFocus() override {
         pauseRenderer = true;

@@ -45,7 +45,7 @@ public:
         graph->setColor(_colors["GREEN"]);
         int pos = std::min((_g.getTick()/3)*6, (int)text.length() - 1);
         if (pos < (int)text.length() - 1) {
-            sndType.play(true);
+            sndType.play(-1, true);
         }
         else {
             sndType.stop();

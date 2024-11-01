@@ -822,15 +822,22 @@ public:
             DBG("Sound loaded: " + fullPath);
         }
     }
-    void play(bool ifNotPlaying = false) {
+    void play(int channel = -1, bool ifNotPlaying = false) {
         // return;
+        this->channel = channel;
         if (sound == nullptr) {
             DBG("Sound not set");
             return;
         }
         if (ifNotPlaying && isPlaying()) return;
         Mix_VolumeChunk(sound, volume);
-        channel = Mix_PlayChannel(-1, sound, 0);
+        this->channel = Mix_PlayChannel(channel, sound, 0);
+        if (this->channel == -1) {
+            std::cerr << "Mix_PlayChannel: " << Mix_GetError() << std::endl;
+            DBG("Cant play sound");
+            exit(1);
+            return;
+        }
         Mix_SetPanning(channel, pan[0], pan[1]);
     }
     void stop() {
@@ -1368,7 +1375,7 @@ protected:
             exit(1);
         }
         SDL_Init(SDL_INIT_AUDIO);
-        if (Mix_OpenAudio(48000, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
+        if (Mix_OpenAudio(48000, MIX_DEFAULT_FORMAT, 8, 2048) < 0) {
             std::cerr << "SDL_mixer could not initialize! SDL_mixer Error: " << Mix_GetError() << std::endl;
             DBG("Cant initialize SDL_mixer");
             exit(1);

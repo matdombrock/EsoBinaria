@@ -98,7 +98,7 @@ public:
         Sounds::menuTrack.volume = 255;
         if (!Sounds::menuTrack.isPlaying()) Sounds::menuTrack.volume = 0;
         Sounds::menuTrack.volUp(4, 128);
-        Sounds::menuTrack.play(true);
+        Sounds::menuTrack.play(1, true);
         em.process();
         em.checkMouse();
         if (btnResume.isClicked()) {
