@@ -4,17 +4,24 @@
             "name": "Mac",
             "includePath": [
                 "${workspaceFolder}/**",
-                // "/opt/homebrew/opt/emscripten/**",
                 "/opt/homebrew/include/SDL2"
             ],
             "defines": [],
             "macFrameworkPath": [
                 "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks"
             ],
-            "compilerPath": "/usr/bin/clang",
+            "compilerPath": "/usr/bin/g++",
             "cStandard": "c17",
             "cppStandard": "c++17",
             "intelliSenseMode": "macos-clang-arm64"
+        },
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}/**"
+            ],
+            "defines": [],
+            "intelliSenseMode": "linux-clang-x64"
         }
     ],
     "version": 4

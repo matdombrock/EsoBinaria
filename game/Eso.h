@@ -31,7 +31,7 @@ public:
     SetupScreen setupScreen;
     EmailScreen emailScreen;
     Sound mainMusic = Sound("main.mp3");
-    App() : Imp::Main("EsoBinaria (v0.1-alpha)", WINDOW_SIZE, 120, "tiles.png") { 
+    App() : Imp::Main("EsoBinaria (v0.1-alpha)", WINDOW_SIZE, 30, "tiles.png") { 
         clearColor = Color(_colors["BG"]);
         entityMan.addEntity(&grid);
         entityMan.addEntity(&bottomBar);
