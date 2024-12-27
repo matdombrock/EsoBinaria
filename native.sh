@@ -1,4 +1,5 @@
 #rm -rf ./out/*
+mkdir -p ./out
 g++ ./src/main.cpp ./build/s7.o -o ./out/imp.app \
  -std=c++17 \
  -DAPP="\"$1\"" \

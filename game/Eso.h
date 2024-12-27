@@ -29,7 +29,7 @@ public:
     Huk huk;
     MainMenu mainMenu;
     SetupScreen setupScreen;
-    EmailScreen EmailScreen;
+    EmailScreen emailScreen;
     Sound mainMusic = Sound("main.mp3");
     App() : Imp::Main("EsoBinaria (v0.1-alpha)", WINDOW_SIZE, 120, "tiles.png") { 
         clearColor = Color(_colors["BG"]);
@@ -39,7 +39,7 @@ public:
         entityMan.addEntity(&topMenu);
         entityMan.addEntity(&huk);
         entityMan.addEntity(&setupScreen);
-        entityMan.addEntity(&EmailScreen);
+        entityMan.addEntity(&emailScreen);
         entityMan.addEntity(&mainMenu);
         entityMan.addEntity(&cursor);
 
@@ -65,7 +65,7 @@ public:
         if (_g.store.getBool("settings_scanlines_disable")) return;
         float amt = std::sin(_g.getTick() / 128.0f) * 0.5f + 0.5f;
         amt *= 0.75f;
-        g->fxApply(FX_SCANLINES2, _g.getTick(), amt);
+        // g->fxApply(FX_SCANLINES2, _g.getTick(), amt);
         g->setColor(128, 96, 255, 32);
         g->rect(Vec2i(0, 0), WINDOW_SIZE);
     }
