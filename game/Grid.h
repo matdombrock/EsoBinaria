@@ -60,6 +60,17 @@ public:
         // cells[8][3].parenRight = true;
     }
     ~Grid() {}
+    void translate(Vec2i pos) {
+        std::vector<std::vector<Cell>> newCells(gridSize.x, std::vector<Cell>(gridSize.y));
+        for (int x = 0; x < gridSize.x; x++) {
+            for (int y = 0; y < gridSize.y; y++) {
+            int newX = (x + pos.x + gridSize.x) % gridSize.x;
+            int newY = (y + pos.y + gridSize.y) % gridSize.y;
+            newCells[newX][newY] = cells[x][y];
+            }
+        }
+        cells = newCells;
+    }
     void reset() {
         for (int x = 0; x < gridSize.x; x++) {
             for (int y = 0; y < gridSize.y; y++) {

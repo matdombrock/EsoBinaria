@@ -6,10 +6,10 @@ using namespace Imp;
 #include "_gameMaster.h"
 #include "_fonts.h"
 
-class BtnTopMenu : public BtnText {
+class BtnTopBar : public BtnText {
 public:
     bool isHomeBtn = false;
-    BtnTopMenu() : BtnText() {
+    BtnTopBar() : BtnText() {
         tag = "btn";
         state = 0;
         center = false;
@@ -17,7 +17,7 @@ public:
         size = Vec2i(80, _g.vu(0.45f));
         setCollider(size);
     }
-    ~BtnTopMenu() {}
+    ~BtnTopBar() {}
     void render(Graphics* graph) override {
         if (!available) return;
         // graph->setColor(_colors["BG2"]);
@@ -49,26 +49,32 @@ public:
     }
 };
 
-class TopMenu : public Entity {
+class TopBar : public Entity {
 public:
-    BtnTopMenu btnHome;
-    BtnTopMenu btnFile;
-    BtnTopMenu btnTools;
-    BtnTopMenu btnEdit;
+    BtnTopBar btnHome;
+    BtnTopBar btnFile;
+    BtnTopBar btnTools;
+    BtnTopBar btnEdit;
     // File menu
-    BtnTopMenu btnNew;
-    BtnTopMenu btnReset;
-    BtnTopMenu btnSave;
-    BtnTopMenu btnLoad;
+    BtnTopBar btnNew;
+    BtnTopBar btnSave;
+    BtnTopBar btnLoad;
     // Tools menu
-    BtnTopMenu btnTests;
-    //
+    BtnTopBar btnTests;
+    // Edit menu
+    BtnTopBar btnUndo;
+    BtnTopBar btnRedo;
+    BtnTopBar btnReset;
+    BtnTopBar btnMVDown;
+    BtnTopBar btnMVUp;
+    BtnTopBar btnMVLeft;
+    BtnTopBar btnMVRight;
     EntityManager em;
     Modal modal;
     int height;
-    std::string activeTopMenu;
-    TopMenu() : Entity() {
-        tag = "TopMenu";
+    std::string activeTopBar;
+    TopBar() : Entity() {
+        tag = "TopBar";
         height = _g.vu(0.5f);
 
         btnHome.isHomeBtn = true;
@@ -79,7 +85,7 @@ public:
         em.addEntity(&btnHome);
 
         btnFile.onClick = [this]() {
-            activeTopMenu = "btnFile";
+            activeTopBar = "btnFile";
             btnNew.available = true;
             btnSave.available = true;
             btnLoad.available = true;
@@ -91,8 +97,14 @@ public:
         em.addEntity(&btnFile);
 
         btnEdit.onClick = [this]() {
-            activeTopMenu = "btnEdit";
+            activeTopBar = "btnEdit";
+            btnUndo.available = true;
+            btnRedo.available = true;
             btnReset.available = true;
+            btnMVDown.available = true;
+            btnMVUp.available = true;
+            btnMVLeft.available = true;
+            btnMVRight.available = true;
         };
         btnEdit.tag = "btnEdit";
         btnEdit.available = true;
@@ -101,7 +113,7 @@ public:
         em.addEntity(&btnEdit);
 
         btnTools.onClick = [this]() {
-            activeTopMenu = "btnTools";
+            activeTopBar = "btnTools";
             btnTests.available = true;
         };
         btnTools.tag = "btnTools";
@@ -158,6 +170,22 @@ public:
         em.addEntity(&btnTests);
 
         // Edit menu
+        btnUndo.onClick = [this]() { 
+            
+        };
+        btnUndo.available = false;
+        btnUndo.text = "UNDO";
+        btnUndo.pos = Vec2i(btnEdit.pos.x, btnEdit.pos.y + _g.vu(0.5f));
+        em.addEntity(&btnUndo);
+
+        btnRedo.onClick = [this]() { 
+            
+        };
+        btnRedo.available = false;
+        btnRedo.text = "REDO";
+        btnRedo.pos = Vec2i(btnEdit.pos.x, btnEdit.pos.y + _g.vu(1.0f));
+        em.addEntity(&btnRedo);
+        
         btnReset.onClick = [this]() { 
             modal.onOk = [&]() {
                 _g.setReset(true); 
@@ -167,31 +195,70 @@ public:
         };
         btnReset.available = false;
         btnReset.text = "RESET";
-        btnReset.pos = Vec2i(btnEdit.pos.x, btnEdit.pos.y + _g.vu(0.5f));
+        btnReset.pos = Vec2i(btnEdit.pos.x, btnEdit.pos.y + _g.vu(1.5f));
         em.addEntity(&btnReset);
+
+        btnMVDown.onClick = [this]() { 
+            _g.sendMessage("mv_down");
+        };
+        btnMVDown.available = false;
+        btnMVDown.text = "DOWN";
+        btnMVDown.pos = Vec2i(btnEdit.pos.x, btnEdit.pos.y + _g.vu(2.0f));
+        em.addEntity(&btnMVDown);
+
+        btnMVUp.onClick = [this]() { 
+            _g.sendMessage("mv_up");
+        };
+        btnMVUp.available = false;
+        btnMVUp.text = "UP";
+        btnMVUp.pos = Vec2i(btnEdit.pos.x, btnEdit.pos.y + _g.vu(2.5f));
+        em.addEntity(&btnMVUp);
+
+        btnMVLeft.onClick = [this]() { 
+            _g.sendMessage("mv_left");
+        };
+        btnMVLeft.available = false;
+        btnMVLeft.text = "LEFT";
+        btnMVLeft.pos = Vec2i(btnEdit.pos.x, btnEdit.pos.y + _g.vu(3.0f));
+        em.addEntity(&btnMVLeft);
+
+        btnMVRight.onClick = [this]() { 
+            _g.sendMessage("mv_right");
+        };
+        btnMVRight.available = false;
+        btnMVRight.text = "RIGHT";
+        btnMVRight.pos = Vec2i(btnEdit.pos.x, btnEdit.pos.y + _g.vu(3.5f));
+        em.addEntity(&btnMVRight);
+
 
         em.addEntity(&modal);
     }
-    ~TopMenu() {}
+    ~TopBar() {}
     void process() override {
         if (_g.getScreen() != SCN_PUZZLE) return;
         if (_g.getHukActive()) return;
         // Clear if nothing is clicked
         if (_input.mouseKeyOnce(SDL_BUTTON_LEFT)) {
-            activeTopMenu = "";
+            activeTopBar = "";
         }
         em.checkMouse();
         em.process();
-        if (activeTopMenu != "btnFile") {
+        if (activeTopBar != "btnFile") {
             btnNew.available = false;
             btnSave.available = false;
             btnLoad.available = false;
         }
-        if (activeTopMenu != "btnTools") {
+        if (activeTopBar != "btnTools") {
             btnTests.available = false;
         }
-        if (activeTopMenu != "btnEdit") {
+        if (activeTopBar != "btnEdit") {
+            btnUndo.available = false;
+            btnRedo.available = false;
             btnReset.available = false;
+            btnMVDown.available = false;
+            btnMVUp.available = false;
+            btnMVLeft.available = false;
+            btnMVRight.available = false;
         }
     }
     void render(Graphics* graph) override {
@@ -200,14 +267,14 @@ public:
         graph->rect(Vec2i(0, 0), Vec2i(WINDOW_SIZE.x, height));
         
         graph->setColor(_colors["BG2"]);
-        if (activeTopMenu == "btnFile") {
+        if (activeTopBar == "btnFile") {
             graph->rect(Vec2i(btnFile.pos.x, height), Vec2i(129, 120));
         }
-        if (activeTopMenu == "btnTools") {
+        if (activeTopBar == "btnTools") {
             graph->rect(Vec2i(btnTools.pos.x, height), Vec2i(120, 120));
         }
-        if (activeTopMenu == "btnEdit") {
-            graph->rect(Vec2i(btnEdit.pos.x, height), Vec2i(120, 120));
+        if (activeTopBar == "btnEdit") {
+            graph->rect(Vec2i(btnEdit.pos.x, height), Vec2i(120, 240));
         }
         
         em.render(graph);

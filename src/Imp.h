@@ -206,6 +206,136 @@ public:
 };
 
 //
+// Storage
+//
+#ifndef __EMSCRIPTEN__
+class Store {
+public:
+    Store() {
+        read();
+    }
+    ~Store() {}
+    void setString(std::string key, std::string value) {
+        data[key] = value;
+        write();
+    }
+    void setInt(std::string key, int value) {
+        data[key] = std::to_string(value);
+        write();
+    }
+    void setFloat(std::string key, float value) {
+        data[key] = std::to_string(value);
+        write();
+    }
+    void setBool(std::string key, bool value) {
+        data[key] = value ? "true" : "false";
+        write();
+    }
+    std::string getString(std::string key) {
+        if (data.find(key) == data.end()) return "";
+        return data[key];
+    }
+    int getInt(std::string key) {
+        if (data.find(key) == data.end()) return 0;
+        return std::stoi(data[key]);
+    }
+    float getFloat(std::string key) {
+        if (data.find(key) == data.end()) return 0.0f;
+        return std::stof(data[key]);
+    }
+    bool getBool(std::string key) {
+        if (data.find(key) == data.end()) return false;
+        return data[key] == "true";
+    }
+    bool hasKey(std::string key) {
+        return data.find(key) != data.end();
+    }
+    void clear() {
+        data.clear();
+        write();
+    }
+private:
+    std::map<std::string, std::string> data;
+    void write() {
+        std::ofstream file(basePath + "store.txt");
+        for (auto const& [key, val] : data) {
+            file << key << "=" << val << std::endl;
+        }
+        file.close();
+    }
+    void read() {
+        std::ifstream file(basePath + "store.txt");
+        if (!file.is_open()) {
+            std::cerr << "Store file not found:" << std::endl;
+            std::cerr << basePath + "store.txt" << std::endl;
+            return;
+        }
+        std::string line;
+        while (std::getline(file, line)) {
+            std::vector<std::string> parts = StringTools::split(line, "=");
+            if (parts.size() == 2) {
+                data[parts[0]] = parts[1];
+            }
+        }
+        file.close();
+    }
+};
+#else
+class Store {
+public:
+    Store() {
+        read();
+    }
+    ~Store() {}
+    void setString(std::string key, std::string value) {
+        EM_ASM({
+            localStorage.setItem(UTF8ToString($0), UTF8ToString($1));
+        }, key.c_str(), value.c_str());
+    }
+    void setInt(std::string key, int value) {
+        setString(key, std::to_string(value));
+    }
+    void setFloat(std::string key, float value) {
+        setString(key, std::to_string(value));
+    }
+    void setBool(std::string key, bool value) {
+        setString(key, value ? "true" : "false");
+    }
+    std::string getString(std::string key) {
+        char* value = (char*)EM_ASM_INT({
+            var value = localStorage.getItem(UTF8ToString($0));
+            if (value === null) return 0;
+            var lengthBytes = lengthBytesUTF8(value) + 1;
+            var stringOnWasmHeap = _malloc(lengthBytes);
+            stringToUTF8(value, stringOnWasmHeap, lengthBytes);
+            return stringOnWasmHeap;
+        }, key.c_str());
+        std::string result = value ? std::string(value) : "";
+        free(value);
+        return result;
+    }
+    int getInt(std::string key) {
+        return std::stoi(getString(key));
+    }
+    float getFloat(std::string key) {
+        return std::stof(getString(key));
+    }
+    bool getBool(std::string key) {
+        return getString(key) == "true";
+    }
+    void clear() {
+        EM_ASM(
+            localStorage.clear();
+        );
+    }
+private:
+    void read() {
+        // No need to read from file, data is already in localStorage
+    }
+};
+#endif
+
+//
 // Input
 //
 class Input {
@@ -808,6 +938,8 @@ public:
         }
     }
     void play(int channel = 4, bool ifNotPlaying = false) {
+        Store store;
+        if (store.hasKey("settings_enable_audio") && !store.getBool("settings_enable_audio")) return;
         // return;
         this->channel = channel;
         if (sound == nullptr) {
@@ -1127,133 +1259,6 @@ public:
         return (1 << bits);
     }
 };
-
-//
-// Storage
-//
-#ifndef __EMSCRIPTEN__
-class Store {
-public:
-    Store() {
-        read();
-    }
-    ~Store() {}
-    void setString(std::string key, std::string value) {
-        data[key] = value;
-        write();
-    }
-    void setInt(std::string key, int value) {
-        data[key] = std::to_string(value);
-        write();
-    }
-    void setFloat(std::string key, float value) {
-        data[key] = std::to_string(value);
-        write();
-    }
-    void setBool(std::string key, bool value) {
-        data[key] = value ? "true" : "false";
-        write();
-    }
-    std::string getString(std::string key) {
-        if (data.find(key) == data.end()) return "";
-        return data[key];
-    }
-    int getInt(std::string key) {
-        if (data.find(key) == data.end()) return 0;
-        return std::stoi(data[key]);
-    }
-    float getFloat(std::string key) {
-        if (data.find(key) == data.end()) return 0.0f;
-        return std::stof(data[key]);
-    }
-    bool getBool(std::string key) {
-        if (data.find(key) == data.end()) return false;
-        return data[key] == "true";
-    }
-    void clear() {
-        data.clear();
-        write();
-    }
-private:
-    std::map<std::string, std::string> data;
-    void write() {
-        std::ofstream file(basePath + "store.txt");
-        for (auto const& [key, val] : data) {
-            file << key << "=" << val << std::endl;
-        }
-        file.close();
-    }
-    void read() {
-        std::ifstream file(basePath + "store.txt");
-        if (!file.is_open()) {
-            std::cerr << "Store file not found:" << std::endl;
-            std::cerr << basePath + "store.txt" << std::endl;
-            return;
-        }
-        std::string line;
-        while (std::getline(file, line)) {
-            std::vector<std::string> parts = StringTools::split(line, "=");
-            if (parts.size() == 2) {
-                data[parts[0]] = parts[1];
-            }
-        }
-        file.close();
-    }
-};
-#else
-class Store {
-public:
-    Store() {
-        read();
-    }
-    ~Store() {}
-    void setString(std::string key, std::string value) {
-        EM_ASM({
-            localStorage.setItem(UTF8ToString($0), UTF8ToString($1));
-        }, key.c_str(), value.c_str());
-    }
-    void setInt(std::string key, int value) {
-        setString(key, std::to_string(value));
-    }
-    void setFloat(std::string key, float value) {
-        setString(key, std::to_string(value));
-    }
-    void setBool(std::string key, bool value) {
-        setString(key, value ? "true" : "false");
-    }
-    std::string getString(std::string key) {
-        char* value = (char*)EM_ASM_INT({
-            var value = localStorage.getItem(UTF8ToString($0));
-            if (value === null) return 0;
-            var lengthBytes = lengthBytesUTF8(value) + 1;
-            var stringOnWasmHeap = _malloc(lengthBytes);
-            stringToUTF8(value, stringOnWasmHeap, lengthBytes);
-            return stringOnWasmHeap;
-        }, key.c_str());
-        std::string result = value ? std::string(value) : "";
-        free(value);
-        return result;
-    }
-    int getInt(std::string key) {
-        return std::stoi(getString(key));
-    }
-    float getFloat(std::string key) {
-        return std::stof(getString(key));
-    }
-    bool getBool(std::string key) {
-        return getString(key) == "true";
-    }
-    void clear() {
-        EM_ASM(
-            localStorage.clear();
-        );
-    }
-private:
-    void read() {
-        // No need to read from file, data is already in localStorage
-    }
-};
-#endif
 
 //
 // Main class

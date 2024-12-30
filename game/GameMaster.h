@@ -145,6 +145,15 @@ public:
     bool getHukActive() {
         return hukActive;
     }
+    void sendMessage(std::string message) {
+        messages.push_back(message);
+    }
+    std::vector<std::string> getMessages() {
+        return messages;
+    }
+    void clearMessages() {
+        messages.clear();
+    }
 private:
     CellType activeTile = CT_VOID;
     TestData* activeTestData = nullptr;
@@ -160,4 +169,5 @@ private:
     std::string codeErr = "";
     std::string codeString = "";
     HelpItem* helpItem = nullptr;
+    std::vector<std::string> messages;
 };
