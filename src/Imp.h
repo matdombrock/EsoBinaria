@@ -1318,6 +1318,7 @@ public:
         // Constant FPS
         frameTime = SDL_GetTicks() - frameStart;
         int delay = frameDelay - frameTime;
+        // delay = 0;
         if (delay > 0) {
             SDL_Delay(delay);
         }
