@@ -1317,9 +1317,21 @@ public:
         }
         // Constant FPS
         frameTime = SDL_GetTicks() - frameStart;
-        if (frameDelay > frameTime) {
-            SDL_Delay(frameDelay - frameTime);
+        int delay = frameDelay - frameTime;
+        if (delay > 0) {
+            SDL_Delay(delay);
         }
+        // Monitor Frame time
+        frameTimeAdder += frameTime + delay;
+        frameTimeAdderCount++;
+        if (frameTimeAdderCount >= 16) {
+            frameTimeAvg = frameTimeAdder / frameTimeAdderCount;
+            frameTimeAdder = 0;
+            frameTimeAdderCount = 0;
+        }
+    }
+    int getRealFPS() {
+        return 1000 / frameTimeAvg;
     }
 protected:
     EntityManager entityMan;
@@ -1394,6 +1406,9 @@ private:
     int frameDelay;
     int frameStart;
     int frameTime;
+    int frameTimeAdder = 0;
+    int frameTimeAdderCount = 0;
+    int frameTimeAvg = 0;
     bool focused;
     virtual void render(Graphics* graph) {}
     virtual void process() {}

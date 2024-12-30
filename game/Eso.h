@@ -68,6 +68,9 @@ public:
         // g->fxApply(FX_SCANLINES2, _g.getTick(), amt);
         g->setColor(128, 96, 255, 32);
         g->rect(Vec2i(0, 0), WINDOW_SIZE);
+        // FPS meter
+        g->setColor(0, 255, 0, 255);
+        g->text(std::to_string(realFPS), Vec2i(0, 0), &Fonts::small);
     }
     void process() override {
         if (_g.getReset()) {
@@ -82,7 +85,11 @@ public:
 
         _g.incTick();
 
-        mainMusic.play(0, true);
+        mainMusic.play(0, true);     
+        // FPS meter
+        if (_g.getTick() % 60 == 0) {
+            realFPS = getRealFPS();
+        }   
     }
     void onLostFocus() override {
         pauseRenderer = true;
@@ -90,4 +97,6 @@ public:
     void onGainedFocus() override {
         pauseRenderer = false;
     }
+private:
+    int realFPS = 0;
 };
