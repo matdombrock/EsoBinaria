@@ -1,3 +1,4 @@
+// Deprecaded?
 #pragma once
 #include "../src/Imp.h"
 using namespace Imp;

@@ -91,14 +91,14 @@ public:
     ~MainMenu() {}
     void process() override {
         if (_g.getScreen() != SCN_MAIN_MENU) {
-            Sounds::menuTrack.volDown(4, 8);
+            // Sounds::menuTrack.volDown(4, 8);
             // Sounds::menuTrack.stop();
             return;
         }
-        Sounds::menuTrack.volume = 255;
-        if (!Sounds::menuTrack.isPlaying()) Sounds::menuTrack.volume = 0;
-        Sounds::menuTrack.volUp(4, 128);
-        Sounds::menuTrack.play(1, true);
+        // Sounds::menuTrack.volume = 255;
+        // if (!Sounds::menuTrack.isPlaying()) Sounds::menuTrack.volume = 0;
+        // Sounds::menuTrack.volUp(4, 128);
+        // Sounds::menuTrack.play(1, true);
         em.process();
         em.checkMouse();
         if (btnResume.isClicked()) {
