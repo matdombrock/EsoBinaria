@@ -78,7 +78,9 @@
         "algorithm": "cpp"
     },
     "cSpell.words": [
-        "scanlines"
+        "scanlines",
+        "subenigma",
+        "subenigmas"
     ],
     "C_Cpp.default.compilerPath": "/usr/bin/g++"
 }

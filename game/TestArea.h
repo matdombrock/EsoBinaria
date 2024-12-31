@@ -74,7 +74,7 @@ public:
         }
         // Update positions
         // XXX - Maybe slow
-        pos.x = WINDOW_SIZE.x - (_g.getShowTests() ? testWinWidth : _g.cellSize / 2);
+        pos.x = WINDOW_SIZE.x - (_g.getShowTests() ? testWinWidth : _g.cellSize * 0.75f);
         for (int i = 0; i < tests.size(); i++) {
             tests[i].pos = Vec2i(_g.vu(0.5f), _g.cellSize + (i * _g.cellSize /2 ));
             tests[i].pos += pos;
@@ -104,7 +104,7 @@ public:
         }
         else {
             graph->setColor(_colors["GRAY"]);
-            graph->text(_g.getPuzzleString(), Vec2i(pos.x + _g.vu(0.5f), pos.y), &Fonts::medium);
+            graph->text(_g.getPuzzleString(), Vec2i(pos.x + _g.vu(1.1f), pos.y + _g.vu(0.25f)), &Fonts::medium);
         }
         if (testFails == 0) {
             graph->setColor(_colors["GREEN"], 128);

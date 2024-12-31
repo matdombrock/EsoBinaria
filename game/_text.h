@@ -34,15 +34,15 @@ std::string hukE0i = "Below the tiles bar we have the 'ESOP' area. This is a mys
 std::string hukE0j = "Don't worry, you dont need to write that! Your tiles will magically generate the script.";
 std::string hukE0k = "Try it now. Click the 'IN_B' tile and place it on the grid. Thats the one with 2 dots!";
 
-std::string hukE1a = "I forgot to mention one of the most critical parts of the interface! The 'tests' area. This is where you'll see if your solution is working correctly.";
+std::string hukE1a = "I forgot to mention one of the most critical parts of the interface! The 'subenigmas' area. This is where you'll see if your solution is working correctly.";
 std::string hukE1b = "You can see it on the right side of the screen.";
-std::string hukE1c = "Test cases have inputs and outputs. The inputs are on the left side of the test case and the output is on the right.";
-std::string hukE1d = "The inputs on the left of the test case correspond with the tiles 'IN_A', 'IN_B', 'IN_C'. The state of the inputs is shown by the color potion ball.";
+std::string hukE1c = "Subenigmas have inputs and outputs. The inputs are on the left side of the subenigma and the output is on the right.";
+std::string hukE1d = "The inputs on the left of the subenigma correspond with the tiles 'IN_A', 'IN_B', 'IN_C'. The state of the inputs is shown by the color potion ball.";
 std::string hukE1e = "If the ball is blue, the input is true. If the ball is yellow, the input is false.";
-std::string hukE1f = "The output on the right of the test case corresponds with the 'OUT' tile. The state of the output is shown by the color of the final potion ball.";
-std::string hukE1g = "To complete a job you need to use the tiles to build a solution that satisfies every test case at once.";
-std::string hukE1h = "If you see a green mark by the test, you're good to go! \n\nIf you see a red mark, you need to go back and fix your solution.";
-std::string hukE1i = "Hover over a test case to see the state of the inputs for that test.";
+std::string hukE1f = "The output on the right of the subenigma corresponds with the 'OUT' tile. The state of the output is shown by the color of the final potion ball.";
+std::string hukE1g = "To complete a job you need to use the tiles to build a solution that satisfies every subenigma at once.";
+std::string hukE1h = "If you see a green mark by the subenigma, you're good to go! \n\nIf you see a red mark, you need to go back and fix your solution.";
+std::string hukE1i = "Hover over a subenigma case to see the state of the inputs for that subenigma.";
 std::string hukE1j = "Remember, If you ever get stuck, click the 'edit' button in the top menu bar and click 'reset'.";
 std::string hukE1k = "Now try placing the 'NOT' tile on the grid. This one that looks like an green X.\n\nPlace it before the 'IN_A' tile!";
 
@@ -53,16 +53,16 @@ std::string hukE2d = "You can 'comment' tiles by hitting the 'c' key or using th
 std::string hukE2e = "You can toggle the 'parentheses' on tiles by hitting the 'tab' key or using the right mouse button when over a tile. This will help you group tiles together.";
 std::string hukE2f = "After removing everything, place the 'IN_A' tile to finish this job.";
 
-std::string hukE3a = "This enigma has 2 test cases. The first test case has all inputs set to false. It wants an output of true.";
-std::string hukE3b = "The second test case has its first input (a) set to true and the test to false. It wants an output of true.";
-std::string hukE3c = "How can we build a solution that satisfies both test cases?";
+std::string hukE3a = "This enigma has 2 subenigmas. The first subenigma has all inputs set to false. It wants an output of true.";
+std::string hukE3b = "The second subenigma has its first input (a) set to true and the subenigma to false. It wants an output of true.";
+std::string hukE3c = "How can we build a solution that satisfies both subenigmas?";
 std::string hukE3d = "These enigmas can get pretty tricky. I'm going to get some lunch and let you sort this one out yourself.";
 std::string hukE3e = "After you sort this one out, you can get started on some real work.";
 std::string hukE3f = "Good luck!.";
 
 std::string hukM0a = "Hey kid, I'm back from lunch now... You're really getting the hang of this! I'm impressed.";
-std::string hukM0b = "This enigma has 4 test cases. Don't worry though someday you'll be working on enigmas with 8 test cases!";
-std::string hukM0c = "More test cases means more conflicts. You'll need to build a solution that satisfies all the test cases at once.";
+std::string hukM0b = "This enigma has 4 subenigmas cases. Don't worry though someday you'll be working on enigmas with 8  cases!";
+std::string hukM0c = "More subengigmas means more conflicts. You'll need to build a solution that satisfies all the subenigmas at once.";
 std::string hukM0d = "Notice that this enigma has all 4 of its outputs set to false. This could be good hint that you'll need to use the 'NOT' tile.";
 std::string hukM0e = "However I think if you look a little closer you will *see* the solution is simple.";
 std::string hukM0f = "See if you can solve this one with only one tile!";

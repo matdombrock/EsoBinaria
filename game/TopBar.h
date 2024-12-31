@@ -164,7 +164,7 @@ public:
         // Tools menu
         btnTests.onClick = []() { DBG("TESTS"); _g.toggleTests(); };
         btnTests.available = false;
-        btnTests.text = "TESTS";
+        btnTests.text = "SUBENIGMAS";
         btnTests.pos = Vec2i(btnTools.pos.x, btnTools.pos.y + _g.vu(0.5f));
         em.addEntity(&btnTests);
 
@@ -271,7 +271,7 @@ public:
             graph->rect(Vec2i(btnFile.pos.x, height), Vec2i(129, 120));
         }
         if (activeTopBar == "btnTools") {
-            graph->rect(Vec2i(btnTools.pos.x, height), Vec2i(120, 180));
+            graph->rect(Vec2i(btnTools.pos.x, height), Vec2i(164, 180));
         }
         if (activeTopBar == "btnEdit") {
             graph->rect(Vec2i(btnEdit.pos.x, height), Vec2i(120, 120));
