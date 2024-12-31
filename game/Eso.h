@@ -13,6 +13,7 @@ using namespace Imp;
 #include "ScreenMainMenu.h"
 #include "ScreenSetup.h"
 #include "ScreenEmail.h"
+#include "ScreenSettings.h"
 #include "Huk.h"
 #include "_gameMaster.h"
 #include "_sounds.h"
@@ -30,6 +31,7 @@ public:
     ScreenMainMenu ScreenMainMenu;
     ScreenSetup ScreenSetup;
     ScreenEmail ScreenEmail;
+    ScreenSettings ScreenSettings;
     Sound mainMusic = Sound("main.ogg");
     App() : Imp::Main("EsoBinaria (v0.1-alpha)", WINDOW_SIZE, 30, "tiles.png") { 
         clearColor = Color(_colors["BG"]);
@@ -41,6 +43,7 @@ public:
         entityMan.addEntity(&ScreenSetup);
         entityMan.addEntity(&ScreenEmail);
         entityMan.addEntity(&ScreenMainMenu);
+        entityMan.addEntity(&ScreenSettings);
         entityMan.addEntity(&cursor);
 
         if (_g.store.getBool("completed_email_intro")) {
@@ -56,6 +59,16 @@ public:
         // _g.store.clear();
 
         // Default Settings
+        initDefaultSettings();
+        // Set some DBG flags
+        _g.store.setBool("completed_email_intro", true);
+        _g.store.setBool("unlocked_medium", true);
+        _g.store.setBool("unlocked_hard", true);
+        // _g.store.setBool("completed_lvl_3.e0", true);
+        // _g.store.setBool("completed_lvl_3.e1", true);
+    }
+    ~App() {}
+    void initDefaultSettings() {
         if (!_g.store.hasKey("settings_enable_scanlines")) 
             _g.store.setBool("settings_enable_scanlines", false);
         if (!_g.store.hasKey("settings_enable_color_overlay")) 
@@ -66,14 +79,9 @@ public:
             _g.store.setBool("settings_enable_fps", true);
         if (!_g.store.hasKey("settings_enable_audio")) 
             _g.store.setBool("settings_enable_audio", true);
-        // Set some DBG flags
-        _g.store.setBool("completed_email_intro", true);
-        _g.store.setBool("unlocked_medium", true);
-        _g.store.setBool("unlocked_hard", true);
-        // _g.store.setBool("completed_lvl_3.e0", true);
-        // _g.store.setBool("completed_lvl_3.e1", true);
+        if (!_g.store.hasKey("settings_enable_music")) 
+            _g.store.setBool("settings_enable_music", true);
     }
-    ~App() {}
     void render(Graphics* graph) override {
         if (_g.store.getBool("settings_enable_scanlines")) {
             float amt = std::sin(_g.getTick() / 128.0f) * 0.5f + 0.5f;
@@ -133,6 +141,9 @@ public:
                 testArea.reset();
                 huk.reset();
             }
+            if (msg == "init_default_settings") {
+                initDefaultSettings();
+            }
             if (msg == "quit") {
                 exit(0);
             }
@@ -150,7 +161,23 @@ public:
 
         _g.incTick();
 
-        mainMusic.play(0, true);     
+        mainMusic.play(0, true); 
+
+        // Enable audio
+        if (!_g.store.getBool("settings_enable_audio")) {
+            Mix_MasterVolume(0);
+        }
+        else {
+            Mix_MasterVolume(128);
+        }
+        // Enable music
+        if (!_g.store.getBool("settings_enable_music")) {
+            mainMusic.mute();
+        }
+        else {
+            mainMusic.unmute();
+        }
+
         // FPS meter
         if (_g.getTick() % 60 == 0) {
             realFPS = getRealFPS();

@@ -17,7 +17,8 @@ enum ScreenName {
     SCN_PUZZLE_SETUP,
     SCN_PUZZLE,
     SCN_HELP,
-    SCN_MAIN_MENU
+    SCN_MAIN_MENU,
+    SCN_SETTINGS
 };
 
 class GameMaster {

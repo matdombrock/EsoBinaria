@@ -98,6 +98,9 @@ public:
             // _g.setQuit(true);
             _g.sendMessage("quit");
         }
+        if (btnSettings.isClicked()) {
+            _g.setScreen(SCN_SETTINGS);
+        }
     }
     void render(Graphics* graph) override {
         if (_g.getScreen() != SCN_MAIN_MENU) return;

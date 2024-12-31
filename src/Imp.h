@@ -948,8 +948,6 @@ public:
         }
     }
     void play(int channel = 4, bool ifNotPlaying = false) {
-        Store store;
-        if (store.hasKey("settings_enable_audio") && !store.getBool("settings_enable_audio")) return;
         // return;
         this->channel = channel;
         if (sound == nullptr) {
