@@ -57,8 +57,6 @@ class MainMenu : public Entity {
 public:
     EntityManager em;
     BtnMainMenu btnResume;
-    BtnMainMenu btnRestart;
-    BtnMainMenu btnNew;
     BtnMainMenu btnSettings;
     BtnMainMenu btnExit;
     Sprite sprBg;
@@ -70,19 +68,11 @@ public:
         btnResume.text = "Resume";
         em.addEntity(&btnResume);
 
-        btnRestart.pos = Vec2i(20, 60 + _g.fontSize * 1.1f);
-        btnRestart.text = "Restart";
-        em.addEntity(&btnRestart);
-
-        btnNew.pos = Vec2i(20, 60 + _g.fontSize * 1.1f * 2);
-        btnNew.text = "New";
-        em.addEntity(&btnNew);
-
-        btnSettings.pos = Vec2i(20, 60 + _g.fontSize * 1.1f * 3);
+        btnSettings.pos = Vec2i(20, 60 + _g.fontSize * 1.1f * 2);
         btnSettings.text = "Settings";
         em.addEntity(&btnSettings);
 
-        btnExit.pos = Vec2i(20, 60 + _g.fontSize * 1.1f * 4);
+        btnExit.pos = Vec2i(20, 60 + _g.fontSize * 1.1f * 3);
         btnExit.text = "Exit";
         em.addEntity(&btnExit);
 
@@ -103,13 +93,6 @@ public:
         em.checkMouse();
         if (btnResume.isClicked()) {
             _g.setScreen(SCN_PUZZLE);
-        }
-        if (btnRestart.isClicked()) {
-            _g.setReset(true);
-            _g.setScreen(SCN_PUZZLE);
-        }
-        if (btnNew.isClicked()) {
-            _g.setScreen(SCN_PUZZLE_SETUP);
         }
         if (btnExit.isClicked()) {
             _g.setQuit(true);

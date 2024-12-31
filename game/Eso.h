@@ -82,7 +82,8 @@ public:
         }
         // Color overlay
         if (_g.store.getBool("settings_enable_color_overlay")) {
-            graph->setColor(128, 96, 255, 32);
+            // graph->setColor(128, 96, 255, 32);
+            graph->setColor(255, 128, 96, 32);
             graph->rect(Vec2i(0, 0), WINDOW_SIZE, true);
         }
         // FPS meter
