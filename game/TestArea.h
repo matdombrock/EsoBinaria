@@ -137,6 +137,8 @@ public:
                     _g.setScreen(SCN_PUZZLE);
                 };
                 modal.title = "Passed!";
+                modal.setOkText("Next");
+                modal.setCancelText("Stay");
                 modal.show = true;
                 shownPassModal = true;
             }

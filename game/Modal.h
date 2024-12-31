@@ -39,6 +39,12 @@ public:
         em.addEntity(&btnCancel);
     }
     ~Modal() {}
+    void setOkText(std::string text) {
+        btnOk.text = text;
+    }
+    void setCancelText(std::string text) {
+        btnCancel.text = text;
+    }
     void reset() {
         show = false;
         showCancel = true;

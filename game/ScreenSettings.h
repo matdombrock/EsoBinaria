@@ -59,6 +59,9 @@ public:
     BtnSettings btnAudio;
     BtnSettings btnMusic;
     BtnSettings btnClearData;
+    BtnSettings btnAutoSave;
+    BtnSettings btnScreenFX;
+    BtnSettings btnRecolor;
     BtnText btnBack;
     Modal modal;
     Sprite sprBg;
@@ -67,7 +70,7 @@ public:
 
         btnFPS.pos = Vec2i(_g.vu(2), _g.vu(2.5f));
         btnFPS.isBool = true;
-        btnFPS.text = "ENABLE FPS METER";
+        btnFPS.text = "FPS METER";
         btnFPS.onClick = [](){
             _g.store.setBool("settings_enable_fps", !_g.store.getBool("settings_enable_fps"));
         };
@@ -78,7 +81,7 @@ public:
 
         btnAudio.pos = Vec2i(_g.vu(2), _g.vu(2.5f) + _g.vu(1));
         btnAudio.isBool = true;
-        btnAudio.text = "ENABLE AUDIO";
+        btnAudio.text = "ALL AUDIO";
         btnAudio.onClick = [](){
             _g.store.setBool("settings_enable_audio", !_g.store.getBool("settings_enable_audio"));
         };
@@ -89,7 +92,7 @@ public:
 
         btnMusic.pos = Vec2i(_g.vu(2), _g.vu(2.5f) + _g.vu(2));
         btnMusic.isBool = true;
-        btnMusic.text = "ENABLE MUSIC";
+        btnMusic.text = "MUSIC";
         btnMusic.onClick = [](){
             _g.store.setBool("settings_enable_music", !_g.store.getBool("settings_enable_music"));
         };
@@ -97,6 +100,37 @@ public:
             return _g.store.getBool("settings_enable_music");
         };
         em.addEntity(&btnMusic);
+
+        btnAutoSave.pos = Vec2i(_g.vu(2), _g.vu(2.5f) + _g.vu(3));
+        btnAutoSave.isBool = true;
+        btnAutoSave.text = "AUTO SAVE/LOAD";
+        btnAutoSave.onClick = [](){
+            _g.store.setBool("settings_enable_auto_save", !_g.store.getBool("settings_enable_auto_save"));
+        };
+        btnAutoSave.isEnabled = [](){
+            return _g.store.getBool("settings_enable_auto_save");
+        };
+        em.addEntity(&btnAutoSave);
+
+        btnScreenFX.pos = Vec2i(_g.vu(2), _g.vu(2.5f) + _g.vu(4));
+        btnScreenFX.isBool = true;
+        btnScreenFX.text = "SCREEN FX";
+        btnScreenFX.onClick = [](){
+            _g.store.setBool("settings_enable_screen_fx", !_g.store.getBool("settings_enable_screen_fx"));
+        };
+        btnScreenFX.isEnabled = [](){
+            return _g.store.getBool("settings_enable_screen_fx");
+        };
+        em.addEntity(&btnScreenFX);
+
+        btnRecolor.pos = Vec2i(_g.vu(2), _g.vu(2.5f) + _g.vu(5));
+        btnRecolor.text = "RECOLORIZE";
+        btnRecolor.onClick = [](){
+            _g.store.setInt("settings_color_overlay_num", (_g.store.getInt("settings_color_overlay_num") + 1) % 8);
+            _g.sendMessage("recolor");
+        };
+        em.addEntity(&btnRecolor);
+
 
         btnClearData.pos = Vec2i(_g.vu(2), _g.vu(2.5f) + _g.vu(7));
         btnClearData.text = "CLEAR DATA";

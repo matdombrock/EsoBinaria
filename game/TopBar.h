@@ -129,11 +129,11 @@ public:
             modal.onOk = [&]() {
                 _g.setScreen(SCN_PUZZLE_SETUP);
             };
-            modal.title = "New Puzzle?";
+            modal.title = "Change Enigma?";
             modal.show = true;
         };
         btnNew.available = false;
-        btnNew.text = "NEW";
+        btnNew.text = "OPEN";
         btnNew.pos = Vec2i(btnFile.pos.x, btnFile.pos.y + _g.vu(0.5f));
         em.addEntity(&btnNew);
 

@@ -33,6 +33,7 @@ public:
     ScreenEmail ScreenEmail;
     ScreenSettings ScreenSettings;
     Sound mainMusic = Sound("main.ogg");
+    int overlayColor[4] = {0,0,0,0};
     App() : Imp::Main("EsoBinaria (v0.1-alpha)", WINDOW_SIZE, 30, "tiles.png") { 
         clearColor = Color(_colors["BG"]);
         entityMan.addEntity(&grid);
@@ -54,7 +55,6 @@ public:
 
         Sounds::init();
         Fonts::init(_g.fontSize);
-
         // DBG Clear settings
         // _g.store.clear();
 
@@ -66,11 +66,14 @@ public:
         _g.store.setBool("unlocked_hard", true);
         // _g.store.setBool("completed_lvl_3.e0", true);
         // _g.store.setBool("completed_lvl_3.e1", true);
+
+
+        recolor();
     }
     ~App() {}
     void initDefaultSettings() {
-        if (!_g.store.hasKey("settings_enable_scanlines")) 
-            _g.store.setBool("settings_enable_scanlines", false);
+        if (!_g.store.hasKey("settings_enable_screen_fx")) 
+            _g.store.setBool("settings_enable_screen_fx", false);
         if (!_g.store.hasKey("settings_enable_color_overlay")) 
             _g.store.setBool("settings_enable_color_overlay", true);   
         if (!_g.store.hasKey("settings_enable_fps")) 
@@ -81,17 +84,37 @@ public:
             _g.store.setBool("settings_enable_audio", true);
         if (!_g.store.hasKey("settings_enable_music")) 
             _g.store.setBool("settings_enable_music", true);
+        if (!_g.store.hasKey("settings_enable_auto_save")) 
+            _g.store.setBool("settings_enable_auto_save", true);
+    }
+    void recolor() {
+        int num = _g.store.getInt("settings_color_overlay_num");
+        // graph->setColor(128, 96, 255, 32);
+        // graph->setColor(255, 128, 96, 32);
+        int overlays[8][4] = {
+            {128, 96, 255, 32},
+            {255, 128, 96, 32},
+            {96, 255, 128, 32},
+            {255, 255, 255, 32},
+            {128, 255, 96, 32},
+            {96, 128, 255, 32},
+            {255, 96, 128, 32},
+            {128, 128, 128, 32}
+        };
+        overlayColor[0] = overlays[num][0];
+        overlayColor[1] = overlays[num][1];
+        overlayColor[2] = overlays[num][2];
+        overlayColor[3] = overlays[num][3];
     }
     void render(Graphics* graph) override {
-        if (_g.store.getBool("settings_enable_scanlines")) {
+        if (_g.store.getBool("settings_enable_screen_fx")) {
             float amt = std::sin(_g.getTick() / 128.0f) * 0.5f + 0.5f;
             amt *= 0.75f;
             graph->fxApply(FX_SCANLINES2, _g.getTick(), amt);
         }
         // Color overlay
         if (_g.store.getBool("settings_enable_color_overlay")) {
-            // graph->setColor(128, 96, 255, 32);
-            graph->setColor(255, 128, 96, 32);
+            graph->setColor(overlayColor[0], overlayColor[1], overlayColor[2], overlayColor[3]);
             graph->rect(Vec2i(0, 0), WINDOW_SIZE, true);
         }
         // FPS meter
@@ -140,6 +163,9 @@ public:
                 grid.reset();
                 testArea.reset();
                 huk.reset();
+            }
+            if (msg == "recolor") {
+                recolor();
             }
             if (msg == "init_default_settings") {
                 initDefaultSettings();

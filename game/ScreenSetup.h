@@ -56,28 +56,28 @@ public:
         }
 
         btnEasy.pos = Vec2i(_g.vu(10), _g.vu(2));
-        btnEasy.text = "IMP";
+        btnEasy.text = "Erinyes";
         btnEasy.onClick = [](){
             _g.setPuzzleChallenge('e');
         };
         em.addEntity(&btnEasy);
 
         btnMedium.pos = Vec2i(_g.vu(10), _g.vu(2) + _g.vu(1));
-        btnMedium.text = "MAGE";
+        btnMedium.text = "Manticore";
         btnMedium.onClick = [](){
             _g.setPuzzleChallenge('m');
         };
         em.addEntity(&btnMedium);
 
         btnHard.pos = Vec2i(_g.vu(10), _g.vu(2) + _g.vu(2));
-        btnHard.text = "ARCH";
+        btnHard.text = "Hydra";
         btnHard.onClick = [](){
             _g.setPuzzleChallenge('h');
         };
         em.addEntity(&btnHard);
 
         btnStart.pos = Vec2i(_g.vu(10), _g.vu(2) + _g.vu(3));
-        btnStart.text = "START";
+        btnStart.text = "Begin >>";
         btnStart.onClick = [](){
             // _g.setReset(true);
             DBG("-------STARTING NEW LEVEL");
