@@ -77,6 +77,8 @@ public:
                 cells[x][y].set(CT_VOID);
             }
         }
+        // Puzzle specific
+        // Fill tutorial puzzles
         // 0 place B
         // 1 place NOT
         if (_g.getPuzzleNum() == 1 && _g.getPuzzleChallenge() == 'e') {
@@ -90,6 +92,10 @@ public:
             cells[4][7].set(CT_BLANK);
         }
         // 3 solo
+
+        //
+        DBG("Sending load msg");
+        _g.sendMessage("load");
     }
     void process() override {
         if (_g.getScreen() != SCN_PUZZLE) return;
@@ -341,5 +347,35 @@ public:
         //     int yy = y + sin(y + (_g.getTick()/6) * 0.1) * _g.cellSize;
         //     graph->line(Vec2i(0, yy), Vec2i(WINDOW_SIZE.x, yy));
         // }
+    }
+    std::string cellsToString() {
+        std::string str = "";
+        for (int y = 0; y < gridSize.y; y++) {
+            for (int x = 0; x < gridSize.x; x++) {
+                Cell cell = cells[x][y];
+                std::string cellString = "";
+                cellString += std::to_string(cell.get()) + ",";
+                cellString += cell.parenLeft ? "1," : "0,";
+                cellString += cell.parenRight ? "1," : "0,";
+                cellString += cell.isComment ? "1," : "0,";
+                str += cellString;
+            }
+        }
+        return str;
+    }
+    void setCellsFromString(std::string str) {
+        std::vector<std::string> split = Imp::StringTools::split(str, ",");
+        for (int y = 0; y < gridSize.y; y++) {
+            for (int x = 0; x < gridSize.x; x++) {
+                Cell cell = cells[x][y];
+                int i = (y * gridSize.x + x) * 4;
+                CellType cellType = (CellType)std::stoi(split[i]);
+                cell.set(cellType);
+                cell.parenLeft = std::stoi(split[i + 1]);
+                cell.parenRight = std::stoi(split[i + 2]);
+                cell.isComment = std::stoi(split[i + 3]);
+                cells[x][y] = cell;
+            }
+        }
     }
 };

@@ -79,8 +79,10 @@ public:
         btnStart.pos = Vec2i(_g.vu(10), _g.vu(2) + _g.vu(3));
         btnStart.text = "START";
         btnStart.onClick = [](){
-            _g.setReset(true);
+            // _g.setReset(true);
+            DBG("-------STARTING NEW LEVEL");
             _g.setScreen(SCN_PUZZLE);
+            _g.sendMessage("reset");         
         };
         em.addEntity(&btnStart);
     }

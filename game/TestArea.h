@@ -85,6 +85,15 @@ public:
                 tests[i].show = false;
             }
         }
+
+        if (testFails == 0) {
+            if (!hasPassed){
+                _g.store.setBool("completed_lvl_" + _g.getPuzzleString(), true);
+                _g.sendMessage("save");
+                hasPassed = true;
+            }
+        }
+        else hasPassed = false;
     }
     void render(Graphics* graph) {
         if (_g.getScreen() != SCN_PUZZLE) return;
@@ -123,15 +132,17 @@ public:
                         return;
                     }
                     _g.setPuzzleData(bits, challenge, num);
-                    _g.setReset(true);
+                    // _g.setReset(true);
+                    _g.sendMessage("reset");
                     _g.setScreen(SCN_PUZZLE);
                 };
                 modal.title = "Passed!";
                 modal.show = true;
                 shownPassModal = true;
             }
-            _g.store.setBool("completed_lvl_" + _g.getPuzzleString(), true);
         }
         else shownPassModal = false;
     }
+private:
+    bool hasPassed = false;
 };

@@ -139,10 +139,9 @@ public:
 
         btnSave.onClick = [this]() { 
             modal.onOk = [&]() {
-                DBG("Save");
+                _g.sendMessage("save");
             };
-            modal.title = "Saved";
-            modal.showCancel = false;
+            modal.title = "Save?";
             modal.show = true; 
         };
         btnSave.available = false;
@@ -152,7 +151,7 @@ public:
 
         btnLoad.onClick = [this]() { 
             modal.onOk = [&]() {
-                _g.setReset(true); 
+                _g.sendMessage("load");
             };
             modal.title = "Load?";
             modal.show = true;
@@ -220,7 +219,8 @@ public:
         
         btnReset.onClick = [this]() { 
             modal.onOk = [&]() {
-                _g.setReset(true); 
+                // _g.setReset(true); 
+                _g.sendMessage("reset");
             };
             modal.title = "Reset?";
             modal.show = true;

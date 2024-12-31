@@ -44,7 +44,7 @@ public:
         entityMan.addEntity(&cursor);
 
         if (_g.store.getBool("completed_email_intro")) {
-            _g.setScreen(SCN_PUZZLE_SETUP);
+            _g.setScreen(SCN_MAIN_MENU);
         } else {
             _g.setScreen(SCN_HELP);
         }
@@ -61,7 +61,7 @@ public:
         if (!_g.store.hasKey("settings_enable_color_overlay")) 
             _g.store.setBool("settings_enable_color_overlay", true);   
         if (!_g.store.hasKey("settings_enable_fps")) 
-            _g.store.setBool("settings_enable_fps", true);
+            _g.store.setBool("settings_enable_fps", false);
         if (!_g.store.hasKey("settings_enable_fps")) 
             _g.store.setBool("settings_enable_fps", true);
         if (!_g.store.hasKey("settings_enable_audio")) 
@@ -95,6 +95,7 @@ public:
     void process() override {
         // Handle messages
         std::vector<std::string> msgs = _g.getMessages();
+        _g.clearMessages();
         for (int i = 0; i < msgs.size(); i++) {
             std::string msg = msgs[i];
             if (msg == "mv_down") {
@@ -109,18 +110,43 @@ public:
             if (msg == "mv_right") {
                 grid.translate(Vec2i(1, 0));
             }
+            if (msg == "save") {
+                auto data = grid.cellsToString();
+                DBG("save");
+                DBG(data);
+                _g.store.setString("save_" + _g.getPuzzleString(), data);
+                // grid.setCellsFromString(data);
+            }
+            if (msg == "load") {
+                if (_g.store.hasKey("save_" + _g.getPuzzleString())) {
+                    auto data = _g.store.getString("save_" + _g.getPuzzleString());
+                    DBG("load");
+                    DBG(data);
+                    grid.setCellsFromString(data);
+                }
+                else {
+                    DBG("No save data found");
+                }
+            }
+            if (msg == "reset") {
+                grid.reset();
+                testArea.reset();
+                huk.reset();
+            }
+            if (msg == "quit") {
+                exit(0);
+            }
         }
-        _g.clearMessages();
 
-        if (_g.getReset()) {
-            _g.setReset(false);
-            grid.reset();
-            testArea.reset();
-            huk.reset();
-        }
-        if (_g.getQuit()) {
-            exit(0);
-        }
+        // if (_g.getReset()) {
+        //     _g.setReset(false);
+        //     grid.reset();
+        //     testArea.reset();
+        //     huk.reset();
+        // }
+        // if (_g.getQuit()) {
+        //     exit(0);
+        // }
 
         _g.incTick();
 

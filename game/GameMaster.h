@@ -36,19 +36,19 @@ public:
     int vu(float val) {
         return (int)(val * cellSize);
     }
-    void setReset(bool reset) {
-        this->reset = reset;
-        DBG("Reset: " + std::to_string(reset));
-    }
-    bool getReset() {
-        return reset;
-    }
-    void setQuit(bool quit) {
-        this->quit = quit;
-    }
-    bool getQuit() {
-        return quit;
-    }
+    // void setReset(bool reset) {
+    //     this->reset = reset;
+    //     DBG("Reset: " + std::to_string(reset));
+    // }
+    // bool getReset() {
+    //     return reset;
+    // }
+    // void setQuit(bool quit) {
+    //     this->quit = quit;
+    // }
+    // bool getQuit() {
+    //     return quit;
+    // }
     void setCodeString(std::string codeString) {
         this->codeString = codeString;
     }
@@ -163,8 +163,8 @@ private:
     char puzzleChallenge = 'e';
     ScreenName activeScreen = SCN_PUZZLE_SETUP;
     bool showTests = true;
-    bool reset = false;
-    bool quit = false;
+    // bool reset = false;
+    // bool quit = false;
     bool hukActive = false;
     std::string codeErr = "";
     std::string codeString = "";

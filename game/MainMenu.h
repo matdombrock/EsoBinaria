@@ -95,7 +95,8 @@ public:
             _g.setScreen(SCN_PUZZLE);
         }
         if (btnExit.isClicked()) {
-            _g.setQuit(true);
+            // _g.setQuit(true);
+            _g.sendMessage("quit");
         }
     }
     void render(Graphics* graph) override {
