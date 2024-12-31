@@ -1,5 +1,10 @@
 Tips are just oblique strategies lol
 screen scrolling effect for transitions
 
+stats tool
+
+////
+
 puzzle -> enigma
 test -> sub-enigmas
+
