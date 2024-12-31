@@ -7,20 +7,20 @@ using namespace Imp;
 #include "_text.h"
 
 
-class EmailScreen : public Entity {
+class ScreenEmail : public Entity {
 public:
     EntityManager em;
     std::string text;
     Sprite sprWiz = Sprite(Vec2i(0, 224), Vec2i(32,32), Vec2i(_g.vu(2), _g.vu(2)));
     Sound sndType = Sound("1.wav");
     Font font = Font("HomeVideo.ttf", 24);
-    EmailScreen() : Entity() {
-        tag = "EmailScreen";
+    ScreenEmail() : Entity() {
+        tag = "ScreenEmail";
         sprWiz.setAnimation({Vec2i(0, 224), Vec2i(32, 224)}, 4);
         // sndType.set("1.wav");
         text = Text::introEmail;
     }
-    ~EmailScreen() {}
+    ~ScreenEmail() {}
     void process() override {
         if (_g.getScreen() != SCN_HELP) return;
         if (_input.keyOnce(SDLK_ESCAPE)) {

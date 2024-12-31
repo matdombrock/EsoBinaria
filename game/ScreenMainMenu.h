@@ -5,13 +5,13 @@ using namespace Imp;
 #include "_gameMaster.h"
 #include "_fonts.h"
 
-class BtnMainMenu : public Entity {
+class BtnScreenMainMenu : public Entity {
 public:
     Vec2i size;
     std::string text;
     Uint8 state;
     bool center;
-    BtnMainMenu() : Entity() {
+    BtnScreenMainMenu() : Entity() {
         tag = "btn";
         state = 0;
         center = false;
@@ -19,7 +19,7 @@ public:
         size = Vec2i(200, _g.fontSize * 1.1f);
         setCollider(size);
     }
-    ~BtnMainMenu() {}
+    ~BtnScreenMainMenu() {}
     bool isClicked() {
         return state == 2;
     }
@@ -53,15 +53,15 @@ public:
     }
 };
 
-class MainMenu : public Entity {
+class ScreenMainMenu : public Entity {
 public:
     EntityManager em;
-    BtnMainMenu btnResume;
-    BtnMainMenu btnSettings;
-    BtnMainMenu btnExit;
+    BtnScreenMainMenu btnResume;
+    BtnScreenMainMenu btnSettings;
+    BtnScreenMainMenu btnExit;
     Sprite sprBg;
     Font font = Font("HomeVideo.ttf", _g.fontSize);
-    MainMenu() : Entity() {
+    ScreenMainMenu() : Entity() {
         tag = "menu";
 
         btnResume.pos = Vec2i(20, 60);
@@ -78,7 +78,7 @@ public:
 
         sprBg = Sprite(Vec2i(176, 176), Vec2i(96, 96), Vec2i(WINDOW_SIZE.x/2, WINDOW_SIZE.x/2));\
     }
-    ~MainMenu() {}
+    ~ScreenMainMenu() {}
     void process() override {
         if (_g.getScreen() != SCN_MAIN_MENU) {
             // Sounds::menuTrack.volDown(4, 8);

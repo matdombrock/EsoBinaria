@@ -10,9 +10,9 @@ using namespace Imp;
 #include "Cursor.h"
 #include "TopBar.h"
 #include "BottomBar.h"
-#include "MainMenu.h"
-#include "SetupScreen.h"
-#include "EmailScreen.h"
+#include "ScreenMainMenu.h"
+#include "ScreenSetup.h"
+#include "ScreenEmail.h"
 #include "Huk.h"
 #include "_gameMaster.h"
 #include "_sounds.h"
@@ -27,9 +27,9 @@ public:
     TopBar TopBar;
     BottomBar bottomBar;
     Huk huk;
-    MainMenu mainMenu;
-    SetupScreen setupScreen;
-    EmailScreen emailScreen;
+    ScreenMainMenu ScreenMainMenu;
+    ScreenSetup ScreenSetup;
+    ScreenEmail ScreenEmail;
     Sound mainMusic = Sound("main.ogg");
     App() : Imp::Main("EsoBinaria (v0.1-alpha)", WINDOW_SIZE, 30, "tiles.png") { 
         clearColor = Color(_colors["BG"]);
@@ -38,9 +38,9 @@ public:
         entityMan.addEntity(&testArea);
         entityMan.addEntity(&TopBar);
         entityMan.addEntity(&huk);
-        entityMan.addEntity(&setupScreen);
-        entityMan.addEntity(&emailScreen);
-        entityMan.addEntity(&mainMenu);
+        entityMan.addEntity(&ScreenSetup);
+        entityMan.addEntity(&ScreenEmail);
+        entityMan.addEntity(&ScreenMainMenu);
         entityMan.addEntity(&cursor);
 
         if (_g.store.getBool("completed_email_intro")) {

@@ -6,12 +6,12 @@ using namespace Imp;
 namespace Sounds {
     Sound menuTrack;
     Sound changeTile;
-    Sound toggleMainMenu;
+    Sound toggleScreenMainMenu;
     Sound toggleTests;
     void init() {
         menuTrack = Sound("menu.ogg");
         changeTile = Sound("2.wav");
-        toggleMainMenu = Sound("3.wav");
+        toggleScreenMainMenu = Sound("3.wav");
         toggleTests = Sound("4.wav");
     }
 };

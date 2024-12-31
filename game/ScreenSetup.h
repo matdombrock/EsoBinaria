@@ -28,7 +28,7 @@ public:
     }
 };
 
-class SetupScreen : public Entity {
+class ScreenSetup : public Entity {
 public:
     EntityManager em;
     BtnNub btnsLvl[256];
@@ -38,8 +38,8 @@ public:
     BtnText btnStart;
     Font font = Font("HomeVideo.ttf", _g.fontSize);
     Font fontLrg = Font("HomeVideo.ttf", _g.fontSize * 4);
-    SetupScreen() : Entity() {
-        tag = "setupScreen";
+    ScreenSetup() : Entity() {
+        tag = "ScreenSetup";
         for (int i = 0; i < 256; i++) {
             int x = i % 16;
             int y = i / 16;
@@ -86,7 +86,7 @@ public:
         };
         em.addEntity(&btnStart);
     }
-    ~SetupScreen() {}
+    ~ScreenSetup() {}
     void process() override {
         if (_g.getScreen() != SCN_PUZZLE_SETUP) return;
         char challenge = _g.getPuzzleChallenge();
