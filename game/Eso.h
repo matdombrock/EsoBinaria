@@ -89,8 +89,6 @@ public:
     }
     void recolor() {
         int num = _g.store.getInt("settings_color_overlay_num");
-        // graph->setColor(128, 96, 255, 32);
-        // graph->setColor(255, 128, 96, 32);
         int overlays[8][4] = {
             {128, 96, 255, 32},
             {255, 128, 96, 32},
