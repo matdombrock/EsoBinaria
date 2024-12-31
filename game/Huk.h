@@ -23,22 +23,48 @@ public:
     }
     void process() override {
         if (_g.getScreen() != SCN_PUZZLE) return;
+        // TODO: All this code for showing the text is a bit messy
         if (!hasShown && _g.getPuzzleBits() == 3 && _g.getPuzzleChallenge() == 'e') {
             show = true;
             hasShown = true;
             _g.setHukActive(true);
             sndNext.play();
             if (_g.getPuzzleNum() == 0) {
-                messages = {Text::huk0a, Text::huk0b, Text::huk0c, Text::huk0d, Text::huk0e, Text::huk0f, Text::huk0g, Text::huk0h, Text::huk0i, Text::huk0j, Text::huk0k};
+                messages = {Text::hukE0a, Text::hukE0b, Text::hukE0c, Text::hukE0d, Text::hukE0e, Text::hukE0f, Text::hukE0g, Text::hukE0h, Text::hukE0i, Text::hukE0j, Text::hukE0k};
             }
             if (_g.getPuzzleNum() == 1) {
-                messages = {Text::huk1a, Text::huk1b, Text::huk1c, Text::huk1d, Text::huk1e, Text::huk1f, Text::huk1g, Text::huk1h, Text::huk1i, Text::huk1j, Text::huk1k};
+                messages = {Text::hukE1a, Text::hukE1b, Text::hukE1c, Text::hukE1d, Text::hukE1e, Text::hukE1f, Text::hukE1g, Text::hukE1h, Text::hukE1i, Text::hukE1j, Text::hukE1k};
             }
             if (_g.getPuzzleNum() == 2) {
-                messages = {Text::huk2a, Text::huk2b, Text::huk2c, Text::huk2d, Text::huk2e, Text::huk2f};
+                messages = {Text::hukE2a, Text::hukE2b, Text::hukE2c, Text::hukE2d, Text::hukE2e, Text::hukE2f};
             }
             if (_g.getPuzzleNum() == 3) {
-                messages = {Text::huk3a, Text::huk3b, Text::huk3c, Text::huk3d, Text::huk3e, Text::huk3f};
+                messages = {Text::hukE3a, Text::hukE3b, Text::hukE3c, Text::hukE3d, Text::hukE3e, Text::hukE3f};
+            }
+        }
+        if (!hasShown && _g.getPuzzleBits() == 3 && _g.getPuzzleChallenge() == 'm') {
+            if (_g.getPuzzleNum() == 0) {
+                show = true;
+                hasShown = true;
+                _g.setHukActive(true);
+                sndNext.play();
+                messages = {Text::hukM0a, Text::hukM0b, Text::hukM0c, Text::hukM0d, Text::hukM0e, Text::hukM0f};
+            }
+            if (_g.getPuzzleNum() == 1) {
+                show = true;
+                hasShown = true;
+                _g.setHukActive(true);
+                sndNext.play();
+                messages = {Text::hukM1a, Text::hukM1b, Text::hukM1c, Text::hukM1d, Text::hukM1e, Text::hukM1f, Text::hukM1g};
+            }
+        }
+        if (!hasShown && _g.getPuzzleBits() == 3 && _g.getPuzzleChallenge() == 'h') {
+            if (_g.getPuzzleNum() == 69) {
+                show = true;
+                hasShown = true;
+                _g.setHukActive(true);
+                sndNext.play();
+                messages = {Text::hukH69a};
             }
         }
         if (!show) return;
