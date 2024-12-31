@@ -239,11 +239,11 @@ public:
         if (_g.getScreen() != SCN_PUZZLE) return;
         // Drag grid bg
         graph->setColor(_colors["BG2"]);
-        for (int x = 0; x < WINDOW_SIZE.x; x += _g.cellSize) {
-            graph->line(Vec2i(x, 0), Vec2i(x, WINDOW_SIZE.y));
+        for (int x = 0; x < gridSize.x; x++) {
+            graph->line(Vec2i(x * _g.cellSize, 0), Vec2i(x * _g.cellSize, gridSize.y * _g.cellSize));
         }
-        for (int y = 0; y < WINDOW_SIZE.y; y += _g.cellSize) {
-            graph->line(Vec2i(0, y), Vec2i(WINDOW_SIZE.x, y));
+        for (int y = 0; y < gridSize.y; y++) {
+            graph->line(Vec2i(0, y * _g.cellSize), Vec2i(gridSize.x * _g.cellSize, y * _g.cellSize));
         }
         // Draw border
         int borderWidth = _g.hasCodeErr() ? _g.cellSize/16 : _g.cellSize/4;

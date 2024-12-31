@@ -30,7 +30,7 @@ public:
     MainMenu mainMenu;
     SetupScreen setupScreen;
     EmailScreen emailScreen;
-    Sound mainMusic = Sound("main.mp3");
+    Sound mainMusic = Sound("main.ogg");
     App() : Imp::Main("EsoBinaria (v0.1-alpha)", WINDOW_SIZE, 30, "tiles.png") { 
         clearColor = Color(_colors["BG"]);
         entityMan.addEntity(&grid);
@@ -43,7 +43,7 @@ public:
         entityMan.addEntity(&mainMenu);
         entityMan.addEntity(&cursor);
 
-        if (_g.store.getBool("email_intro")) {
+        if (_g.store.getBool("completed_email_intro")) {
             _g.setScreen(SCN_PUZZLE_SETUP);
         } else {
             _g.setScreen(SCN_HELP);
@@ -52,7 +52,9 @@ public:
         Sounds::init();
         Fonts::init(_g.fontSize);
 
-        if (_g.store.hasKey("email_intro")) _g.store.setBool("email_intro", true);
+        // DBG Clear settings
+        // _g.store.clear();
+
         // Default Settings
         if (!_g.store.hasKey("settings_enable_scanlines")) 
             _g.store.setBool("settings_enable_scanlines", false);
@@ -63,29 +65,30 @@ public:
         if (!_g.store.hasKey("settings_enable_fps")) 
             _g.store.setBool("settings_enable_fps", true);
         if (!_g.store.hasKey("settings_enable_audio")) 
-            _g.store.setBool("settings_enable_audio", false);
+            _g.store.setBool("settings_enable_audio", true);
         // Set some DBG flags
+        _g.store.setBool("completed_email_intro", true);
         _g.store.setBool("unlocked_medium", true);
         _g.store.setBool("unlocked_hard", true);
         // _g.store.setBool("completed_lvl_3.e0", true);
         // _g.store.setBool("completed_lvl_3.e1", true);
     }
     ~App() {}
-    void render(Graphics* g) override {
+    void render(Graphics* graph) override {
         if (_g.store.getBool("settings_enable_scanlines")) {
             float amt = std::sin(_g.getTick() / 128.0f) * 0.5f + 0.5f;
             amt *= 0.75f;
-            g->fxApply(FX_SCANLINES2, _g.getTick(), amt);
+            graph->fxApply(FX_SCANLINES2, _g.getTick(), amt);
         }
-        // overlay
+        // Color overlay
         if (_g.store.getBool("settings_enable_color_overlay")) {
-            g->setColor(128, 96, 255, 32);
-            g->rect(Vec2i(0, 0), WINDOW_SIZE);
+            graph->setColor(128, 96, 255, 32);
+            graph->rect(Vec2i(0, 0), WINDOW_SIZE, true);
         }
         // FPS meter
         if (_g.store.getBool("settings_enable_fps")) {
-            g->setColor(0, 255, 0, 255);
-            g->text(std::to_string(realFPS), Vec2i(0, 0), &Fonts::small);
+            graph->setColor(0, 255, 0, 255);
+            graph->text(std::to_string(realFPS), Vec2i(0, 0), &Fonts::small);
         }
     }
     void process() override {

@@ -236,15 +236,16 @@ public:
         return data[key];
     }
     int getInt(std::string key) {
+        if (!hasKey(key)) return 0;
         if (data.find(key) == data.end()) return 0;
         return std::stoi(data[key]);
     }
     float getFloat(std::string key) {
-        if (data.find(key) == data.end()) return 0.0f;
+        if (!hasKey(key)) return 0.0f;
         return std::stof(data[key]);
     }
     bool getBool(std::string key) {
-        if (data.find(key) == data.end()) return false;
+        if (!hasKey(key)) return false;
         return data[key] == "true";
     }
     bool hasKey(std::string key) {
@@ -302,6 +303,7 @@ public:
         setString(key, value ? "true" : "false");
     }
     std::string getString(std::string key) {
+        if (!hasKey(key)) return "";
         char* value = (char*)EM_ASM_INT({
             var value = localStorage.getItem(UTF8ToString($0));
             if (value === null) return 0;
@@ -315,13 +317,21 @@ public:
         return result;
     }
     int getInt(std::string key) {
+        if (!hasKey(key)) return 0;
         return std::stoi(getString(key));
     }
     float getFloat(std::string key) {
+        if (!hasKey(key)) return 0.0f;
         return std::stof(getString(key));
     }
     bool getBool(std::string key) {
+        if (!hasKey(key)) return false;
         return getString(key) == "true";
+    }
+    bool hasKey(std::string key) {
+        return static_cast<bool>(EM_ASM_INT({
+            return localStorage.getItem(UTF8ToString($0)) !== null;
+        }, key.c_str()));
     }
     void clear() {
         EM_ASM(

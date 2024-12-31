@@ -59,7 +59,7 @@ public:
         this->helpItem = helpItem;
     }
     HelpItem* getHelpItem() {
-        return helpItem;
+        return helpItem ;
     }
     void setCodeErr(std::string err) {
         codeErr = err;

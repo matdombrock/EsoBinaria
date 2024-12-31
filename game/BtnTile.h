@@ -24,15 +24,21 @@ public:
     }
     ~BtnTile() {}
     void render(Graphics* graph) override {
-            if (type == CT_IND && _g.getPuzzleBits() < 4) {
-                return;
-            }
-            Vec2i post = pos.copy();
-            
-            if (_g.getActiveTile() == type) {
-                post += Vec2i(0, -_g.cellSize / 4);
-            }
-            else if (state > 0) {
+        // Ignore input D and C if puzzle bits are less than 4
+        if (type == CT_IND && _g.getPuzzleBits() < 4) {
+            return;
+        }
+        Vec2i post = pos.copy();
+        
+        if (_g.getActiveTile() == type) { // is active
+            post += Vec2i(0, -_g.cellSize / 4);
+            // Draw line to mouse
+            graph->setColor(_colors["YELLOW"], 64);
+            graph->line(post + Vec2i(_g.vu(0.5f), _g.vu(0.5f)), _input.mousePos() - Vec2i(0, _g.vu(0.5f)));
+            graph->line(post + Vec2i(_g.vu(0.5f), _g.vu(0.5f)), _input.mousePos() - Vec2i(_g.vu(0.5f), -_g.vu(0.25f)));
+            graph->line(post + Vec2i(_g.vu(0.5f), _g.vu(0.5f)), _input.mousePos() + Vec2i(_g.vu(0.5f), _g.vu(0.25f)));
+        }
+        else if (state > 0) {
             post += Vec2i(0, -_g.cellSize / 8);
         }
         graph->setColor(_colors["GREEN"]);

@@ -101,10 +101,6 @@ public:
             btnUndo.available = true;
             btnRedo.available = true;
             btnReset.available = true;
-            btnMVDown.available = true;
-            btnMVUp.available = true;
-            btnMVLeft.available = true;
-            btnMVRight.available = true;
         };
         btnEdit.tag = "btnEdit";
         btnEdit.available = true;
@@ -115,6 +111,10 @@ public:
         btnTools.onClick = [this]() {
             activeTopBar = "btnTools";
             btnTests.available = true;
+            btnMVDown.available = true;
+            btnMVUp.available = true;
+            btnMVLeft.available = true;
+            btnMVRight.available = true;
         };
         btnTools.tag = "btnTools";
         btnTools.available = true;
@@ -169,6 +169,38 @@ public:
         btnTests.pos = Vec2i(btnTools.pos.x, btnTools.pos.y + _g.vu(0.5f));
         em.addEntity(&btnTests);
 
+        btnMVDown.onClick = [this]() { 
+            _g.sendMessage("mv_down");
+        };
+        btnMVDown.available = false;
+        btnMVDown.text = "DOWN";
+        btnMVDown.pos = Vec2i(btnTools.pos.x, btnTools.pos.y + _g.vu(1.0f));
+        em.addEntity(&btnMVDown);
+
+        btnMVUp.onClick = [this]() { 
+            _g.sendMessage("mv_up");
+        };
+        btnMVUp.available = false;
+        btnMVUp.text = "UP";
+        btnMVUp.pos = Vec2i(btnTools.pos.x, btnTools.pos.y + _g.vu(1.5f));
+        em.addEntity(&btnMVUp);
+
+        btnMVLeft.onClick = [this]() { 
+            _g.sendMessage("mv_left");
+        };
+        btnMVLeft.available = false;
+        btnMVLeft.text = "LEFT";
+        btnMVLeft.pos = Vec2i(btnTools.pos.x, btnTools.pos.y + _g.vu(2.0f));
+        em.addEntity(&btnMVLeft);
+
+        btnMVRight.onClick = [this]() { 
+            _g.sendMessage("mv_right");
+        };
+        btnMVRight.available = false;
+        btnMVRight.text = "RIGHT";
+        btnMVRight.pos = Vec2i(btnTools.pos.x, btnTools.pos.y + _g.vu(2.5f));
+        em.addEntity(&btnMVRight);
+
         // Edit menu
         btnUndo.onClick = [this]() { 
             
@@ -198,38 +230,6 @@ public:
         btnReset.pos = Vec2i(btnEdit.pos.x, btnEdit.pos.y + _g.vu(1.5f));
         em.addEntity(&btnReset);
 
-        btnMVDown.onClick = [this]() { 
-            _g.sendMessage("mv_down");
-        };
-        btnMVDown.available = false;
-        btnMVDown.text = "DOWN";
-        btnMVDown.pos = Vec2i(btnEdit.pos.x, btnEdit.pos.y + _g.vu(2.0f));
-        em.addEntity(&btnMVDown);
-
-        btnMVUp.onClick = [this]() { 
-            _g.sendMessage("mv_up");
-        };
-        btnMVUp.available = false;
-        btnMVUp.text = "UP";
-        btnMVUp.pos = Vec2i(btnEdit.pos.x, btnEdit.pos.y + _g.vu(2.5f));
-        em.addEntity(&btnMVUp);
-
-        btnMVLeft.onClick = [this]() { 
-            _g.sendMessage("mv_left");
-        };
-        btnMVLeft.available = false;
-        btnMVLeft.text = "LEFT";
-        btnMVLeft.pos = Vec2i(btnEdit.pos.x, btnEdit.pos.y + _g.vu(3.0f));
-        em.addEntity(&btnMVLeft);
-
-        btnMVRight.onClick = [this]() { 
-            _g.sendMessage("mv_right");
-        };
-        btnMVRight.available = false;
-        btnMVRight.text = "RIGHT";
-        btnMVRight.pos = Vec2i(btnEdit.pos.x, btnEdit.pos.y + _g.vu(3.5f));
-        em.addEntity(&btnMVRight);
-
 
         em.addEntity(&modal);
     }
@@ -250,15 +250,15 @@ public:
         }
         if (activeTopBar != "btnTools") {
             btnTests.available = false;
+            btnMVDown.available = false;
+            btnMVUp.available = false;
+            btnMVLeft.available = false;
+            btnMVRight.available = false;
         }
         if (activeTopBar != "btnEdit") {
             btnUndo.available = false;
             btnRedo.available = false;
             btnReset.available = false;
-            btnMVDown.available = false;
-            btnMVUp.available = false;
-            btnMVLeft.available = false;
-            btnMVRight.available = false;
         }
     }
     void render(Graphics* graph) override {
@@ -271,10 +271,10 @@ public:
             graph->rect(Vec2i(btnFile.pos.x, height), Vec2i(129, 120));
         }
         if (activeTopBar == "btnTools") {
-            graph->rect(Vec2i(btnTools.pos.x, height), Vec2i(120, 120));
+            graph->rect(Vec2i(btnTools.pos.x, height), Vec2i(120, 180));
         }
         if (activeTopBar == "btnEdit") {
-            graph->rect(Vec2i(btnEdit.pos.x, height), Vec2i(120, 240));
+            graph->rect(Vec2i(btnEdit.pos.x, height), Vec2i(120, 120));
         }
         
         em.render(graph);
