@@ -187,12 +187,16 @@ public:
 
         mainMusic.play(0, true); 
 
-        // Enable audio
+        // Enable / disable audio
         if (!_g.store.getBool("settings_enable_audio")) {
-            //Mix_MasterVolume(0);// breaks linux
+            #if defined(__APPLE__)
+                Mix_MasterVolume(0);// breaks linux
+            #endif
         }
         else {
-            //Mix_MasterVolume(128);
+            #if defined(__APPLE__)
+                Mix_MasterVolume(128);// breaks linux
+            #endif
         }
         // Enable music
         if (!_g.store.getBool("settings_enable_music")) {
