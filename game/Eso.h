@@ -25,13 +25,13 @@ public:
     Grid grid;
     TestArea testArea;
     Cursor cursor;
-    TopBar TopBar;
+    TopBar topBar;
     BottomBar bottomBar;
     Huk huk;
-    ScreenMainMenu ScreenMainMenu;
-    ScreenSetup ScreenSetup;
-    ScreenEmail ScreenEmail;
-    ScreenSettings ScreenSettings;
+    ScreenMainMenu screenMainMenu;
+    ScreenSetup screenSetup;
+    ScreenEmail screenEmail;
+    ScreenSettings screenSettings;
     Sound mainMusic = Sound("main.ogg");
     int overlayColor[4] = {0,0,0,0};
     App() : Imp::Main("EsoBinaria (v0.1-alpha)", WINDOW_SIZE, 30, "tiles.png") { 
@@ -39,12 +39,12 @@ public:
         entityMan.addEntity(&grid);
         entityMan.addEntity(&bottomBar);
         entityMan.addEntity(&testArea);
-        entityMan.addEntity(&TopBar);
+        entityMan.addEntity(&topBar);
         entityMan.addEntity(&huk);
-        entityMan.addEntity(&ScreenSetup);
-        entityMan.addEntity(&ScreenEmail);
-        entityMan.addEntity(&ScreenMainMenu);
-        entityMan.addEntity(&ScreenSettings);
+        entityMan.addEntity(&screenSetup);
+        entityMan.addEntity(&screenEmail);
+        entityMan.addEntity(&screenMainMenu);
+        entityMan.addEntity(&screenSettings);
         entityMan.addEntity(&cursor);
 
         if (_g.store.getBool("completed_email_intro")) {
@@ -189,10 +189,10 @@ public:
 
         // Enable audio
         if (!_g.store.getBool("settings_enable_audio")) {
-            Mix_MasterVolume(0);
+            //Mix_MasterVolume(0);// breaks linux
         }
         else {
-            Mix_MasterVolume(128);
+            //Mix_MasterVolume(128);
         }
         // Enable music
         if (!_g.store.getBool("settings_enable_music")) {
