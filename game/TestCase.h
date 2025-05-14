@@ -51,9 +51,14 @@ public:
     ~TestCase() {}
     void set(int index, int bits, int puzzleNum) {
         this->data.index = index;
-        data.inputs.resize(bits);
+        // Ensure we always have at least 4 inputs (a, b, c, d)
+        data.inputs.resize(std::max(bits, 4));
         for (int i = 0; i < bits; i++) {
             data.inputs[i] = Util::intToBits(index, bits)[i];
+        }
+        // Set any additional inputs (if bits < 4) to false
+        for (int i = bits; i < 4; i++) {
+            data.inputs[i] = false;
         }
         data.output = Util::intToBits(puzzleNum, Util::maxUnsignedInt(bits))[index];
     }
@@ -114,8 +119,10 @@ public:
         if (data.lastCheck) sprPass.render(graph, pos + Vec2i(hoverMod, 0));
         else sprFail.render(graph, Vec2i(pos.x - _g.vu(0.1f) - (_g.getTick()/8 % 6) + hoverMod, pos.y));
         int x = ce;
-        for (bool input : data.inputs) {
-            if (input) sprTrue.render(graph, Vec2i(pos.x + x, pos.y));
+        // Only display up to the actual number of inputs needed for the puzzle
+        int bitsToShow = std::min(static_cast<size_t>(_g.getPuzzleBits()), data.inputs.size());
+        for (int i = 0; i < bitsToShow; i++) {
+            if (data.inputs[i]) sprTrue.render(graph, Vec2i(pos.x + x, pos.y));
             else sprFalse.render(graph, Vec2i(pos.x + x, pos.y));
             x += ce;
         }

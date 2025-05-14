@@ -111,7 +111,10 @@ public:
         }
         int x = mousePosCell.x;
         int y = mousePosCell.y;
-        CellType cellType = cells[x][y].get();
+        CellType cellType = CT_VOID;
+        if (x >= 0 && x < gridSize.x && y >= 0 && y < gridSize.y) {
+            cellType = cells[x][y].get();
+        }
         bool isTile = cellType != CT_VOID && cellType != CT_CLEAR;
         highlightCellTypeStr = Cell::typeToString(cellType);
         
@@ -153,7 +156,7 @@ public:
                 }
             }
             // Drop tile
-            if (newCell != CT_VOID) {
+            if (newCell != CT_VOID && x >= 0 && x < gridSize.x && y >= 0 && y < gridSize.y) {
                 DBG("New Cell: " + std::to_string(newCell));
                 if (newCell == CT_CLEAR) {
                     if (isTile) sndRemove.play();
@@ -177,12 +180,14 @@ public:
                 }
             }
             // Toggle connectors
-            if (_input.keyOnce(SDLK_TAB) || _input.mouseKeyOnce(SDL_BUTTON_RIGHT) || _input.mouseKeyOnce(4)) {
+            if ((x >= 0 && x < gridSize.x && y >= 0 && y < gridSize.y) && 
+                (_input.keyOnce(SDLK_TAB) || _input.mouseKeyOnce(SDL_BUTTON_RIGHT) || _input.mouseKeyOnce(4))) {
                 cells[x][y].cycleParens();
                 if (isTile) sndParen.play();
             }
             // Toggle comments
-            if (_input.keyOnce(SDLK_c) || _input.mouseKeyOnce(SDL_BUTTON_MIDDLE)) {
+            if ((x >= 0 && x < gridSize.x && y >= 0 && y < gridSize.y) && 
+                (_input.keyOnce(SDLK_c) || _input.mouseKeyOnce(SDL_BUTTON_MIDDLE))) {
                 cells[x][y].isComment = !cells[x][y].isComment;
             }
         }

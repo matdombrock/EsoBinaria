@@ -14,7 +14,7 @@ public:
     int testCount;
     int testFails;
     int testWinWidth;
-    std::vector<TestCase> tests;
+    std::vector<TestCase> tests = {};
     std::string codeStringOld;
     Font font = Font("HomeVideo.ttf", _g.fontSize);
     Modal modal;
@@ -23,9 +23,10 @@ public:
         tag = "testScreen";
         
         DBG("Max unsigned int: " + std::to_string(Util::maxUnsignedInt(_g.getPuzzleBits())));
-
         tests.resize(256);
+        DBG("ok1");
         reset();
+        DBG("ok2");
         testWinWidth = _g.fontSize * 8;
         pos.y = _g.cellSize;
         for (int i = 0; i < tests.size(); i++) {
@@ -33,6 +34,7 @@ public:
         }
 
         em.addEntity(&modal);
+
     }
     ~TestArea() {}
     int check() {
@@ -51,7 +53,7 @@ public:
             case 'h': testCount = Util::maxUnsignedInt(_g.getPuzzleBits()); break;
             default: testCount = Util::maxUnsignedInt(_g.getPuzzleBits()); break;
         }
-        for (int i = 0; i < tests.size(); i++) {
+        for (int i = 0; i < 7; i++) { // TODO: WTF used to be tests.size()
            tests[i].set(i, _g.getPuzzleBits(), _g.getPuzzleNum()); 
         }
         check();
