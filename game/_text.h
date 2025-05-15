@@ -20,7 +20,7 @@ We are the light.
 We are the EsoBinaria, the device that we seek to <$FF0000$>[REDACTED]<$FFFFFF$>.
 
 ------------------------------------------------
-<$00FF00$>PRESS THE <ESC> KEY TO ENTER ESO-OS
+<$00FF00$>PRESS ANY KEY TO ENTER ESO-OS
 )";
 std::string hukE0a = "Hey there, I'm huk. Heard this was your first day! I'm here to train you on how to use this system. Let's get started! \n\nPress any key to continue.";
 std::string hukE0b = "First things first. Listen to what I say very carefully because the ESObinaria is a very complex machine.";

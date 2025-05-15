@@ -23,8 +23,11 @@ public:
     ~ScreenEmail() {}
     void process() override {
         if (_g.getScreen() != SCN_HELP) return;
-        if (_input.keyOnce(SDLK_ESCAPE)) {
+        if (_input.anyKeyOnce()) {
+          pressed++;
+          if (pressed > 1) {
             _g.setScreen(SCN_PUZZLE);
+          }
         }
     }
     void render(Graphics* graph) override {
@@ -44,6 +47,7 @@ public:
 
         graph->setColor(_colors["GREEN"]);
         int pos = std::min((_g.getTick()/3)*6, (int)text.length() - 1);
+        if (pressed > 0) pos = text.length() - 1;
         if (pos < (int)text.length() - 1) {
             sndType.play(1, true);
         }
@@ -53,4 +57,6 @@ public:
         std::string textTrunc = text.substr(0, pos);
         graph->textFmt(textTrunc, Vec2i(_g.vu(1), _g.vu(2)), &Fonts::small, WINDOW_SIZE.x - _g.vu(2));
     }
+private:
+    int pressed = 0;
 };
