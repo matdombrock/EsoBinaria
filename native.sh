@@ -1,11 +1,11 @@
 mkdir -p ./out
 rm -rf ./out/*
 g++ ./src/main.cpp ./build/s7.o -o ./out/EsoBinaria \
- -std=c++17 \
- -DAPP="\"$1\"" \
- -lm -lstdc++\
- -I/opt/homebrew/include/SDL2 -L/opt/homebrew/lib -lSDL2 -lSDL2_ttf -lSDL2_mixer -lSDL2_image \
- -g
+  -std=c++17 \
+  -DAPP="\"$1\"" \
+  -lm -lstdc++ -DBUILD_TIME=$(date +%s) \
+  -I/opt/homebrew/include/SDL2 -L/opt/homebrew/lib -lSDL2 -lSDL2_ttf -lSDL2_mixer -lSDL2_image \
+  -g
 rm -rf ./out/assets
 cp -r game/assets ./out/assets
 
@@ -27,3 +27,4 @@ makeself ./out/EsoBinaria_Install ./out/EsoBinaria_Bundle/EsoBinaria "EsoBinaria
 cd ./out
 zip -r ./EsoBinaria_Bundle.zip ./EsoBinaria_Bundle
 zip -r ./EsoBinaria_Install.zip ./EsoBinaria_Install
+
