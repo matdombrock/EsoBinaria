@@ -7,7 +7,7 @@ emcc ./src/main.cpp ./build/s7.wasm.o -o out-wasm/index.html \
   -std=c++17 \
   -s "EXPORTED_RUNTIME_METHODS=['FS']" -s "FORCE_FILESYSTEM=1" \
   -DAPP="\"$1\"" \
-  -DBUILD_TIME=$(date +%s"
---preload-file game/assets@/assets \
+  -DBUILD_TIME=$(date +%s) \
+  --preload-file game/assets@/assets \
   --shell-file shell_minimal.html
 
