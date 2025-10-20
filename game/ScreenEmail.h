@@ -17,7 +17,6 @@ public:
     ScreenEmail() : Entity() {
         tag = "ScreenEmail";
         sprWiz.setAnimation({Vec2i(0, 224), Vec2i(32, 224)}, 4);
-        // sndType.set("1.wav");
         text = Text::introEmail;
     }
     ~ScreenEmail() {}
