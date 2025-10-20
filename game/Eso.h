@@ -90,8 +90,8 @@ public:
     void recolor() {
         int num = _g.store.getInt("settings_color_overlay_num");
         int overlays[8][4] = {
-            {128, 96, 255, 32},
             {255, 128, 96, 32},
+            {128, 96, 255, 32},
             {96, 255, 128, 32},
             {255, 255, 255, 32},
             {128, 255, 96, 32},

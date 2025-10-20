@@ -68,6 +68,7 @@ public:
   BtnScreenMainMenu btnSettings;
   BtnScreenMainMenu btnExit;
   Sprite sprBg;
+  Sprite sprTitle;
   Font font = Font("HomeVideo.ttf", _g.fontSize);
   ScreenMainMenu() : Entity() {
     tag = "menu";
@@ -86,6 +87,9 @@ public:
 
     sprBg = Sprite(Vec2i(176, 176), Vec2i(96, 96),
                    Vec2i(WINDOW_SIZE.x / 2, WINDOW_SIZE.x / 2));
+
+    sprTitle = Sprite(Vec2i(80, 80), Vec2i(96, 32),
+                      Vec2i(96 * 4, 32 * 4));
   }
   ~ScreenMainMenu() {}
   void process() override {
@@ -121,6 +125,7 @@ public:
     em.render(graph);
     sprBg.render(graph,
                  WINDOW_SIZE - Vec2i(WINDOW_SIZE.x / 2, WINDOW_SIZE.x / 2));
+    sprTitle.render(graph, Vec2i(WINDOW_SIZE.x - 96 * 4, 0));
     graph->setColor(_colors["WHITE"]);
     std::string text = "ESO-OS version 0.8 #" + std::to_string(BUILD_TIME);
     graph->text(text, pos + Vec2i(0, WINDOW_SIZE.y - 32), &Fonts::small);

@@ -39,6 +39,7 @@ set(CMAKE_BUILD_TYPE Debug)
 if(NOT ESO_WASM)
   add_custom_command(
     TARGET Esobinaria POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/out
     COMMAND ${CMAKE_COMMAND} -E rename $<TARGET_FILE:Esobinaria> ${CMAKE_BINARY_DIR}/out/Esobinaria
     COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/game/assets ${CMAKE_BINARY_DIR}/out/assets
   )
@@ -48,11 +49,11 @@ endif()
 if(ESO_WASM)
   add_custom_command(
     TARGET Esobinaria POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/outhtml
-    COMMAND ${CMAKE_COMMAND} -E rename ${CMAKE_BINARY_DIR}/Esobinaria.html ${CMAKE_BINARY_DIR}/outhtml/index.html
-    COMMAND ${CMAKE_COMMAND} -E rename ${CMAKE_BINARY_DIR}/Esobinaria.js ${CMAKE_BINARY_DIR}/outhtml/Esobinaria.js
-    COMMAND ${CMAKE_COMMAND} -E rename ${CMAKE_BINARY_DIR}/Esobinaria.wasm ${CMAKE_BINARY_DIR}/outhtml/Esobinaria.wasm
-    COMMAND ${CMAKE_COMMAND} -E rename ${CMAKE_BINARY_DIR}/Esobinaria.data ${CMAKE_BINARY_DIR}/outhtml/Esobinaria.data
-    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/game/assets ${CMAKE_BINARY_DIR}/outhtml/assets
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/out
+    COMMAND ${CMAKE_COMMAND} -E rename ${CMAKE_BINARY_DIR}/Esobinaria.html ${CMAKE_BINARY_DIR}/out/index.html
+    COMMAND ${CMAKE_COMMAND} -E rename ${CMAKE_BINARY_DIR}/Esobinaria.js ${CMAKE_BINARY_DIR}/out/Esobinaria.js
+    COMMAND ${CMAKE_COMMAND} -E rename ${CMAKE_BINARY_DIR}/Esobinaria.wasm ${CMAKE_BINARY_DIR}/out/Esobinaria.wasm
+    COMMAND ${CMAKE_COMMAND} -E rename ${CMAKE_BINARY_DIR}/Esobinaria.data ${CMAKE_BINARY_DIR}/out/Esobinaria.data
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/game/assets ${CMAKE_BINARY_DIR}/out/assets
   )
 endif()
