@@ -6,8 +6,11 @@ g++ ./src/main.cpp ./build/s7.o -o ./out/EsoBinaria \
   -lm -lstdc++ -DBUILD_TIME=$(date +%s) \
   -I/opt/homebrew/include/SDL2 -L/opt/homebrew/lib -lSDL2 -lSDL2_ttf -lSDL2_mixer -lSDL2_image \
   -g
+
 rm -rf ./out/assets
 cp -r game/assets ./out/assets
+
+exit 0
 
 mkdir -p ./out/EsoBinaria_Install
 rm -rf ./out/*.DS_Store
