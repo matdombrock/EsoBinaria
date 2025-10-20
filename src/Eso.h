@@ -10,6 +10,7 @@ using namespace Imp;
 #include "Cursor.h"
 #include "TopBar.h"
 #include "BottomBar.h"
+#include "ScreenBumper.h"
 #include "ScreenMainMenu.h"
 #include "ScreenSetup.h"
 #include "ScreenEmail.h"
@@ -27,6 +28,7 @@ public:
     TopBar topBar;
     BottomBar bottomBar;
     Huk huk;
+    ScreenBumper screenBumper;
     ScreenMainMenu screenMainMenu;
     ScreenSetup screenSetup;
     ScreenEmail screenEmail;
@@ -43,28 +45,27 @@ public:
         entityMan.addEntity(&testArea);
         entityMan.addEntity(&topBar);
         entityMan.addEntity(&huk);
+        entityMan.addEntity(&screenBumper);
         entityMan.addEntity(&screenSetup);
         entityMan.addEntity(&screenEmail);
         entityMan.addEntity(&screenMainMenu);
         entityMan.addEntity(&screenSettings);
         entityMan.addEntity(&cursor);
 
-        if (_g.store.getBool("completed_email_intro")) {
-            _g.setScreen(SCN_MAIN_MENU);
-        } else {
-            _g.setScreen(SCN_HELP);
-        }
+        _g.setScreen(SCN_BUMPER);
 
         Fonts::init(_g.fontSize);
+
         // DBG Clear settings
         // _g.store.clear();
 
         // Default Settings
         initDefaultSettings();
+
         // Set some DBG flags
-        _g.store.setBool("completed_email_intro", true);
-        _g.store.setBool("unlocked_medium", true);
-        _g.store.setBool("unlocked_hard", true);
+        // _g.store.setBool("completed_email_intro", true);
+        // _g.store.setBool("unlocked_medium", true);
+        // _g.store.setBool("unlocked_hard", true);
         // _g.store.setBool("completed_lvl_3.e0", true);
         // _g.store.setBool("completed_lvl_3.e1", true);
 

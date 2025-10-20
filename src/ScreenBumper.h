@@ -1,0 +1,120 @@
+#pragma once
+#include "GameMaster.h"
+#include "Imp.h"
+using namespace Imp;
+#include "_colors.h"
+#include "_fonts.h"
+#include "_gameMaster.h"
+
+#ifndef BUILD_TIME
+#define BUILD_TIME 1234
+#endif
+
+class BtnScreenBumper : public Entity {
+public:
+  Vec2i size;
+  std::string text;
+  Uint8 state;
+  bool center;
+  BtnScreenBumper() : Entity() {
+    tag = "btn";
+    state = 0;
+    center = false;
+    text = "Button";
+    size = Vec2i(200, _g.fontSize * 1.1f);
+    setCollider(size);
+  }
+  ~BtnScreenBumper() {}
+  bool isClicked() { return state == 2; }
+  void process() override {}
+  void render(Graphics *graph) override {
+    Color *c = &_colors["GRAY"];
+    switch (state) {
+    case 0:
+      c = &_colors["GRAY"];
+      break;
+    case 1:
+      c = &_colors["YELLOW"];
+      break;
+    case 2:
+      c = &_colors["GREEN"];
+      break;
+    }
+    std::string textMod = (state > 0 ? ">> " : "") + text;
+    graph->setColor(*c);
+    if (center) {
+      int textWidth = graph->textWidth(textMod, &Fonts::medium);
+      Vec2i textPos =
+          pos + Vec2i((size.x - textWidth) / 2, (size.y - _g.fontSize) / 2);
+      graph->text(textMod, textPos, &Fonts::medium);
+    } else {
+      graph->text(textMod, pos, &Fonts::medium);
+    }
+  }
+  void onMouse(bool over) override {
+    if (_input.mouseKeyOnce(SDL_BUTTON_LEFT) && over) {
+      state = 2;
+    } else if (over) {
+      state = 1;
+    } else
+      state = 0;
+  }
+};
+
+class ScreenBumper : public Entity {
+public:
+  EntityManager em;
+  BtnScreenBumper btnResume;
+  BtnScreenBumper btnSettings;
+  BtnScreenBumper btnExit;
+  Sprite sprBg;
+  Sprite sprTitle;
+  Sprite sprSDL;
+  Sprite sprCPP;
+  Font font = Font("HomeVideo.ttf", _g.fontSize);
+  Input input;
+  ScreenBumper() : Entity() {
+    tag = "bumper";
+
+    sprBg = Sprite(Vec2i(176, 176), Vec2i(96, 96),
+                   Vec2i(WINDOW_SIZE.x / 2, WINDOW_SIZE.x / 2));
+
+    sprTitle = Sprite(Vec2i(80, 80), Vec2i(96, 32), Vec2i(96 * 8, 32 * 8));
+    sprSDL = Sprite(Vec2i(176, 80), Vec2i(48, 32), Vec2i(48 * 4, 32 * 4));
+    sprCPP = Sprite(Vec2i(224, 80), Vec2i(32, 32), Vec2i(32 * 4, 32 * 4));
+  }
+  ~ScreenBumper() {}
+  void process() override {
+    if (_g.getScreen() != SCN_BUMPER) {
+      return;
+    }
+    input.poll();
+    bool pressed = input.anyKey();
+    if (pressed) {
+      DBG("Exiting bumper via keypress");
+      if (_g.store.getBool("completed_email_intro")) {
+        _g.setScreen(SCN_MAIN_MENU);
+      } else {
+        _g.setScreen(SCN_HELP);
+      }
+    }
+  }
+  void render(Graphics *graph) override {
+    if (_g.getScreen() != SCN_BUMPER)
+      return;
+    graph->setColor(_colors["BG"]);
+    graph->rect(Vec2i(0, 0), WINDOW_SIZE);
+    graph->setColor(_colors["WHITE"]);
+    graph->text("ESOBINARIA", Vec2i(20, 20), &Fonts::medium);
+    graph->text("MATHIEU DOMBROCK 2024-2025", Vec2i(20, 60), &Fonts::medium);
+    em.render(graph);
+    sprBg.render(graph,
+                 WINDOW_SIZE - Vec2i(WINDOW_SIZE.x / 2, WINDOW_SIZE.x / 2));
+    sprTitle.render(graph, Vec2i((WINDOW_SIZE.x / 2) - (96 * 4), 110));
+    sprSDL.render(graph, Vec2i(150, 440));
+    sprCPP.render(graph, Vec2i(450, 440));
+    graph->setColor(_colors["WHITE"]);
+    std::string text = "ESO-OS version 0.8 #" + std::to_string(BUILD_TIME);
+    graph->text(text, pos + Vec2i(0, WINDOW_SIZE.y - 32), &Fonts::small);
+  }
+};

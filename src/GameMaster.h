@@ -14,6 +14,7 @@ using namespace Imp;
 #define WINDOW_FPS 60
 
 enum ScreenName {
+  SCN_BUMPER,
   SCN_PUZZLE_SETUP,
   SCN_PUZZLE,
   SCN_HELP,
@@ -54,7 +55,10 @@ public:
   std::string getCodeErr() { return codeErr; }
   void incTick() { tick++; }
   int getTick() { return tick; }
-  void setScreen(ScreenName screenName) { activeScreen = screenName; }
+  void setScreen(ScreenName screenName) {
+    DBG("Switching to screen: " + std::to_string(screenName));
+    activeScreen = screenName;
+  }
   ScreenName getScreen() { return activeScreen; }
   void setPuzzleBits(int bits) { puzzleBits = bits; }
   int getPuzzleBits() { return puzzleBits; }
