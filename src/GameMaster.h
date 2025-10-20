@@ -3,7 +3,7 @@
 #include <map>
 #include <string>
 
-#include "../src/Imp.h"
+#include "Imp.h"
 using namespace Imp;
 
 #include "Cell.h"

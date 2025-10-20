@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 #include <map>
-#include "../src/Imp.h"
+#include "Imp.h"
 using namespace Imp;
 
 inline std::map<std::string, Color> _colors = {

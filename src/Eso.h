@@ -3,7 +3,7 @@
 
 #include "../lib/s7/s7.h"
 
-#include "../src/Imp.h"
+#include "Imp.h"
 using namespace Imp;
 #include "Grid.h"
 #include "TestArea.h"

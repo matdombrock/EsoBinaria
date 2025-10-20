@@ -1,5 +1,5 @@
 #pragma once
-#include "../src/Imp.h"
+#include "Imp.h"
 #include "GameMaster.h"
 using namespace Imp;
 #include "_colors.h"

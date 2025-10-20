@@ -31,19 +31,19 @@ const std::string basePath = SDL_GetBasePath();
 //
 // DEBUG
 //
-void DBG(const std::string& value) {
+inline void DBG(const std::string& value) {
     std::cout << value << std::endl;
 }
-void DBG(const char* value) {
+inline void DBG(const char* value) {
     std::cout << value << std::endl;
 }
-void DBG(int value) {
+inline void DBG(int value) {
     std::cout << value << std::endl;
 }
-void DBG(float value) {
+inline void DBG(float value) {
     std::cout << value << std::endl;
 }
-void DBG(bool value) {
+inline void DBG(bool value) {
     std::cout << (value ? "true" : "false") << std::endl;
 }
 
@@ -422,7 +422,7 @@ private:
     Uint32 mouseStatePrev = 0;
 };
 // Declare global input
-Input _input;
+inline Input _input;
 
 //
 // Graphics

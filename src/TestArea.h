@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../src/Imp.h"
+#include "Imp.h"
 using namespace Imp;
 #include "TestCase.h"
 #include "Modal.h"
