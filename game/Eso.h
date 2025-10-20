@@ -16,7 +16,6 @@ using namespace Imp;
 #include "ScreenSettings.h"
 #include "Huk.h"
 #include "_gameMaster.h"
-#include "_sounds.h"
 #include "_fonts.h"
 
 
@@ -35,6 +34,9 @@ public:
     Sound mainMusic = Sound("main.ogg");
     int overlayColor[4] = {0,0,0,0};
     App() : Imp::Main("EsoBinaria", WINDOW_SIZE, WINDOW_FPS, "tiles.png") { 
+
+        _g.init();
+
         clearColor = Color(_colors["BG"]);
         entityMan.addEntity(&grid);
         entityMan.addEntity(&bottomBar);
@@ -53,7 +55,6 @@ public:
             _g.setScreen(SCN_HELP);
         }
 
-        Sounds::init();
         Fonts::init(_g.fontSize);
         // DBG Clear settings
         // _g.store.clear();

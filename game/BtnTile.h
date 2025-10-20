@@ -20,7 +20,7 @@ public:
         tag = "tileBtn";
         type = CT_CLEAR;
         setCollider(Vec2i(_g.cellSize, _g.cellSize));
-        sndTick.set("1.wav");
+        sndTick.set("tick.wav");
     }
     ~BtnTile() {}
     void render(Graphics* graph) override {

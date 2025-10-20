@@ -12,7 +12,7 @@ public:
     EntityManager em;
     std::string text;
     Sprite sprWiz = Sprite(Vec2i(0, 224), Vec2i(32,32), Vec2i(_g.vu(2), _g.vu(2)));
-    Sound sndType = Sound("1.wav");
+    Sound sndType = Sound("tick.wav");
     Font font = Font("HomeVideo.ttf", 24);
     ScreenEmail() : Entity() {
         tag = "ScreenEmail";

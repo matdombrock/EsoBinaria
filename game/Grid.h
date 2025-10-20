@@ -34,11 +34,11 @@ public:
             }
         }
 
-        sndTick.set("1.wav");
+        sndTick.set("tick.wav");
         // sndTick.volume = 32;
-        sndAdd.set("14.wav");
+        sndAdd.set("add.wav");
         sndRemove.set("rock.ogg");
-        sndParen.set("5.wav");  
+        sndParen.set("paren.wav");  
 
         highlightCellTypeStr = "CLEAR";
         helpString = "";
