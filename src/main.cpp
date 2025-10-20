@@ -5,10 +5,9 @@
  * found in the LICENSE file.
  */
 
-#include <stdio.h>
 #include <iostream>
 
-#include "../game/Eso.h"
+#include "Eso.h"
 
 #ifdef __EMSCRIPTEN__
     #include <emscripten.h>

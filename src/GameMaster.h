@@ -45,19 +45,6 @@ public:
     DBG("Loaded Current Puzzle: " + getPuzzleString());
   }
   int vu(float val) { return (int)(val * cellSize); }
-  // void setReset(bool reset) {
-  //     this->reset = reset;
-  //     DBG("Reset: " + std::to_string(reset));
-  // }
-  // bool getReset() {
-  //     return reset;
-  // }
-  // void setQuit(bool quit) {
-  //     this->quit = quit;
-  // }
-  // bool getQuit() {
-  //     return quit;
-  // }
   void setCodeString(std::string codeString) { this->codeString = codeString; }
   std::string getCodeString() { return codeString; }
   void setHelpItem(HelpItem *helpItem) { this->helpItem = helpItem; }
