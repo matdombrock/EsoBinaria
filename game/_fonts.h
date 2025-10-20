@@ -3,10 +3,10 @@
 using namespace Imp;
 
 namespace Fonts {
-    Font medium;
-    Font large;
-    Font small;
-    void init(int fontSize) {
+    inline Font medium;
+    inline Font large;
+    inline Font small;
+    inline void init(int fontSize) {
         medium = Font("HomeVideo.ttf", fontSize);
         large = Font("HomeVideo.ttf", fontSize * 4);
         small = Font("HomeVideo.ttf", fontSize * 0.75f);
