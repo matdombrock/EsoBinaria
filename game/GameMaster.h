@@ -12,6 +12,7 @@ using namespace Imp;
 #include "_helpItems.h"
 
 #define WINDOW_SIZE Vec2i(1024, 768)
+#define WINDOW_FPS 60
 
 enum ScreenName {
     SCN_PUZZLE_SETUP,
