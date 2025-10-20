@@ -31,8 +31,11 @@ void main_loop() {
 int main(int argc, char* argv[]) {
     std::cout << "MAIN Startup" << std::endl;
     #ifdef __EMSCRIPTEN__
+        DBG("Emscripten main loop");
         emscripten_set_main_loop(main_loop, 0, 1);
         return 0;
+    #else
+        DBG("Standard main loop");
     #endif
     while (true) {
         main_loop();

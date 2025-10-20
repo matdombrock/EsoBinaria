@@ -34,7 +34,7 @@ public:
     ScreenSettings screenSettings;
     Sound mainMusic = Sound("main.ogg");
     int overlayColor[4] = {0,0,0,0};
-    App() : Imp::Main("EsoBinaria (v0.1-alpha)", WINDOW_SIZE, WINDOW_FPS, "tiles.png") { 
+    App() : Imp::Main("EsoBinaria", WINDOW_SIZE, WINDOW_FPS, "tiles.png") { 
         clearColor = Color(_colors["BG"]);
         entityMan.addEntity(&grid);
         entityMan.addEntity(&bottomBar);

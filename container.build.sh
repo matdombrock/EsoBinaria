@@ -1,3 +1,4 @@
 #!/bin/bash
-podman build -t esobinaria .
+set -e
+podman build -t esobinaria:latest .
 echo 'Container built with tag "esobinaria"'
