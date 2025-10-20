@@ -445,6 +445,7 @@ public:
     }
 };
 
+// WARN: THIS IS A BAD IDEA
 class ScreenFXProps {   
 public:
     int tick = 0;
@@ -456,6 +457,7 @@ public:
     Uint32* pixels;
 };
 
+// WARN: THIS IS A BAD IDEA
 class ScreenFX {
 public:
     ScreenFX(){}
@@ -895,6 +897,7 @@ public:
     int getTick() {
         return tick;
     }
+    // WARN: This is a bad idea
     void fxApply(FXName name, int tick, float mix = 1.0f, float p1 = 0.0f, float p2 = 0.0f, float p3 = 0.0f) {
         switch(name) {
             case FX_INVERT:

@@ -110,6 +110,7 @@ public:
         overlayColor[3] = overlays[num][3];
     }
     void render(Graphics* graph) override {
+        // WARN: THIS IS A BAD IDEA
         if (_g.store.getBool("settings_enable_screen_fx")) {
             float amt = std::sin(_g.getTick() / 128.0f) * 0.5f + 0.5f;
             amt *= 0.75f;
