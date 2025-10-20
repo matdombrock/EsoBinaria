@@ -90,6 +90,7 @@ public:
     }
     input.poll();
     bool pressed = input.anyKey();
+    // if (pressed || (_g.getTick() / WINDOW_FPS) > 5) {
     if (pressed) {
       DBG("Exiting bumper via keypress");
       if (_g.store.getBool("completed_email_intro")) {
@@ -104,16 +105,19 @@ public:
       return;
     graph->setColor(_colors["BG"]);
     graph->rect(Vec2i(0, 0), WINDOW_SIZE);
-    graph->setColor(_colors["WHITE"]);
+    graph->setColor(_colors["GRAY"]);
     graph->text("ESOBINARIA", Vec2i(20, 20), &Fonts::medium);
     graph->text("MATHIEU DOMBROCK 2024-2025", Vec2i(20, 60), &Fonts::medium);
+    graph->setColor(_colors["WHITE"]);
+    int posX = 220 + sin((_g.getTick() / 16.0f)) * 10;
+    graph->text("-- PRESS TO CONTINUE --", Vec2i(posX, 380), &Fonts::medium);
     em.render(graph);
     sprBg.render(graph,
                  WINDOW_SIZE - Vec2i(WINDOW_SIZE.x / 2, WINDOW_SIZE.x / 2));
     sprTitle.render(graph, Vec2i((WINDOW_SIZE.x / 2) - (96 * 4), 110));
-    sprSDL.render(graph, Vec2i(150, 440));
-    sprCPP.render(graph, Vec2i(450, 440));
-    graph->setColor(_colors["WHITE"]);
+    sprSDL.render(graph, Vec2i(32, 550));
+    sprCPP.render(graph, Vec2i(248, 550));
+    graph->setColor(_colors["GRAY"]);
     std::string text = "ESO-OS version 0.8 #" + std::to_string(BUILD_TIME);
     graph->text(text, pos + Vec2i(0, WINDOW_SIZE.y - 32), &Fonts::small);
   }

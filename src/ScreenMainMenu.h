@@ -94,14 +94,8 @@ public:
   ~ScreenMainMenu() {}
   void process() override {
     if (_g.getScreen() != SCN_MAIN_MENU) {
-      // Sounds::menuTrack.volDown(4, 8);
-      // Sounds::menuTrack.stop();
       return;
     }
-    // Sounds::menuTrack.volume = 255;
-    // if (!Sounds::menuTrack.isPlaying()) Sounds::menuTrack.volume = 0;
-    // Sounds::menuTrack.volUp(4, 128);
-    // Sounds::menuTrack.play(1, true);
     em.process();
     em.checkMouse();
     if (btnResume.isClicked()) {
@@ -125,7 +119,7 @@ public:
     em.render(graph);
     sprBg.render(graph,
                  WINDOW_SIZE - Vec2i(WINDOW_SIZE.x / 2, WINDOW_SIZE.x / 2));
-    sprTitle.render(graph, Vec2i(WINDOW_SIZE.x - 96 * 4, 0));
+    sprTitle.render(graph, Vec2i((WINDOW_SIZE.x - 96 * 4) - 16, 16));
     graph->setColor(_colors["WHITE"]);
     std::string text = "ESO-OS version 0.8 #" + std::to_string(BUILD_TIME);
     graph->text(text, pos + Vec2i(0, WINDOW_SIZE.y - 32), &Fonts::small);
