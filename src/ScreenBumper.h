@@ -10,63 +10,8 @@ using namespace Imp;
 #define BUILD_TIME 1234
 #endif
 
-class BtnScreenBumper : public Entity {
-public:
-  Vec2i size;
-  std::string text;
-  Uint8 state;
-  bool center;
-  BtnScreenBumper() : Entity() {
-    tag = "btn";
-    state = 0;
-    center = false;
-    text = "Button";
-    size = Vec2i(200, _g.fontSize * 1.1f);
-    setCollider(size);
-  }
-  ~BtnScreenBumper() {}
-  bool isClicked() { return state == 2; }
-  void process() override {}
-  void render(Graphics *graph) override {
-    Color *c = &_colors["GRAY"];
-    switch (state) {
-    case 0:
-      c = &_colors["GRAY"];
-      break;
-    case 1:
-      c = &_colors["YELLOW"];
-      break;
-    case 2:
-      c = &_colors["GREEN"];
-      break;
-    }
-    std::string textMod = (state > 0 ? ">> " : "") + text;
-    graph->setColor(*c);
-    if (center) {
-      int textWidth = graph->textWidth(textMod, &Fonts::medium);
-      Vec2i textPos =
-          pos + Vec2i((size.x - textWidth) / 2, (size.y - _g.fontSize) / 2);
-      graph->text(textMod, textPos, &Fonts::medium);
-    } else {
-      graph->text(textMod, pos, &Fonts::medium);
-    }
-  }
-  void onMouse(bool over) override {
-    if (_input.mouseKeyOnce(SDL_BUTTON_LEFT) && over) {
-      state = 2;
-    } else if (over) {
-      state = 1;
-    } else
-      state = 0;
-  }
-};
-
 class ScreenBumper : public Entity {
 public:
-  EntityManager em;
-  BtnScreenBumper btnResume;
-  BtnScreenBumper btnSettings;
-  BtnScreenBumper btnExit;
   Sprite sprBg;
   Sprite sprTitle;
   Sprite sprSDL;
@@ -103,15 +48,12 @@ public:
   void render(Graphics *graph) override {
     if (_g.getScreen() != SCN_BUMPER)
       return;
-    graph->setColor(_colors["BG"]);
-    graph->rect(Vec2i(0, 0), WINDOW_SIZE);
     graph->setColor(_colors["GRAY"]);
     graph->text("ESOBINARIA", Vec2i(20, 20), &Fonts::medium);
     graph->text("MATHIEU DOMBROCK 2024-2025", Vec2i(20, 60), &Fonts::medium);
     graph->setColor(_colors["WHITE"]);
     int posX = 220 + sin((_g.getTick() / 16.0f)) * 10;
     graph->text("-- PRESS TO CONTINUE --", Vec2i(posX, 380), &Fonts::medium);
-    em.render(graph);
     sprBg.render(graph,
                  WINDOW_SIZE - Vec2i(WINDOW_SIZE.x / 2, WINDOW_SIZE.x / 2));
     sprTitle.render(graph, Vec2i((WINDOW_SIZE.x / 2) - (96 * 4), 110));

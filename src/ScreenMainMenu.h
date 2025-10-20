@@ -112,8 +112,6 @@ public:
   void render(Graphics *graph) override {
     if (_g.getScreen() != SCN_MAIN_MENU)
       return;
-    graph->setColor(_colors["BG"]);
-    graph->rect(Vec2i(0, 0), WINDOW_SIZE);
     graph->setColor(_colors["WHITE"]);
     graph->text("ESO-OS", Vec2i(20, 20), &Fonts::medium);
     em.render(graph);

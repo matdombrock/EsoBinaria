@@ -10,6 +10,7 @@ using namespace Imp;
 #include "Cursor.h"
 #include "TopBar.h"
 #include "BottomBar.h"
+#include "ScreenBG.h"
 #include "ScreenBumper.h"
 #include "ScreenMainMenu.h"
 #include "ScreenSetup.h"
@@ -28,6 +29,7 @@ public:
     TopBar topBar;
     BottomBar bottomBar;
     Huk huk;
+    ScreenBG screenBG;
     ScreenBumper screenBumper;
     ScreenMainMenu screenMainMenu;
     ScreenSetup screenSetup;
@@ -40,6 +42,7 @@ public:
         _g.init();
 
         clearColor = Color(_colors["BG"]);
+        entityMan.addEntity(&screenBG);
         entityMan.addEntity(&grid);
         entityMan.addEntity(&bottomBar);
         entityMan.addEntity(&testArea);

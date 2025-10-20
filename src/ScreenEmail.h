@@ -40,8 +40,6 @@ public:
   void render(Graphics *graph) override {
     if (_g.getScreen() != SCN_HELP)
       return;
-    graph->setColor(_colors["BG3"]);
-    graph->rect(Vec2i(0, 0), WINDOW_SIZE, true);
     graph->setColor(_colors["BG"], 128);
     graph->rect(Vec2i(_g.vu(0.5f), _g.vu(0.5f)),
                 WINDOW_SIZE - Vec2i(_g.vu(1), _g.vu(1)), true);

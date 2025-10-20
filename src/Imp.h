@@ -770,30 +770,35 @@ public:
         if (thickness <= 1) {
             SDL_RenderDrawLine(renderer, start.x, start.y, end.x, end.y);
         } else {
-            // Calculate the direction vector
+            // Draw a filled rectangle perpendicular to the line to simulate thickness
             Vec2f direction = Vec2f(end.x - start.x, end.y - start.y).normalize();
-            // Calculate the perpendicular vector
-            Vec2f perpendicular(-direction.y, direction.x);
-            // Scale the perpendicular vector by half the thickness
-            perpendicular *= (thickness / 2.0f);
+            Vec2f perp(-direction.y, direction.x);
 
-            // Define the four corners of the thick line
-            Vec2f points[4] = {
-                Vec2f(start.x, start.y) + perpendicular,
-                Vec2f(start.x, start.y) - perpendicular,
-                Vec2f(end.x, end.y) + perpendicular,
-                Vec2f(end.x, end.y) - perpendicular
-            };
+            float half_thick = thickness / 2.0f;
+            Vec2f p1 = Vec2f(start.x, start.y) + perp * half_thick;
+            Vec2f p2 = Vec2f(start.x, start.y) - perp * half_thick;
+            Vec2f p3 = Vec2f(end.x, end.y) - perp * half_thick;
+            Vec2f p4 = Vec2f(end.x, end.y) + perp * half_thick;
 
-            // Draw the thick line as a series of connected lines
-            SDL_Point sdlPoints[5];
+            // Draw the thick line as a filled polygon (two triangles)
+            SDL_Vertex verts[4];
+            verts[0].position.x = p1.x; verts[0].position.y = p1.y;
+            verts[1].position.x = p2.x; verts[1].position.y = p2.y;
+            verts[2].position.x = p3.x; verts[2].position.y = p3.y;
+            verts[3].position.x = p4.x; verts[3].position.y = p4.y;
+
+            // Set color for all vertices
+            Uint8 r, g, b, a;
+            SDL_GetRenderDrawColor(renderer, &r, &g, &b, &a);
             for (int i = 0; i < 4; ++i) {
-                sdlPoints[i].x = static_cast<int>(points[i].x);
-                sdlPoints[i].y = static_cast<int>(points[i].y);
+                verts[i].color.r = r;
+                verts[i].color.g = g;
+                verts[i].color.b = b;
+                verts[i].color.a = a;
             }
-            sdlPoints[4] = sdlPoints[0]; // Close the polygon
 
-            SDL_RenderDrawLines(renderer, sdlPoints, 5);
+            int indices[6] = {0, 1, 2, 0, 2, 3};
+            SDL_RenderGeometry(renderer, nullptr, verts, 4, indices, 6);
         }
     }
     void point(Vec2i pos) {
