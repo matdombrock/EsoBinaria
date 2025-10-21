@@ -1,17 +1,8 @@
 # EsoBinaria
 
-EsoBinaria is a tile-based visual programming game where players solve puzzles by arranging and configuring various logic gates and components. The goal is to manipulate inputs and outputs to achieve specific conditions or results, using a grid-based interface. Players can interact with different game elements such as buttons, menus, and sprites to navigate through levels and challenges. The game features a main menu, setup screens, and various in-game entities to provide an engaging and educational experience in logical thinking and problem-solving.
+EsoBinaria is a tile-based visual programming game where players solve boolean logic puzzles. 
 
 ## Tiles
-
-### VOID
-This meta tile represents an empty cell that does nothing. This tile is not user-selectable and can not be placed.
-
-### CLEAR
-This meta tile removes an existing tile. It can not exist on the board and can not be placed by the user. 
-
-### BLANK
-This is meta tile which acts as an empty space. Its only purpose is to serve as a way to place additional parenthesis as needed. 
 
 ### AND
 This operator tile resolves true if all it's inputs are true. It can have any amount of inputs but ALL of them must be true for it to resolve true. 
@@ -56,16 +47,80 @@ C = 1
 Note: Even though the NOT tile only takes one input it must be wrapped in parenthesis to work. If you neglect the parenthesis the value will not be inverted.
 
 ### XOR
-This tile resolves true if the inputs are different. 
+The XOR tile is a logic operator that resolves true if an odd number of its inputs are true. In other words, it outputs true only when the inputs are different. If all inputs are false or all are true, it resolves false. This tile can have two or more inputs.
 
-### NAND: Outputs false if both inputs are true.
-### NOR: Outputs false if either input is true.
-### XNOR: Outputs false if the inputs are different.
-### INA: Represents input A.
-### INB: Represents input B.
-### INC: Represents input C.
-### IND: Represents input D.
+Examples:
+```c
+A = 1
+B = 0
+C = 1
+(XOR A B) => 1
+(XOR A B C) => 0
+(XOR B C) => 1
+(XOR A C) => 0
+(XOR A B C A) => 1
+```
 
+### NAND
+This operator tile outputs false only if all its inputs are true; otherwise, it outputs true. It is the inverse of the AND tile and can have two or more inputs.
+
+Examples:
+```c
+A = 1
+B = 1
+C = 0
+(NAND A B) => 0
+(NAND A B C) => 1
+(NAND B C) => 1
+```
+
+### NOR
+This operator tile outputs true only if all its inputs are false; otherwise, it outputs false. It is the inverse of the OR tile and can have two or more inputs.
+
+Examples:
+```c
+A = 0
+B = 0
+C = 1
+(NOR A B) => 1
+(NOR A B C) => 0
+(NOR C) => 0
+```
+
+### XNOR
+This operator tile outputs true if an even number of its inputs are true (including zero); otherwise, it outputs false. It is the inverse of the XOR tile and can have two or more inputs.
+
+Examples:
+```c
+A = 1
+B = 0
+C = 1
+(XNOR A B) => 0
+(XNOR A B C) => 1
+(XNOR B C) => 0
+(XNOR A C) => 1
+```
+
+### CLEAR
+This meta tile removes an existing tile. It can not exist on the board and can not be placed by the user. 
+
+### BLANK
+This is meta tile which acts as an empty space. Its only purpose is to serve as a way to place additional parenthesis as needed. 
+
+### INA
+Represents input A. Its value is set by the puzzle or user.
+
+### INB
+Represents input B. Its value is set by the puzzle or user.
+
+### INC
+Represents input C. Its value is set by the puzzle or user.
+
+### IND
+Represents input D. Its value is set by the puzzle or user.
+
+### VOID
+This meta tile represents an empty cell that does nothing. This tile is not user-selectable and can not be placed.
 
 # Build Instructions
 
