@@ -23,13 +23,14 @@ public:
     posC.y = WINDOW_SIZE.y - posA.y;
     posD.x = WINDOW_SIZE.x - posA.x;
     posD.y = WINDOW_SIZE.y - posA.y;
+    // alpha = 8 + (sin(_g.getTick() / 128.0f) + 1.0f) * 8;
+    alpha = 8;
   }
   void render(Graphics *graph) override {
     graph->setColor(_colors["BG"]);
     graph->rect(Vec2i(0, 0), WINDOW_SIZE);
     //
-    int lineWidth = 128;
-    int alpha = 32 + (sin(_g.getTick() / 128.0f) + 1.0f) * 32;
+    int lineWidth = 512;
     graph->setColor(_colors["RED"], alpha);
     graph->line(Vec2i(0, 0), posA, lineWidth);
     graph->setColor(_colors["BLUE"], alpha);
@@ -42,6 +43,7 @@ public:
   }
 
 private:
+  int alpha = 64;
   Vec2i posA = Vec2i(0, 0);
   Vec2i posB = Vec2i(0, 0);
   Vec2i posC = Vec2i(0, 0);
