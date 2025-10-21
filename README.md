@@ -7,6 +7,8 @@ EsoBinaria is a tile-based visual programming game where players solve boolean l
 ### AND
 This operator tile resolves true if all it's inputs are true. It can have any amount of inputs but ALL of them must be true for it to resolve true. 
 
+![and tile](asset_meta/tile-and.png)
+
 Examples:
 ```c
 A = 1
