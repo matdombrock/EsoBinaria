@@ -1,4 +1,4 @@
-# EsoBinaria
+![title](https://raw.githubusercontent.com/matdombrock/EsoBinaria/refs/heads/master/asset_meta/title.png)
 
 EsoBinaria is a tile-based visual programming game where players solve boolean logic puzzles. 
 
