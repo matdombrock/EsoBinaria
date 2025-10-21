@@ -119,7 +119,7 @@ public:
                  WINDOW_SIZE - Vec2i(WINDOW_SIZE.x / 2, WINDOW_SIZE.x / 2));
     sprTitle.render(graph, Vec2i((WINDOW_SIZE.x - 96 * 4) - 16, 16));
     graph->setColor(_colors["WHITE"]);
-    std::string text = "ESO-OS version 0.8 #" + std::to_string(BUILD_TIME);
+    std::string text = "ESO-OS version "+ (std::string)VERSION_STRING +" #" + std::to_string(BUILD_TIME);
     graph->text(text, pos + Vec2i(0, WINDOW_SIZE.y - 32), &Fonts::small);
   }
 };

@@ -12,6 +12,7 @@ using namespace Imp;
 
 #define WINDOW_SIZE Vec2i(1024, 768)
 #define WINDOW_FPS 60
+#define VERSION_STRING "0.8"
 
 enum ScreenName {
   SCN_BUMPER,

@@ -60,7 +60,7 @@ public:
     sprSDL.render(graph, Vec2i(32, 550));
     sprCPP.render(graph, Vec2i(248, 550));
     graph->setColor(_colors["GRAY"]);
-    std::string text = "ESO-OS version 0.8 #" + std::to_string(BUILD_TIME);
+    std::string text = "ESO-OS version "+ (std::string)VERSION_STRING +" #" + std::to_string(BUILD_TIME);
     graph->text(text, pos + Vec2i(0, WINDOW_SIZE.y - 32), &Fonts::small);
   }
 };

@@ -5,8 +5,12 @@ set -e
 mkdir -p buildwasm
 
 # Build s7
-echo "Compiling s7 for wasm..."
-emcc -c ./lib/s7/s7.c -o ./buildwasm/s7.wasm.o -std=c11
+if [ ! -f ./build/s7.o ]; then
+  echo "Compiling s7 for wasm..."
+  emcc -c ./lib/s7/s7.c -o ./buildwasm/s7.wasm.o -std=c11
+else
+  echo "s7.o already exists, skipping compilation."
+fi
 
 # Build the project
 cd buildwasm
