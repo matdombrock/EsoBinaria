@@ -3,9 +3,10 @@ https://markdowntohtml.com/
 
 
 <p>EsoBinaria is a tile-based visual programming game where players solve boolean logic puzzles. </p>
+<h2 id="tiles">Tiles</h2>
 <h3 id="and">AND</h3>
-<p>This operator tile resolves true if all it&#39;s inputs are true. It can have any amount of inputs but ALL of them must be true for it to resolve true. </p>
 <p><img src="https://raw.githubusercontent.com/matdombrock/EsoBinaria/refs/heads/master/asset_meta/tiles/tile-and.png" alt="and tile"></p>
+<p>The AND tile resolves true if all it&#39;s inputs are true. It can have any amount of inputs but ALL of them must be true for it to resolve true. </p>
 <p>Examples:</p>
 <pre><code class="lang-c">A = <span class="hljs-number">1</span>
 <span class="hljs-keyword">B </span>= <span class="hljs-number">0</span>
@@ -15,8 +16,8 @@ C = <span class="hljs-number">1</span>
 (<span class="hljs-keyword">AND </span>A <span class="hljs-keyword">B </span>C) =&gt; <span class="hljs-number">0</span>
 </code></pre>
 <h3 id="or">OR</h3>
-<p>This operator tile resolves true if any of it&#39;s inputs are true. It can have any amount of inputs and will resolve true if any of its inputs are true. </p>
 <p><img src="https://raw.githubusercontent.com/matdombrock/EsoBinaria/refs/heads/master/asset_meta/tiles/tile-or.png" alt="or tile"></p>
+<p>The OR tile resolves true if any of it&#39;s inputs are true. It can have any amount of inputs.</p>
 <p>Examples:</p>
 <pre><code class="lang-c">A = <span class="hljs-number">1</span>
 B = <span class="hljs-number">0</span>
@@ -27,8 +28,8 @@ C = <span class="hljs-number">1</span>
 (<span class="hljs-name">OR</span> A B C) =&gt; <span class="hljs-number">1</span>
 </code></pre>
 <h3 id="not">NOT</h3>
-<p>This operator tile inverts the value of its input. It will resolve true when its input is false and it will resolve false when its input is true. This tile can only operate on one input. It is an error to supply it with more than one input. </p>
 <p><img src="https://raw.githubusercontent.com/matdombrock/EsoBinaria/refs/heads/master/asset_meta/tiles/tile-not.png" alt="not tile"></p>
+<p>This NOT tile inverts the value of its input. It will resolve true when its input is false and it will resolve false when its input is true. This tile can only operate on one input. It is an error to supply it with more than one input. </p>
 <p>Examples:</p>
 <pre><code class="lang-c">A = <span class="hljs-number">1</span>
 B = <span class="hljs-number">0</span>
@@ -39,8 +40,8 @@ C = <span class="hljs-number">1</span>
 </code></pre>
 <p>Note: Even though the NOT tile only takes one input it must be wrapped in parenthesis to work. If you neglect the parenthesis the value will not be inverted.</p>
 <h3 id="xor">XOR</h3>
-<p>The XOR tile is a logic operator that resolves true if an odd number of its inputs are true. In other words, it outputs true only when the inputs are different. If all inputs are false or all are true, it resolves false. This tile can have two or more inputs.</p>
 <p><img src="https://raw.githubusercontent.com/matdombrock/EsoBinaria/refs/heads/master/asset_meta/tiles/tile-xor.png" alt="xor tile"></p>
+<p>The XOR tile is a logic operator that resolves to true if an odd number of its inputs are true. In other words, it outputs true only when the number of true inputs is odd. If all inputs are false or all are true, it resolves to false. This tile can have two or more inputs.</p>
 <p>Examples:</p>
 <pre><code class="lang-c">A = <span class="hljs-number">1</span>
 B = <span class="hljs-number">0</span>
@@ -52,8 +53,8 @@ C = <span class="hljs-number">1</span>
 <span class="hljs-comment">(XOR A B C A)</span> =&gt; <span class="hljs-number">1</span>
 </code></pre>
 <h3 id="nand">NAND</h3>
-<p>This operator tile outputs false only if all its inputs are true; otherwise, it outputs true. It is the inverse of the AND tile and can have two or more inputs.</p>
 <p><img src="https://raw.githubusercontent.com/matdombrock/EsoBinaria/refs/heads/master/asset_meta/tiles/tile-nand.png" alt="nand tile"></p>
+<p>The NAND tile outputs false only if all its inputs are true; otherwise, it outputs true. It is the inverse of the AND tile. It can have two or more inputs.</p>
 <p>Examples:</p>
 <pre><code class="lang-c">A = <span class="hljs-number">1</span>
 B = <span class="hljs-number">1</span>
@@ -63,8 +64,8 @@ C = <span class="hljs-number">0</span>
 (<span class="hljs-name">NAND</span> B C) =&gt; <span class="hljs-number">1</span>
 </code></pre>
 <h3 id="nor">NOR</h3>
-<p>This operator tile outputs true only if all its inputs are false; otherwise, it outputs false. It is the inverse of the OR tile and can have two or more inputs.</p>
 <p><img src="https://raw.githubusercontent.com/matdombrock/EsoBinaria/refs/heads/master/asset_meta/tiles/tile-nor.png" alt="nor tile"></p>
+<p>The NOR tile outputs true only if all its inputs are false; otherwise, it outputs false. It is the inverse of the OR tile. It can have two or more inputs.</p>
 <p>Examples:</p>
 <pre><code class="lang-c">A = <span class="hljs-number">0</span>
 B = <span class="hljs-number">0</span>
@@ -74,8 +75,8 @@ C = <span class="hljs-number">1</span>
 (<span class="hljs-name">NOR</span> C) =&gt; <span class="hljs-number">0</span>
 </code></pre>
 <h3 id="xnor">XNOR</h3>
-<p>This operator tile outputs true if an even number of its inputs are true (including zero); otherwise, it outputs false. It is the inverse of the XOR tile and can have two or more inputs.</p>
 <p><img src="https://raw.githubusercontent.com/matdombrock/EsoBinaria/refs/heads/master/asset_meta/tiles/tile-xnor.png" alt="xnor tile"></p>
+<p>The XNOR tile outputs true if an even number of its inputs are true (including zero); otherwise, it outputs false. It is the inverse of the XOR tile. It can have two or more inputs.</p>
 <p>Examples:</p>
 <pre><code class="lang-c">A = <span class="hljs-number">1</span>
 B = <span class="hljs-number">0</span>
@@ -86,20 +87,19 @@ C = <span class="hljs-number">1</span>
 (<span class="hljs-name">XNOR</span> A C) =&gt; <span class="hljs-number">1</span>
 </code></pre>
 <h3 id="clear">CLEAR</h3>
-<p>This meta tile removes an existing tile. It can not exist on the board and can not be placed by the user. </p>
 <p><img src="https://raw.githubusercontent.com/matdombrock/EsoBinaria/refs/heads/master/asset_meta/tiles/tile-clear.png" alt="clear tile"></p>
+<p>This meta tile removes an existing tile. It can not exist on the board and can not be placed by the user. </p>
 <h3 id="blank">BLANK</h3>
-<p>This is meta tile which acts as an empty space. Its only purpose is to serve as a way to place additional parenthesis as needed. </p>
 <p><img src="https://raw.githubusercontent.com/matdombrock/EsoBinaria/refs/heads/master/asset_meta/tiles/tile-blank.png" alt="blank tile"></p>
+<p>This is meta tile which acts as an empty space. Its only purpose is to serve as a way to place additional parenthesis as needed. </p>
 <h3 id="in_a">IN_A</h3>
-<p>Represents input A. Its value is set by the puzzle or user.</p>
 <p><img src="https://raw.githubusercontent.com/matdombrock/EsoBinaria/refs/heads/master/asset_meta/tiles/tile-ina.png" alt="in_a tile"></p>
+<p>Represents input A. Its value is set by the puzzle or user.</p>
 <h3 id="in_b">IN_B</h3>
-<p>Represents input B. Its value is set by the puzzle or user.</p>
 <p><img src="https://raw.githubusercontent.com/matdombrock/EsoBinaria/refs/heads/master/asset_meta/tiles/tile-inb.png" alt="in_b tile"></p>
+<p>Represents input B. Its value is set by the puzzle or user.</p>
 <h3 id="in_c">IN_C</h3>
-<p>Represents input C. Its value is set by the puzzle or user.</p>
 <p><img src="https://raw.githubusercontent.com/matdombrock/EsoBinaria/refs/heads/master/asset_meta/tiles/tile-inc.png" alt="in_c tile"></p>
+<p>Represents input C. Its value is set by the puzzle or user.</p>
 <h3 id="void">VOID</h3>
 <p>This meta tile represents an empty cell that does nothing. This tile is not user-selectable and can not be placed.</p>
-
