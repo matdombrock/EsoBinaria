@@ -16,3 +16,16 @@ fi
 cd build
 cmake ..
 make
+
+# Copy the SDL libraries
+sdl_dir="out/lib"
+mkdir -p $sdl_dir
+
+cp /usr/lib/x86_64-linux-gnu/libSDL2-2.0.so.0 $sdl_dir/
+cp /usr/lib/x86_64-linux-gnu/libSDL2_image-2.0.so.0 $sdl_dir/
+cp /usr/lib/x86_64-linux-gnu/libSDL2_mixer-2.0.so.0 $sdl_dir/
+cp /usr/lib/x86_64-linux-gnu/libSDL2_ttf-2.0.so.0 $sdl_dir/
+cp /usr/lib/x86_64-linux-gnu/libFLAC.so.12 $sdl_dir/
+
+# Copy the launch script
+cp ../build_res/launch.EsoBinaria.sh ./out/launch.EsoBinaria.sh

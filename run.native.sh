@@ -2,4 +2,5 @@
 
 set -e
 
-./build/out/Eso*
+cd ./build/out/
+./launch*

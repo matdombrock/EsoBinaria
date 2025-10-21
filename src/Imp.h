@@ -24,9 +24,17 @@
 #endif
 #define PI 3.14159265358979323846f
 
+// State global to the whole Imp namespace
+struct ImpState {
+  // Set in Main::init() but used for mouse scaling
+  int windowScale;
+};
+
 namespace Imp {
 
 const std::string basePath = SDL_GetBasePath();
+
+inline ImpState state = {1};
 
 //
 // DEBUG
@@ -376,7 +384,8 @@ public:
         // DBG((int)keyState[ SDL_SCANCODE_W ]);
     };
     Vec2i mousePos() {
-        return Vec2i(mouseX, mouseY);
+        int scale = Imp::state.windowScale;
+        return Vec2i(mouseX/scale, mouseY/scale);
     }
     bool mouseKey(Uint32 key) {
         return mouseState == key;
@@ -1285,6 +1294,7 @@ public:
     Main(const char *windowTitle = "Imp", 
         Vec2i windowSize = {800, 600},
         int fps = 60,
+        int scale = 1,
         std::string spriteSheet = ""
     ) 
         : fps(fps), windowTitle(windowTitle), windowSize(windowSize), graph(new Graphics(windowSize))
@@ -1292,7 +1302,7 @@ public:
         DBG("Imp constructed");
         // Set random seed
         srand(static_cast<unsigned int>(time(0)));
-        init(spriteSheet);
+        init(spriteSheet, scale);
     }
     ~Main() {
         SDL_Quit();
@@ -1355,6 +1365,9 @@ public:
     int getRealFPS() {
         return 1000 / frameTimeAvg;
     }
+    int getScale() {
+        return scale;
+    }
 protected:
     EntityManager entityMan;
     const char* windowTitle;
@@ -1363,19 +1376,25 @@ protected:
     Color clearColor;
     SDL_Event event;
     bool pauseRenderer;
-    void init(std::string spriteSheetFile = "") {
+    int scale = 1;
+    void init(std::string spriteSheetFile = "", int scale = 1) {
         DBG("Imp starting");
         if (basePath.empty()) {
             DBG("Base path not set");
             exit(1);
         }
-        window = SDL_CreateWindow(windowTitle, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, windowSize.x, windowSize.y, SDL_WINDOW_SHOWN);
+        if (window != nullptr) {
+            SDL_DestroyWindow(window);
+        }
+        Imp::state.windowScale = scale;
+        window = SDL_CreateWindow(windowTitle, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, windowSize.x * scale, windowSize.y * scale, SDL_WINDOW_SHOWN);
         if (window == nullptr) {
             std::cerr << "Window could not be created! SDL_Error: " << SDL_GetError() << std::endl;
             SDL_Quit();
             exit(1);
         }
         SDL_renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+        SDL_RenderSetLogicalSize(SDL_renderer, windowSize.x, windowSize.y);
         if (SDL_renderer == nullptr) {
             std::cerr << "Renderer could not be created! SDL_Error: " << SDL_GetError() << std::endl;
             SDL_DestroyWindow(window);

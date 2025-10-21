@@ -38,7 +38,7 @@ public:
   ScreenSettings screenSettings;
   Sound mainMusic = Sound("main.ogg");
   int overlayColor[4] = {0, 0, 0, 0};
-  App() : Imp::Main("EsoBinaria", WINDOW_SIZE, WINDOW_FPS, "tiles.png") {
+  App() : Imp::Main("EsoBinaria", WINDOW_SIZE, WINDOW_FPS, _g.store.getInt("settings_window_scale"), "tiles.png") {
 
     _g.init();
 
@@ -92,6 +92,8 @@ public:
       _g.store.setBool("settings_enable_music", true);
     if (!_g.store.hasKey("settings_enable_auto_save"))
       _g.store.setBool("settings_enable_auto_save", true);
+    if (!_g.store.hasKey("settings_window_scale"))
+      _g.store.setInt("settings_window_scale", 1);
   }
   void recolor() {
     int num = _g.store.getInt("settings_color_overlay_num");
@@ -165,6 +167,14 @@ public:
       }
       if (msg == "recolor") {
         recolor();
+      }
+      if (msg == "resize") {
+        int scale = _g.store.getInt("settings_window_scale");
+        scale = scale + 1;
+        if (scale > 2)
+          scale = 1;
+        _g.store.setInt("settings_window_scale", scale);
+        init("tiles.png", scale);
       }
       if (msg == "init_default_settings") {
         initDefaultSettings();

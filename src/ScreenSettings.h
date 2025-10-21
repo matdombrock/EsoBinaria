@@ -62,6 +62,7 @@ public:
     BtnSettings btnAutoSave;
     BtnSettings btnScreenFX;
     BtnSettings btnRecolor;
+    BtnSettings btnResize;
     BtnText btnBack;
     Modal modal;
     Sprite sprBg;
@@ -131,8 +132,15 @@ public:
         };
         em.addEntity(&btnRecolor);
 
+        btnResize.pos = Vec2i(_g.vu(2), _g.vu(2.5f) + _g.vu(6));
+        btnResize.text = "RESIZE";
+        btnResize.onClick = [](){
+            _g.sendMessage("resize");
+        };
+        em.addEntity(&btnResize);
 
-        btnClearData.pos = Vec2i(_g.vu(2), _g.vu(2.5f) + _g.vu(7));
+
+        btnClearData.pos = Vec2i(_g.vu(2), _g.vu(2.5f) + _g.vu(8));
         btnClearData.text = "CLEAR DATA";
         btnClearData.onClick = [this](){
             modal.onOk = [&]() {

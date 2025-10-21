@@ -1,5 +1,5 @@
 build
 buildwasm
-out
-out-wasm
+*.zip
 .DS_Store
+
