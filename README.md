@@ -6,6 +6,15 @@ EsoBinaria is a tile-based visual programming game where players solve boolean l
 
 ![screenshot](https://github.com/matdombrock/EsoBinaria/blob/master/asset_meta/screenshot/puzzle.png)
 
+## Technical Features
+- Custom Game Engine
+    - C++ 17
+    - SDL2
+- Runs natively or in a browser
+    - Build for WASM
+- Embedded Scheme interpreter
+- Containerized build system
+
 ## Tiles
 
 ### AND
