@@ -7,7 +7,7 @@ EsoBinaria is a tile-based visual programming game where players solve boolean l
 ### AND
 This operator tile resolves true if all it's inputs are true. It can have any amount of inputs but ALL of them must be true for it to resolve true. 
 
-![and tile](asset_meta/tile-and.png)
+![and tile](https://github.com/matdombrock/EsoBinaria/blob/master/asset_meta/tile-and.png)
 
 Examples:
 ```c
@@ -22,7 +22,7 @@ C = 1
 ### OR
 This operator tile resolves true if any of it's inputs are true. It can have any amount of inputs and will resolve true if any of its inputs are true. 
 
-![or tile](asset_meta/tile-or.png)
+![or tile](https://github.com/matdombrock/EsoBinaria/blob/master/asset_meta/tile-or.png)
 
 Examples:
 ```c
@@ -38,7 +38,7 @@ C = 1
 ### NOT
 This operator tile inverts the value of its input. It will resolve true when its input is false and it will resolve false when its input is true. This tile can only operate on one input. It is an error to supply it with more than one input. 
 
-![not tile](asset_meta/tile-not.png)
+![not tile](https://github.com/matdombrock/EsoBinaria/blob/master/asset_meta/tile-not.png)
 
 Examples:
 ```c
@@ -55,7 +55,7 @@ Note: Even though the NOT tile only takes one input it must be wrapped in parent
 ### XOR
 The XOR tile is a logic operator that resolves true if an odd number of its inputs are true. In other words, it outputs true only when the inputs are different. If all inputs are false or all are true, it resolves false. This tile can have two or more inputs.
 
-![xor tile](asset_meta/tile-xor.png)
+![xor tile](https://github.com/matdombrock/EsoBinaria/blob/master/asset_meta/tile-xor.png)
 
 Examples:
 ```c
@@ -72,7 +72,7 @@ C = 1
 ### NAND
 This operator tile outputs false only if all its inputs are true; otherwise, it outputs true. It is the inverse of the AND tile and can have two or more inputs.
 
-![nand tile](asset_meta/tile-nand.png)
+![nand tile](https://github.com/matdombrock/EsoBinaria/blob/master/asset_meta/tile-nand.png)
 
 Examples:
 ```c
@@ -87,7 +87,7 @@ C = 0
 ### NOR
 This operator tile outputs true only if all its inputs are false; otherwise, it outputs false. It is the inverse of the OR tile and can have two or more inputs.
 
-![nor tile](asset_meta/tile-nor.png)
+![nor tile](https://github.com/matdombrock/EsoBinaria/blob/master/asset_meta/tile-nor.png)
 
 Examples:
 ```c
@@ -102,7 +102,7 @@ C = 1
 ### XNOR
 This operator tile outputs true if an even number of its inputs are true (including zero); otherwise, it outputs false. It is the inverse of the XOR tile and can have two or more inputs.
 
-![xnor tile](asset_meta/tile-xnor.png)
+![xnor tile](https://github.com/matdombrock/EsoBinaria/blob/master/asset_meta/tile-xnor.png)
 
 Examples:
 ```c
@@ -118,27 +118,27 @@ C = 1
 ### CLEAR
 This meta tile removes an existing tile. It can not exist on the board and can not be placed by the user. 
 
-![clear tile](asset_meta/tile-clear.png)
+![clear tile](https://github.com/matdombrock/EsoBinaria/blob/master/asset_meta/tile-clear.png)
 
 ### BLANK
 This is meta tile which acts as an empty space. Its only purpose is to serve as a way to place additional parenthesis as needed. 
 
-![blank tile](asset_meta/tile-blank.png)
+![blank tile](https://github.com/matdombrock/EsoBinaria/blob/master/asset_meta/tile-blank.png)
 
 ### IN_A
 Represents input A. Its value is set by the puzzle or user.
 
-![in_a tile](asset_meta/tile-ina.png)
+![in_a tile](https://github.com/matdombrock/EsoBinaria/blob/master/asset_meta/tile-ina.png)
 
 ### IN_B
 Represents input B. Its value is set by the puzzle or user.
 
-![in_b tile](asset_meta/tile-inb.png)
+![in_b tile](https://github.com/matdombrock/EsoBinaria/blob/master/asset_meta/tile-inb.png)
 
 ### IN_C
 Represents input C. Its value is set by the puzzle or user.
 
-![in_c tile](asset_meta/tile-inc.png)
+![in_c tile](https://github.com/matdombrock/EsoBinaria/blob/master/asset_meta/tile-inc.png)
 
 ### VOID
 This meta tile represents an empty cell that does nothing. This tile is not user-selectable and can not be placed.
