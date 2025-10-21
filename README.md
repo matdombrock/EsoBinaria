@@ -2,6 +2,8 @@
 
 EsoBinaria is a tile-based visual programming game where players solve boolean logic puzzles. 
 
+## [Check it out on Itch.io](https://replicat.itch.io/esobinaria)
+
 ![screenshot](https://raw.githubusercontent.com/matdombrock/EsoBinaria/refs/heads/master/asset_meta/screenshot/firstday.png)
 
 ![screenshot](https://raw.githubusercontent.com/matdombrock/EsoBinaria/refs/heads/master/asset_meta/screenshot/puzzle.png)
