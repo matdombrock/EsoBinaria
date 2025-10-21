@@ -17,6 +17,7 @@ cd build
 cmake ..
 make
 
+# Packaging step
 # Copy the SDL libraries
 sdl_dir="out/lib"
 mkdir -p $sdl_dir
