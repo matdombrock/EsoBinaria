@@ -1,32 +1,61 @@
+/*
+ * Imp - A simple game framework built on SDL2
+ * Copyright (C) 2024-2024  Mathieu Dombrock
+*/
 #pragma once
 
-#include <SDL.h>
 #include <iostream>
 #include <string>
-#include <SDL_ttf.h>
-#include <SDL_image.h>
-#include <SDL_mixer.h>
+#include <algorithm>
+#include <functional>
+#include <vector> 
+#include <cmath>
+#include <map>
+#include <fstream>
+#ifdef __EMSCRIPTEN__
+    #include <emscripten.h>
+#endif
+#if defined(__APPLE__)
+    #include <SDL.h>
+    #include <SDL_ttf.h>
+    #include <SDL_image.h>
+    #include <SDL_mixer.h>
+#else
+    #include <SDL2/SDL.h>
+    #include <SDL2/SDL_ttf.h>
+    #include <SDL2/SDL_image.h>
+    #include <SDL2/SDL_mixer.h>
+#endif
+#define PI 3.14159f
 
-#define PI 3.14159265358979323846f
+// State global to the whole Imp namespace
+struct ImpState {
+  // Set in Main::init() but used for mouse scaling
+  int windowScale;
+};
 
 namespace Imp {
+
+const std::string basePath = SDL_GetBasePath();
+
+inline ImpState state = {1};
 
 //
 // DEBUG
 //
-void DBG(const std::string& value) {
+inline void DBG(const std::string& value) {
     std::cout << value << std::endl;
 }
-void DBG(const char* value) {
+inline void DBG(const char* value) {
     std::cout << value << std::endl;
 }
-void DBG(int value) {
+inline void DBG(int value) {
     std::cout << value << std::endl;
 }
-void DBG(float value) {
+inline void DBG(float value) {
     std::cout << value << std::endl;
 }
-void DBG(bool value) {
+inline void DBG(bool value) {
     std::cout << (value ? "true" : "false") << std::endl;
 }
 
@@ -148,7 +177,7 @@ public:
         return count;
     }
     // TODO: This code is sketchy
-    static std::vector<std::string> split(const std::string& str, const std::string& delimiter, bool cleanDelimiter = true) {
+    static std::vector<std::string> splitSketch(const std::string& str, const std::string& delimiter, bool cleanDelimiter = true) {
         std::vector<std::string> tokens;
         size_t start = 0;
         size_t end = str.find(delimiter);
@@ -174,7 +203,159 @@ public:
         }
         return tokens;
     }
+    static std::vector<std::string> split(const std::string& str, std::string delimiter) {
+        std::vector<std::string> tokens;
+        size_t start = 0;
+        size_t end = str.find(delimiter);
+        while (end != std::string::npos) {
+            tokens.push_back(str.substr(start, end - start));
+            start = end + 1;
+            end = str.find(delimiter, start);
+        }
+        tokens.push_back(str.substr(start));
+        return tokens;
+    }
 };
+
+//
+// Storage
+//
+#ifndef __EMSCRIPTEN__
+class Store {
+public:
+    Store() {
+        read();
+    }
+    ~Store() {}
+    void setString(std::string key, std::string value) {
+        data[key] = value;
+        write();
+    }
+    void setInt(std::string key, int value) {
+        data[key] = std::to_string(value);
+        write();
+    }
+    void setFloat(std::string key, float value) {
+        data[key] = std::to_string(value);
+        write();
+    }
+    void setBool(std::string key, bool value) {
+        data[key] = value ? "true" : "false";
+        write();
+    }
+    std::string getString(std::string key) {
+        if (data.find(key) == data.end()) return "";
+        return data[key];
+    }
+    int getInt(std::string key) {
+        if (!hasKey(key)) return 0;
+        if (data.find(key) == data.end()) return 0;
+        return std::stoi(data[key]);
+    }
+    float getFloat(std::string key) {
+        if (!hasKey(key)) return 0.0f;
+        return std::stof(data[key]);
+    }
+    bool getBool(std::string key) {
+        if (!hasKey(key)) return false;
+        return data[key] == "true";
+    }
+    bool hasKey(std::string key) {
+        return data.find(key) != data.end();
+    }
+    void clear() {
+        data.clear();
+        write();
+    }
+private:
+    std::map<std::string, std::string> data;
+    void write() {
+        std::ofstream file(basePath + "store.txt");
+        for (auto const& [key, val] : data) {
+            file << key << "=" << val << std::endl;
+        }
+        file.close();
+    }
+    void read() {
+        std::ifstream file(basePath + "store.txt");
+        if (!file.is_open()) {
+            std::cerr << "Store file not found:" << std::endl;
+            std::cerr << basePath + "store.txt" << std::endl;
+            return;
+        }
+        std::string line;
+        while (std::getline(file, line)) {
+            std::vector<std::string> parts = StringTools::split(line, "=");
+            if (parts.size() == 2) {
+                data[parts[0]] = parts[1];
+            }
+        }
+        file.close();
+    }
+};
+#else
+class Store {
+public:
+    Store() {
+        read();
+    }
+    ~Store() {}
+    void setString(std::string key, std::string value) {
+        EM_ASM({
+            localStorage.setItem(UTF8ToString($0), UTF8ToString($1));
+        }, key.c_str(), value.c_str());
+    }
+    void setInt(std::string key, int value) {
+        setString(key, std::to_string(value));
+    }
+    void setFloat(std::string key, float value) {
+        setString(key, std::to_string(value));
+    }
+    void setBool(std::string key, bool value) {
+        setString(key, value ? "true" : "false");
+    }
+    std::string getString(std::string key) {
+        if (!hasKey(key)) return "";
+        char* value = (char*)EM_ASM_INT({
+            var value = localStorage.getItem(UTF8ToString($0));
+            if (value === null) return 0;
+            var lengthBytes = lengthBytesUTF8(value) + 1;
+            var stringOnWasmHeap = _malloc(lengthBytes);
+            stringToUTF8(value, stringOnWasmHeap, lengthBytes);
+            return stringOnWasmHeap;
+        }, key.c_str());
+        std::string result = value ? std::string(value) : "";
+        free(value);
+        return result;
+    }
+    int getInt(std::string key) {
+        if (!hasKey(key)) return 0;
+        return std::stoi(getString(key));
+    }
+    float getFloat(std::string key) {
+        if (!hasKey(key)) return 0.0f;
+        return std::stof(getString(key));
+    }
+    bool getBool(std::string key) {
+        if (!hasKey(key)) return false;
+        return getString(key) == "true";
+    }
+    bool hasKey(std::string key) {
+        return static_cast<bool>(EM_ASM_INT({
+            return localStorage.getItem(UTF8ToString($0)) !== null;
+        }, key.c_str()));
+    }
+    void clear() {
+        EM_ASM(
+            localStorage.clear();
+        );
+    }
+private:
+    void read() {
+        // No need to read from file, data is already in localStorage
+    }
+};
+#endif
 
 //
 // Input
@@ -187,16 +368,28 @@ public:
     ~Input() {}
     void poll() {
         for (int i = 0; i < 512; i++) {
+            if (keyStatePrev[i] != keyState[i]) DBG("Key changed " + std::to_string(i) + " " + std::to_string(keyState[i]));
             keyStatePrev[i] = keyState[i];
         }
-        SDL_PumpEvents();
-
+        // SDL_PumpEvents();
+        SDL_Event event;
+        while (SDL_PollEvent(&event)) {
+            SDL_Scancode scancode = SDL_GetScancodeFromKey(event.key.keysym.sym);
+            if (event.type == SDL_KEYDOWN)    keyState[scancode] = 1;
+            else if (event.type == SDL_KEYUP) keyState[scancode] = 0;
+            if (event.type == SDL_QUIT) {
+                DBG("SDL Quit event");
+                exit(0);
+                return;
+            }
+        }
         mouseStatePrev = mouseState;
         mouseState = SDL_GetMouseState(&mouseX, &mouseY);
         // DBG((int)keyState[ SDL_SCANCODE_W ]);
     };
     Vec2i mousePos() {
-        return Vec2i(mouseX, mouseY);
+        int scale = Imp::state.windowScale;
+        return Vec2i(mouseX/scale, mouseY/scale);
     }
     bool mouseKey(Uint32 key) {
         return mouseState == key;
@@ -208,18 +401,21 @@ public:
         return keyState[SDL_GetScancodeFromKey(keyCode)];
     }
     bool keyOnce(SDL_Keycode keyCode) {
-        return keyState[SDL_GetScancodeFromKey(keyCode)] && !keyStatePrev[SDL_GetScancodeFromKey(keyCode)];
+        SDL_Scancode scancode = SDL_GetScancodeFromKey(keyCode);
+        return keyState[scancode] && !keyStatePrev[scancode];
     }
     bool anyKey() {
         for (int i = 0; i < 512; i++) {
             if (keyState[i]) return true;
         }
+        if (mouseState) return true;
         return false;
     }
-    bool anyKeyDown() {
+    bool anyKeyOnce() {
         for (int i = 0; i < 512; i++) {
             if (keyState[i] && !keyStatePrev[i]) return true;
         }
+        if (mouseState && (mouseStatePrev != mouseState)) return true;
         return false;
     }
     Vec2i wasd() {
@@ -231,29 +427,184 @@ public:
         return out;
     }
 private:
-    const Uint8* keyState = SDL_GetKeyboardState(NULL);
-    Uint8 keyStatePrev[512] = {};
+    Uint8 keyState[512] = {0};
+    Uint8 keyStatePrev[512] = {0};
     int mouseX = 0;
     int mouseY = 0;
     Uint32 mouseState = SDL_GetMouseState(&mouseX, &mouseY);
     Uint32 mouseStatePrev = 0;
 };
 // Declare global input
-Input _input;
+inline Input _input;
 
 //
 // Graphics
 //
+
+class Font {
+public:
+    TTF_Font* data;
+    int size;
+    Font(const std::string& fontName = "", int fontSize = 24) {
+        if (fontName.empty()) return;
+        std::string fontPath = basePath + "assets/" + fontName;
+        data = TTF_OpenFont(fontPath.c_str(), fontSize);
+        this->size = fontSize;
+        if (data == nullptr) {
+            std::cerr << "TTF_OpenFont Error: " << TTF_GetError() << std::endl;
+            exit(1);
+            return;
+        }
+    }
+};
+
+// WARN: THIS IS A BAD IDEA
+class ScreenFXProps {   
+public:
+    int tick = 0;
+    int x = 0;
+    int y = 0;
+    float p1 = 0.0f;
+    float p2 = 0.0f;
+    float p3 = 0.0f;
+    Uint32* pixels;
+};
+
+// WARN: THIS IS A BAD IDEA
+class ScreenFX {
+public:
+    ScreenFX(){}
+    ~ScreenFX() {}
+    void render(SDL_Renderer* renderer, int tick, float mix, float p1, float p2, float p3) {
+        SDL_GetRendererOutputSize(renderer, &width, &height);
+        surface = SDL_CreateRGBSurfaceWithFormat(0, width, height, 32, SDL_PIXELFORMAT_RGBA32);
+        SDL_RenderReadPixels(renderer, nullptr, surface->format->format, surface->pixels, surface->pitch);
+        Uint32* pixels = (Uint32*)surface->pixels;
+        for (int y = 0; y < height; ++y) {
+            for (int x = 0; x < width; ++x) {
+                Uint32 pixel= pixels[y * width + x];
+                Uint8 r, g, b, a;
+                SDL_GetRGBA(pixel, surface->format, &r, &g, &b, &a);
+                ScreenFXProps props;
+                props.tick = tick;
+                props.x = x;
+                props.y = y;
+                props.p1 = p1;
+                props.p2 = p2;
+                props.p3 = p3;
+                props.pixels = pixels;
+                Uint8 ri = r;
+                Uint8 gi = g;
+                Uint8 bi = b;
+                renderPixel(&r, &g, &b, &a, props);
+                r = (r * mix) + (ri * (1.0f - mix));
+                g = (g * mix) + (gi * (1.0f - mix));
+                b = (b * mix) + (bi * (1.0f - mix));
+                pixels[y * width + x] = SDL_MapRGBA(surface->format, r, g, b, a);
+            }
+        }
+        SDL_Texture* newTexture = SDL_CreateTextureFromSurface(renderer, surface);
+        SDL_FreeSurface(surface);
+        // Render the new texture
+        SDL_SetRenderTarget(renderer, nullptr);
+        SDL_RenderCopy(renderer, newTexture, nullptr, nullptr);
+        SDL_DestroyTexture(newTexture);
+    }
+protected:
+    virtual void renderPixel(Uint8 *r, Uint8 *g, Uint8 *b, Uint8 *a, ScreenFXProps props) {}
+    int width, height;
+    SDL_Renderer* renderer;
+    SDL_Surface* surface;
+};
+
+class FXInvert : public ScreenFX {
+protected:
+    void renderPixel(Uint8 *r, Uint8 *g, Uint8 *b, Uint8 *a, ScreenFXProps props) override {
+        *r = 255 - *r;
+        *g = 255 - *g;
+        *b = 255 - *b;
+    }
+};
+
+class FXScanlines : public ScreenFX {
+protected:
+    void renderPixel(Uint8 *r, Uint8 *g, Uint8 *b, Uint8 *a, ScreenFXProps props) override {
+        float f = 0.9f;
+        int mod = props.y + (props.tick / 16);
+        if (mod % 32 >= 24) {
+            *r = *r * f;
+            *g = *g * f;
+            *b = *b * f;
+        }
+    }
+};
+
+class FXScanlines2 : public ScreenFX {
+protected:
+    void renderPixel(Uint8 *r, Uint8 *g, Uint8 *b, Uint8 *a, ScreenFXProps props) override {
+        float f = 0.9f;
+        int scanSpeed = 4;
+        float scanTime = 1.0f;
+        
+        int mod = props.y + (props.tick * scanSpeed);
+        int scanSize = height * scanTime;
+        int subScanSize = scanSize / 128;
+        if (mod % scanSize >= scanSize - subScanSize) {
+            Uint32 pixel = props.pixels[props.y * width + props.x + (mod % subScanSize)];
+            Uint8 r1, g1, b1, a1;
+            SDL_GetRGBA(pixel, surface->format, &r1, &g1, &b1, &a1);
+            *r = b1 * f;
+            *g = r1 * f;
+            *b = g1 * f;
+        }
+        f=0.8f;
+        mod = props.y + (props.tick * (scanSpeed/4));
+        if (mod % (subScanSize * 8) >= (subScanSize * 7.5f)) {
+            Uint8 rt = *r;
+            Uint8 gt = *g;
+            Uint8 bt = *b;
+            *r = bt;
+            *g = rt;
+            *b = gt;
+        }
+        if (mod % (subScanSize * 2) >= subScanSize) {
+            Uint8 rt = *r;
+            Uint8 gt = *g;
+            Uint8 bt = *b;
+            *r = rt * f;
+            *g = gt * f;
+            *b = bt * f;
+        }
+        if (std::rand() % 5000 < 1) {
+            *r = std::max(200 - *r, 0);
+            *g = std::max(256 - *g, 0);
+            *b = std::max(200 - *b, 0);
+        }
+        *r = std::min((int)(*r * 1.2f), 255);
+        *b = std::min((int)(*b * 1.1f), 255);
+    }
+};
+
+enum FXName {
+    FX_INVERT,
+    FX_SCANLINES,
+    FX_SCANLINES2,
+};
+
 class Graphics {
 public:
     int fps = 60;
+    FXInvert fxInvert;
+    FXScanlines fxScanlines;
+    FXScanlines2 fxScanlines2;
     Graphics(Vec2i windowSize) : renderer(nullptr), windowSize(windowSize) {}
     ~Graphics() {}
     void setRenderer(SDL_Renderer* renderer) {
         this->renderer = renderer;
     }
     bool loadSpritesheet(const std::string& path) {
-        SDL_Surface* surface = IMG_Load(path.c_str());
+        std::string spritePath = basePath + "assets/" + path;
+        SDL_Surface* surface = IMG_Load(spritePath.c_str());
         if (!surface) {
             std::cerr << "IMG_Load: " << IMG_GetError() << std::endl;
             DBG("Cant load image");
@@ -287,19 +638,7 @@ public:
         SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
         SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, alpha);
     }
-    void setFont(const std::string& fontName, int fontSize = 24) {
-        DBG("Setting font");
-        std::string basePath = SDL_GetBasePath();
-        std::string fontPath = basePath + "assets/" + fontName;
-        font = TTF_OpenFont(fontPath.c_str(), fontSize);
-        this->fontSize = fontSize;
-        if (font == nullptr) {
-            std::cerr << "TTF_OpenFont Error: " << TTF_GetError() << std::endl;
-            exit(1);
-            return;
-        }
-    }
-    void text(const std::string& text, Vec2i pos) {
+    void text(const std::string& text, Vec2i pos, Font* font) {
         if (text.length() == 0) {
             // DBG("Attempt to render Empty text");
             return;
@@ -310,7 +649,7 @@ public:
         }
         SDL_Color color;
         SDL_GetRenderDrawColor(renderer, &color.r, &color.g, &color.b, &color.a);
-        SDL_Surface* surface = TTF_RenderText_Solid(font, text.c_str(), color);
+        SDL_Surface* surface = TTF_RenderText_Solid(font->data, text.c_str(), color);
         if (surface == nullptr) {
             std::cerr << "TTF_RenderText_Solid: " << TTF_GetError() << std::endl;
             return;
@@ -330,18 +669,18 @@ public:
         SDL_DestroyTexture(texture);
         // TTF_CloseFont(font);
     }
-    void textFmt(const std::string& text, Vec2i pos, int maxWidth = 1024) {
+    void textFmt(const std::string& text, Vec2i pos, Font* font, int maxWidth = 1024) {
         // Split by new lines
         std::vector<std::string> lines = StringTools::split(text, "\n");
         // Split by overflows
         std::vector<std::string> linesOverflow = {};
-        int colorWidth = textWidth("<$RRGGBB$>");
+        int colorWidth = textWidth("<$RRGGBB$>", font);
         for (std::string line : lines) {
             std::string lineOverflow = "";
             for (std::string word : StringTools::split(line, " ")) {
                 int colorCount = StringTools::containsCount(lineOverflow + word, "<$");
                 int  colorWidthTotal = colorCount * colorWidth;
-                int lineW = textWidth(lineOverflow + word);
+                int lineW = textWidth(lineOverflow + word, font);
                 if (lineW - colorWidthTotal > maxWidth) {
                     linesOverflow.push_back(lineOverflow);
                     lineOverflow = word + " ";
@@ -356,7 +695,7 @@ public:
         // Split each line into color chunks
         std::vector<std::vector<std::string>> chunks = {};
         for (std::string line : linesOverflow) {
-            std::vector<std::string> subChunks = StringTools::split(line, "<$", false);
+            std::vector<std::string> subChunks = StringTools::splitSketch(line, "<$", false);
             chunks.push_back(subChunks);
         }
 
@@ -379,11 +718,11 @@ public:
                     }
                     else continue;
                 }
-                this->text(subChunk, pos + Vec2i(xOff, yOff));
-                xOff += textWidth(subChunk);
+                this->text(subChunk, pos + Vec2i(xOff, yOff), font);
+                xOff += textWidth(subChunk, font);
             }
             xOff = 0;
-            yOff += fontSize;
+            yOff += font->size;
         }
     }
     void rect(Vec2i pos, Vec2i size, bool fill = true) {
@@ -446,30 +785,35 @@ public:
         if (thickness <= 1) {
             SDL_RenderDrawLine(renderer, start.x, start.y, end.x, end.y);
         } else {
-            // Calculate the direction vector
+            // Draw a filled rectangle perpendicular to the line to simulate thickness
             Vec2f direction = Vec2f(end.x - start.x, end.y - start.y).normalize();
-            // Calculate the perpendicular vector
-            Vec2f perpendicular(-direction.y, direction.x);
-            // Scale the perpendicular vector by half the thickness
-            perpendicular *= (thickness / 2.0f);
+            Vec2f perp(-direction.y, direction.x);
 
-            // Define the four corners of the thick line
-            Vec2f points[4] = {
-                Vec2f(start.x, start.y) + perpendicular,
-                Vec2f(start.x, start.y) - perpendicular,
-                Vec2f(end.x, end.y) + perpendicular,
-                Vec2f(end.x, end.y) - perpendicular
-            };
+            float half_thick = thickness / 2.0f;
+            Vec2f p1 = Vec2f(start.x, start.y) + perp * half_thick;
+            Vec2f p2 = Vec2f(start.x, start.y) - perp * half_thick;
+            Vec2f p3 = Vec2f(end.x, end.y) - perp * half_thick;
+            Vec2f p4 = Vec2f(end.x, end.y) + perp * half_thick;
 
-            // Draw the thick line as a series of connected lines
-            SDL_Point sdlPoints[5];
+            // Draw the thick line as a filled polygon (two triangles)
+            SDL_Vertex verts[4];
+            verts[0].position.x = p1.x; verts[0].position.y = p1.y;
+            verts[1].position.x = p2.x; verts[1].position.y = p2.y;
+            verts[2].position.x = p3.x; verts[2].position.y = p3.y;
+            verts[3].position.x = p4.x; verts[3].position.y = p4.y;
+
+            // Set color for all vertices
+            Uint8 r, g, b, a;
+            SDL_GetRenderDrawColor(renderer, &r, &g, &b, &a);
             for (int i = 0; i < 4; ++i) {
-                sdlPoints[i].x = static_cast<int>(points[i].x);
-                sdlPoints[i].y = static_cast<int>(points[i].y);
+                verts[i].color.r = r;
+                verts[i].color.g = g;
+                verts[i].color.b = b;
+                verts[i].color.a = a;
             }
-            sdlPoints[4] = sdlPoints[0]; // Close the polygon
 
-            SDL_RenderDrawLines(renderer, sdlPoints, 5);
+            int indices[6] = {0, 1, 2, 0, 2, 3};
+            SDL_RenderGeometry(renderer, nullptr, verts, 4, indices, 6);
         }
     }
     void point(Vec2i pos) {
@@ -542,22 +886,22 @@ public:
     Vec2i getWindowSize() {
         return windowSize;
     }
-    int textWidth(const std::string& text) {
+    int textWidth(const std::string& text, Font* font) {
         if (font == nullptr) {
             std::cerr << "TTF_OpenFont: " << TTF_GetError() << std::endl;
             exit(1);
         }
         int width;
-        TTF_SizeText(font, text.c_str(), &width, nullptr);
+        TTF_SizeText(font->data, text.c_str(), &width, nullptr);
         return width;
     }
-    int textHeight(const std::string& text) {
+    int textHeight(const std::string& text, Font* font) {
         if (font == nullptr) {
             std::cerr << "TTF_OpenFont: " << TTF_GetError() << std::endl;
             exit(1);
         }
         int height;
-        TTF_SizeText(font, text.c_str(), nullptr, &height);
+        TTF_SizeText(font->data, text.c_str(), nullptr, &height);
         return height;
     }
     void tickUp() {
@@ -566,10 +910,22 @@ public:
     int getTick() {
         return tick;
     }
+    // WARN: This is a bad idea
+    void fxApply(FXName name, int tick, float mix = 1.0f, float p1 = 0.0f, float p2 = 0.0f, float p3 = 0.0f) {
+        switch(name) {
+            case FX_INVERT:
+                fxInvert.render(renderer, tick, mix, p1, p2, p3);
+                break;
+            case FX_SCANLINES:
+                fxScanlines.render(renderer, tick, mix, p1, p2, p3);
+                break;
+            case FX_SCANLINES2:
+                fxScanlines2.render(renderer, tick, mix, p1, p2, p3);
+                break;
+        }
+    }
 private:
     int tick = 0;
-    TTF_Font* font;
-    int fontSize = 24;
     Vec2i windowSize;
     SDL_Renderer* renderer;
     SDL_Texture* spritesheet;
@@ -579,6 +935,7 @@ class Sound {
 public:
     Mix_Chunk* sound;
     int channel = -1;
+    // Max volume is 128
     int volume = MIX_MAX_VOLUME / 2;
     int pan[2] = { 255, 255 };
     std::string tag;
@@ -588,40 +945,45 @@ public:
     ~Sound() {
         if (sound != nullptr) {
             // WARN: Causes errors if sound is redefined
-            Mix_FreeChunk(sound);
+            // WARN: AS happens in _sounds.h
+            // Mix_FreeChunk(sound);
         }
     }
     void set(std::string path) {
         channel = -1;
-        if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
-            std::cerr << "SDL_mixer could not initialize! SDL_mixer Error: " << Mix_GetError() << std::endl;
-            DBG("Cant initialize SDL_mixer");
-            return;
-        }
-        std::string basePath = SDL_GetBasePath();
-        if (basePath.empty()) {
-            std::cerr << "SDL_GetBasePath failed!" << std::endl;
-            DBG("Can't get base path");
-            return;
-        }
+
+        //  if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
+        //     std::cerr << "SDL_mixer could not initialize! SDL_mixer Error: " << Mix_GetError() << std::endl;
+        //     DBG("Cant initialize SDL_mixer");
+        //     exit(1);
+        // }
         std::string fullPath = basePath + "assets/" + path;
         sound = Mix_LoadWAV(fullPath.c_str());
         if (sound == nullptr) {
             std::cerr << "Mix_LoadWAV: " << Mix_GetError() << std::endl;
             DBG("Cant load sound: " + fullPath);
+            exit(1);
         }
         else {
             DBG("Sound loaded: " + fullPath);
         }
     }
-    void play(bool ifNotPlaying = false) {
+    void play(int channel = 4, bool ifNotPlaying = false) {
+        // return;
+        this->channel = channel;
         if (sound == nullptr) {
             DBG("Sound not set");
             return;
         }
         if (ifNotPlaying && isPlaying()) return;
         Mix_VolumeChunk(sound, volume);
-        channel = Mix_PlayChannel(-1, sound, 0);
+        this->channel = Mix_PlayChannel(channel, sound, 0);
+        if (this->channel == -1) {
+            std::cerr << "Mix_PlayChannel: " << Mix_GetError() << std::endl;
+            DBG("Cant play sound");
+            exit(1);
+            return;
+        }
         Mix_SetPanning(channel, pan[0], pan[1]);
     }
     void stop() {
@@ -880,7 +1242,7 @@ public:
 class BtnText : public Btn {
 public:
     std::string text = "Button";
-    Uint8 fontSize = 24;
+    Font font = Font("HomeVideo.ttf", 24);
     BtnText() : Btn() {}
     ~BtnText() {}
     void render(Graphics* graph) override {
@@ -893,12 +1255,12 @@ public:
         }
         graph->setColor(c);
         if (center) {
-            int textWidth = graph->textWidth(text);
-            Vec2i textPos = pos + Vec2i((size.x - textWidth) / 2, (size.y - fontSize) / 2);
-            graph->text(text, textPos);
+            int textWidth = graph->textWidth(text, &font);
+            Vec2i textPos = pos + Vec2i((size.x - textWidth) / 2, (size.y - font.size) / 2);
+            graph->text(text, textPos, &font);
         }
         else {
-            graph->text(text, pos);
+            graph->text(text, pos, &font);
         }
     }
 };
@@ -936,6 +1298,7 @@ public:
     Main(const char *windowTitle = "Imp", 
         Vec2i windowSize = {800, 600},
         int fps = 60,
+        int scale = 1,
         std::string spriteSheet = ""
     ) 
         : fps(fps), windowTitle(windowTitle), windowSize(windowSize), graph(new Graphics(windowSize))
@@ -943,7 +1306,7 @@ public:
         DBG("Imp constructed");
         // Set random seed
         srand(static_cast<unsigned int>(time(0)));
-        init(spriteSheet);
+        init(spriteSheet, scale);
     }
     ~Main() {
         SDL_Quit();
@@ -952,6 +1315,14 @@ public:
     void loop()
     {
         frameStart = SDL_GetTicks();
+        _input.poll();
+        // while (SDL_PollEvent(&event) != 0) {
+        //     if (event.type == SDL_QUIT) {
+        //         shouldQuit = true;
+        //         quit();
+        //         return;
+        //     }
+        // }
         entityMan.checkMouse();
         entityMan.checkCollisions();
         entityMan.process();
@@ -963,13 +1334,6 @@ public:
             render(graph);
             SDL_RenderPresent(SDL_renderer);
             graph->tickUp();   
-        }
-        while (SDL_PollEvent(&event) != 0) {
-            if (event.type == SDL_QUIT) {
-                shouldQuit = true;
-                quit();
-                return;
-            }
         }
         // Handle focus
         if ((SDL_GetWindowFlags(window) & SDL_WINDOW_INPUT_FOCUS) == 0) {
@@ -988,9 +1352,25 @@ public:
         }
         // Constant FPS
         frameTime = SDL_GetTicks() - frameStart;
-        if (frameDelay > frameTime) {
-            SDL_Delay(frameDelay - frameTime);
+        int delay = frameDelay - frameTime;
+        // delay = 0;
+        if (delay > 0) {
+            SDL_Delay(delay);
         }
+        // Monitor Frame time
+        frameTimeAdder += frameTime + delay;
+        frameTimeAdderCount++;
+        if (frameTimeAdderCount >= 16) {
+            frameTimeAvg = frameTimeAdder / frameTimeAdderCount;
+            frameTimeAdder = 0;
+            frameTimeAdderCount = 0;
+        }
+    }
+    int getRealFPS() {
+        return 1000 / frameTimeAvg;
+    }
+    int getScale() {
+        return scale;
     }
 protected:
     EntityManager entityMan;
@@ -1000,15 +1380,25 @@ protected:
     Color clearColor;
     SDL_Event event;
     bool pauseRenderer;
-    void init(std::string spriteSheetFile = "") {
+    int scale = 1;
+    void init(std::string spriteSheetFile = "", int scale = 1) {
         DBG("Imp starting");
-        window = SDL_CreateWindow(windowTitle, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, windowSize.x, windowSize.y, SDL_WINDOW_SHOWN);
+        if (basePath.empty()) {
+            DBG("Base path not set");
+            exit(1);
+        }
+        if (window != nullptr) {
+            SDL_DestroyWindow(window);
+        }
+        Imp::state.windowScale = scale;
+        window = SDL_CreateWindow(windowTitle, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, windowSize.x * scale, windowSize.y * scale, SDL_WINDOW_SHOWN);
         if (window == nullptr) {
             std::cerr << "Window could not be created! SDL_Error: " << SDL_GetError() << std::endl;
             SDL_Quit();
             exit(1);
         }
         SDL_renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+        SDL_RenderSetLogicalSize(SDL_renderer, windowSize.x, windowSize.y);
         if (SDL_renderer == nullptr) {
             std::cerr << "Renderer could not be created! SDL_Error: " << SDL_GetError() << std::endl;
             SDL_DestroyWindow(window);
@@ -1026,12 +1416,16 @@ protected:
             SDL_Quit();
             exit(1);
         }
+        SDL_Init(SDL_INIT_AUDIO);
+        if (Mix_OpenAudio(48000, MIX_DEFAULT_FORMAT, 8, 2048) < 0) {
+            std::cerr << "SDL_mixer could not initialize! SDL_mixer Error: " << Mix_GetError() << std::endl;
+            DBG("Cant initialize SDL_mixer");
+            exit(1);
+        }
         graph->setRenderer(SDL_renderer);
 
-        graph->setFont("HomeVideo.ttf", 24);
-
         if (spriteSheetFile != "") {
-            graph->loadSpritesheet("assets/" + spriteSheetFile);
+            graph->loadSpritesheet(spriteSheetFile);
             DBG("Loaded spritesheet: " + spriteSheetFile);
         }
         shouldQuit = false;
@@ -1057,6 +1451,9 @@ private:
     int frameDelay;
     int frameStart;
     int frameTime;
+    int frameTimeAdder = 0;
+    int frameTimeAdderCount = 0;
+    int frameTimeAvg = 0;
     bool focused;
     virtual void render(Graphics* graph) {}
     virtual void process() {}

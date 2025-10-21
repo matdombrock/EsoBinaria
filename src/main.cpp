@@ -5,13 +5,9 @@
  * found in the LICENSE file.
  */
 
-#include <stdio.h>
 #include <iostream>
 
-#ifndef APP
-    #define APP "../examples/Basic.h"
-#endif
-#include APP
+#include "Eso.h"
 
 #ifdef __EMSCRIPTEN__
     #include <emscripten.h>
@@ -34,8 +30,11 @@ void main_loop() {
 int main(int argc, char* argv[]) {
     std::cout << "MAIN Startup" << std::endl;
     #ifdef __EMSCRIPTEN__
+        DBG("Emscripten main loop");
         emscripten_set_main_loop(main_loop, 0, 1);
         return 0;
+    #else
+        DBG("Standard main loop");
     #endif
     while (true) {
         main_loop();
