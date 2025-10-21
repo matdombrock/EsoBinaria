@@ -1,4 +1,5 @@
 build
+buildwasm
 out
 out-wasm
 .DS_Store
