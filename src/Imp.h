@@ -1,3 +1,7 @@
+/*
+ * Imp - A simple game framework built on SDL2
+ * Copyright (C) 2024-2024  Mathieu Dombrock
+*/
 #pragma once
 
 #include <iostream>
@@ -22,7 +26,7 @@
     #include <SDL2/SDL_image.h>
     #include <SDL2/SDL_mixer.h>
 #endif
-#define PI 3.14159265358979323846f
+#define PI 3.14159f
 
 // State global to the whole Imp namespace
 struct ImpState {
