@@ -5,4 +5,4 @@
 set -e
 
 cd ./build/out/
-./EsoBinaria
+./launch*
