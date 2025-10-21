@@ -1390,6 +1390,7 @@ protected:
         if (window != nullptr) {
             SDL_DestroyWindow(window);
         }
+        scale = scale < 1 ? 1 : scale;
         Imp::state.windowScale = scale;
         window = SDL_CreateWindow(windowTitle, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, windowSize.x * scale, windowSize.y * scale, SDL_WINDOW_SHOWN);
         if (window == nullptr) {
