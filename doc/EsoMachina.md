@@ -55,7 +55,7 @@ C = 1
 Note: Even though the NOT tile only takes one input it must be wrapped in parenthesis to work. If you neglect the parenthesis the value will not be inverted.
 
 ### XOR
-This tile resolves true if the inputs are different.
+This tile resolves true if the inputs are different. 
 
 ### NAND: Outputs false if both inputs are true.
 ### NOR: Outputs false if either input is true.
