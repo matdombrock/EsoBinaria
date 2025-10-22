@@ -32,6 +32,7 @@ public:
   Store store;
   Sound sndToggleTests;
   Sound sndChangeTile;
+  Input input;
   GameMaster() {}
   ~GameMaster() {}
   void init() {
