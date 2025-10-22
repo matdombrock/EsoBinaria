@@ -52,7 +52,7 @@ public:
     }
   }
   void onMouse(bool over) override {
-    if (_input.mouseKeyOnce(SDL_BUTTON_LEFT) && over) {
+    if (GInput.mouseKeyOnce(SDL_BUTTON_LEFT) && over) {
       state = 2;
     } else if (over) {
       state = 1;

@@ -13,7 +13,7 @@ public:
     }
     ~Cursor() {}
     void process() override {
-        pos = _input.mousePos();
+        pos = GInput.mousePos();
     }
     void render(Graphics* graph) override {
         spr.render(graph, pos);

@@ -71,7 +71,7 @@ public:
             int testFails = check();
             codeStringOld = _g.getCodeString();
         }
-        if(_input.keyOnce(SDLK_SPACE)) {
+        if(GInput.keyOnce(SDLK_SPACE)) {
             _g.toggleTests();
         }
         // Update positions

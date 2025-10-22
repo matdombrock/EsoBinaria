@@ -100,7 +100,7 @@ public:
     void process() override {
         if (_g.getScreen() != SCN_PUZZLE) return;
         if (_g.getHukActive()) return;
-        mousePos = _input.mousePos();
+        mousePos = GInput.mousePos();
         mousePosCell = mousePos / _g.cellSize;
         // Update lastMouse array with the most recent mousePosCell value
         if (_g.getTick() % 2 == 0) {
@@ -118,22 +118,22 @@ public:
         bool isTile = cellType != CT_VOID && cellType != CT_CLEAR;
         highlightCellTypeStr = Cell::typeToString(cellType);
         
-        if (_input.keyOnce(SDLK_q)) _g.setActiveTile(CT_CLEAR);
-        if (_input.keyOnce(SDLK_BACKSPACE)) _g.setActiveTile(CT_CLEAR);
-        if (_input.keyOnce(SDLK_w)) _g.setActiveTile(CT_BLANK);
-        if (_input.keyOnce(SDLK_e)) _g.setActiveTile(CT_AND);
-        if (_input.keyOnce(SDLK_r)) _g.setActiveTile(CT_OR);
-        if (_input.keyOnce(SDLK_t)) _g.setActiveTile(CT_NOT);
-        if (_input.keyOnce(SDLK_a)) _g.setActiveTile(CT_INA);
-        if (_input.keyOnce(SDLK_s)) _g.setActiveTile(CT_INB);
-        if (_input.keyOnce(SDLK_d)) _g.setActiveTile(CT_INC);
-        if (_input.keyOnce(SDLK_f)) _g.setActiveTile(CT_IND);
-        if (_input.keyOnce(SDLK_y)) _g.setActiveTile(CT_XOR);
-        if (_input.keyOnce(SDLK_u)) _g.setActiveTile(CT_NAND);
-        if (_input.keyOnce(SDLK_i)) _g.setActiveTile(CT_NOR);
-        if (_input.keyOnce(SDLK_o)) _g.setActiveTile(CT_XNOR);
+        if (GInput.keyOnce(SDLK_q)) _g.setActiveTile(CT_CLEAR);
+        if (GInput.keyOnce(SDLK_BACKSPACE)) _g.setActiveTile(CT_CLEAR);
+        if (GInput.keyOnce(SDLK_w)) _g.setActiveTile(CT_BLANK);
+        if (GInput.keyOnce(SDLK_e)) _g.setActiveTile(CT_AND);
+        if (GInput.keyOnce(SDLK_r)) _g.setActiveTile(CT_OR);
+        if (GInput.keyOnce(SDLK_t)) _g.setActiveTile(CT_NOT);
+        if (GInput.keyOnce(SDLK_a)) _g.setActiveTile(CT_INA);
+        if (GInput.keyOnce(SDLK_s)) _g.setActiveTile(CT_INB);
+        if (GInput.keyOnce(SDLK_d)) _g.setActiveTile(CT_INC);
+        if (GInput.keyOnce(SDLK_f)) _g.setActiveTile(CT_IND);
+        if (GInput.keyOnce(SDLK_y)) _g.setActiveTile(CT_XOR);
+        if (GInput.keyOnce(SDLK_u)) _g.setActiveTile(CT_NAND);
+        if (GInput.keyOnce(SDLK_i)) _g.setActiveTile(CT_NOR);
+        if (GInput.keyOnce(SDLK_o)) _g.setActiveTile(CT_XNOR);
 
-        if (_input.mousePos().y < _g.bottomBarPos.y) {
+        if (GInput.mousePos().y < _g.bottomBarPos.y) {
             if (lastMouse[0] != lastMouse[1]) {
                 int relMouse = ((float)mousePosCell.x / gridSize.x) * 255;
                 if(_g.getActiveTestData() == nullptr) {
@@ -143,7 +143,7 @@ public:
             }
 
             CellType newCell = CT_VOID;
-            if (_input.mouseKeyOnce(SDL_BUTTON_LEFT)) {
+            if (GInput.mouseKeyOnce(SDL_BUTTON_LEFT)) {
                 CellType active = _g.getActiveTile();
                 // Grab tile if nothing is active
                 if (active == CT_VOID && cellType != CT_VOID) {
@@ -168,12 +168,12 @@ public:
                     cells[x][y].set(newCell);
                 }
                 // clear active Tile
-                if (newCell != CT_CLEAR && !_input.key(SDLK_LCTRL)) {
+                if (newCell != CT_CLEAR && !GInput.key(SDLK_LCTRL)) {
                     _g.setActiveTile(CT_VOID, false);
                 }
             }
             // Remove held tile or right click
-            if (_input.mouseKeyOnce(SDL_BUTTON_RIGHT) || _input.mouseKeyOnce(4)) {
+            if (GInput.mouseKeyOnce(SDL_BUTTON_RIGHT) || GInput.mouseKeyOnce(4)) {
                 if (_g.getActiveTile() != CT_VOID) {
                     _g.setActiveTile(CT_VOID);
                     return;
@@ -181,13 +181,13 @@ public:
             }
             // Toggle connectors
             if ((x >= 0 && x < gridSize.x && y >= 0 && y < gridSize.y) && 
-                (_input.keyOnce(SDLK_TAB) || _input.mouseKeyOnce(SDL_BUTTON_RIGHT) || _input.mouseKeyOnce(4))) {
+                (GInput.keyOnce(SDLK_TAB) || GInput.mouseKeyOnce(SDL_BUTTON_RIGHT) || GInput.mouseKeyOnce(4))) {
                 cells[x][y].cycleParens();
                 if (isTile) sndParen.play();
             }
             // Toggle comments
             if ((x >= 0 && x < gridSize.x && y >= 0 && y < gridSize.y) && 
-                (_input.keyOnce(SDLK_c) || _input.mouseKeyOnce(SDL_BUTTON_MIDDLE))) {
+                (GInput.keyOnce(SDLK_c) || GInput.mouseKeyOnce(SDL_BUTTON_MIDDLE))) {
                 cells[x][y].isComment = !cells[x][y].isComment;
             }
         }

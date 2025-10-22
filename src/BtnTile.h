@@ -35,11 +35,11 @@ public:
       // Draw line to mouse
       graph->setColor(_colors["YELLOW"], 64);
       graph->line(post + Vec2i(_g.vu(0.5f), _g.vu(0.5f)),
-                  _input.mousePos() - Vec2i(0, _g.vu(0.5f)), 3);
+                  GInput.mousePos() - Vec2i(0, _g.vu(0.5f)), 3);
       graph->line(post + Vec2i(_g.vu(0.5f), _g.vu(0.5f)),
-                  _input.mousePos() - Vec2i(_g.vu(0.5f), -_g.vu(0.25f)), 6);
+                  GInput.mousePos() - Vec2i(_g.vu(0.5f), -_g.vu(0.25f)), 6);
       graph->line(post + Vec2i(_g.vu(0.5f), _g.vu(0.5f)),
-                  _input.mousePos() + Vec2i(_g.vu(0.5f), _g.vu(0.25f)), 3);
+                  GInput.mousePos() + Vec2i(_g.vu(0.5f), _g.vu(0.25f)), 3);
     } else if (state > 0) {
       post += Vec2i(0, -_g.cellSize / 8);
     }
@@ -54,7 +54,7 @@ public:
     oldState = state;
     if (over) {
       state = 1;
-      if (_input.mouseKeyOnce(SDL_BUTTON_LEFT)) {
+      if (GInput.mouseKeyOnce(SDL_BUTTON_LEFT)) {
         state = 2;
         _g.setActiveTile(type);
       }

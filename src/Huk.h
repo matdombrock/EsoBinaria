@@ -68,7 +68,7 @@ public:
             }
         }
         if (!show) return;
-        if (_input.anyKeyOnce()) {
+        if (GInput.anyKeyOnce()) {
             messageIndex++;
             if (messageIndex >= messages.size()) {
                 show = false;

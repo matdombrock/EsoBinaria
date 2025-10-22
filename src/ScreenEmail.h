@@ -30,7 +30,7 @@ public:
       startTicks = _g.getTick();
       _g.store.setBool("completed_email_intro", true);
     }
-    else if (_input.anyKeyOnce()) {
+    else if (GInput.anyKeyOnce()) {
       pressed++;
       if (pressed > 1) {
         _g.setScreen(SCN_PUZZLE);

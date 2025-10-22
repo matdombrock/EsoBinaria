@@ -128,10 +128,10 @@ public:
 
         // Draw cursor lines
         // graph->setColor(_colors["GREEN"], 128);
-        // graph->line(_input.mousePos(), Vec2i(0,0));
-        // graph->line(_input.mousePos(), Vec2i(WINDOW_SIZE.x,0));
-        // graph->line(_input.mousePos(), Vec2i(WINDOW_SIZE.x,WINDOW_SIZE.y));
-        // graph->line(_input.mousePos(), Vec2i(0,WINDOW_SIZE.y));
+        // graph->line(GInput.mousePos(), Vec2i(0,0));
+        // graph->line(GInput.mousePos(), Vec2i(WINDOW_SIZE.x,0));
+        // graph->line(GInput.mousePos(), Vec2i(WINDOW_SIZE.x,WINDOW_SIZE.y));
+        // graph->line(GInput.mousePos(), Vec2i(0,WINDOW_SIZE.y));
 
         if (_g.getPuzzleChallenge() == 'e') {
             graph->setColor(_colors["GREEN"], 64);

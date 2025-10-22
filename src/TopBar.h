@@ -235,7 +235,7 @@ public:
         if (_g.getScreen() != SCN_PUZZLE) return;
         if (_g.getHukActive()) return;
         // Clear if nothing is clicked
-        if (_input.mouseKeyOnce(SDL_BUTTON_LEFT)) {
+        if (GInput.mouseKeyOnce(SDL_BUTTON_LEFT)) {
             activeTopBar = "";
         }
         em.checkMouse();

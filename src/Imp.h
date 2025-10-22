@@ -440,7 +440,8 @@ private:
   Uint32 mouseStatePrev = 0;
 };
 // Declare global input
-inline Input _input;
+// There should only be one instance of this
+inline Input GInput;
 
 //
 // Graphics
@@ -1215,7 +1216,7 @@ public:
     return collisions;
   }
   void checkMouse() {
-    Vec2i mousePos = _input.mousePos();
+    Vec2i mousePos = GInput.mousePos();
     for (Entity *entity : entities) {
       if (entity->colliderEnabled) {
         bool over = entity->collider->isInside(mousePos);
@@ -1251,7 +1252,7 @@ public:
   void onMouse(bool over) override {
     if (!available)
       return;
-    if (_input.mouseKeyOnce(SDL_BUTTON_LEFT) && over) {
+    if (GInput.mouseKeyOnce(SDL_BUTTON_LEFT) && over) {
       state = 2;
       if (onClick != nullptr)
         onClick();
@@ -1340,7 +1341,7 @@ public:
   }
   void loop() {
     frameStart = SDL_GetTicks();
-    _input.poll();
+    GInput.poll();
     // while (SDL_PollEvent(&event) != 0) {
     //     if (event.type == SDL_QUIT) {
     //         shouldQuit = true;
