@@ -20,7 +20,7 @@ public:
   Sprite sprTitle;
   Sprite sprSDL;
   Sprite sprCPP;
-  Font font = Font("HomeVideo.ttf", _g.fontSize);
+  Font font = Font("HomeVideo.ttf", g_gm.fontSize);
   Input input;
   ScreenBumper() : Entity() {
     tag = "bumper";
@@ -34,7 +34,7 @@ public:
   }
   ~ScreenBumper() {}
   void process() override {
-    if (_g.getScreen() != SCN_BUMPER) {
+    if (g_gm.getScreen() != SCN_BUMPER) {
       return;
     }
     input.poll();
@@ -42,28 +42,28 @@ public:
     // if (pressed || (_g.getTick() / WINDOW_FPS) > 5) {
     if (pressed) {
       DBG("Exiting bumper via keypress");
-      if (_g.store.getBool("completed_email_intro")) {
-        _g.setScreen(SCN_MAIN_MENU);
+      if (g_gm.store.getBool("completed_email_intro")) {
+        g_gm.setScreen(SCN_MAIN_MENU);
       } else {
-        _g.setScreen(SCN_HELP);
+        g_gm.setScreen(SCN_HELP);
       }
     }
   }
   void render(Graphics *graph) override {
-    if (_g.getScreen() != SCN_BUMPER)
+    if (g_gm.getScreen() != SCN_BUMPER)
       return;
-    graph->setColor(_colors["GRAY"]);
+    graph->setColor(g_colors["GRAY"]);
     graph->text("ESOBINARIA", Vec2i(20, 20), &Fonts::medium);
     graph->text("MATHIEU DOMBROCK 2024-2025", Vec2i(20, 60), &Fonts::medium);
-    graph->setColor(_colors["WHITE"]);
-    int posX = 220 + sin((_g.getTick() / 16.0f)) * 10;
+    graph->setColor(g_colors["WHITE"]);
+    int posX = 220 + sin((g_gm.getTick() / 16.0f)) * 10;
     graph->text("-- PRESS TO CONTINUE --", Vec2i(posX, 380), &Fonts::medium);
     sprBg.render(graph,
                  WINDOW_SIZE - Vec2i(WINDOW_SIZE.x / 2, WINDOW_SIZE.x / 2));
     sprTitle.render(graph, Vec2i((WINDOW_SIZE.x / 2) - (96 * 4), 110));
     sprSDL.render(graph, Vec2i(32, 550));
     sprCPP.render(graph, Vec2i(248, 550));
-    graph->setColor(_colors["GRAY"]);
+    graph->setColor(g_colors["GRAY"]);
     std::string text = "ESO-OS version "+ (std::string)VERSION_STRING +" #" + std::to_string(BUILD_TIME);
     graph->text(text, pos + Vec2i(0, WINDOW_SIZE.y - 32), &Fonts::small);
   }

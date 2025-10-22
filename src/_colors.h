@@ -8,7 +8,7 @@
 #include "Imp.h"
 using namespace Imp;
 
-inline std::map<std::string, Color> _colors = {
+inline std::map<std::string, Color> g_colors = {
     {"BG", Color(20,25,20)},
     {"BG2", Color(45,50,45)},
     {"BG3", Color(55,55,60)},

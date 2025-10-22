@@ -12,7 +12,7 @@ public:
     std::string key;
 };
 
-inline std::map<std::string, HelpItem> helpItems = {
+inline std::map<std::string, HelpItem> g_helpItems = {
     {"A", {"IN_A", "Input A", "A"}},
     {"B", {"IN_B", "Input B", "S"}},
     {"C", {"IN_C", "Input C", "D"}},

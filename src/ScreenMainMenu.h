@@ -24,23 +24,23 @@ public:
     state = 0;
     center = false;
     text = "Button";
-    size = Vec2i(200, _g.fontSize * 1.1f);
+    size = Vec2i(200, g_gm.fontSize * 1.1f);
     setCollider(size);
   }
   ~BtnScreenMainMenu() {}
   bool isClicked() { return state == 2; }
   void process() override {}
   void render(Graphics *graph) override {
-    Color *c = &_colors["GRAY"];
+    Color *c = &g_colors["GRAY"];
     switch (state) {
     case 0:
-      c = &_colors["GRAY"];
+      c = &g_colors["GRAY"];
       break;
     case 1:
-      c = &_colors["YELLOW"];
+      c = &g_colors["YELLOW"];
       break;
     case 2:
-      c = &_colors["GREEN"];
+      c = &g_colors["GREEN"];
       break;
     }
     std::string textMod = (state > 0 ? ">> " : "") + text;
@@ -48,7 +48,7 @@ public:
     if (center) {
       int textWidth = graph->textWidth(textMod, &Fonts::medium);
       Vec2i textPos =
-          pos + Vec2i((size.x - textWidth) / 2, (size.y - _g.fontSize) / 2);
+          pos + Vec2i((size.x - textWidth) / 2, (size.y - g_gm.fontSize) / 2);
       graph->text(textMod, textPos, &Fonts::medium);
     } else {
       graph->text(textMod, pos, &Fonts::medium);
@@ -72,7 +72,7 @@ public:
   BtnScreenMainMenu btnExit;
   Sprite sprBg;
   Sprite sprTitle;
-  Font font = Font("HomeVideo.ttf", _g.fontSize);
+  Font font = Font("HomeVideo.ttf", g_gm.fontSize);
   ScreenMainMenu() : Entity() {
     tag = "menu";
 
@@ -80,11 +80,11 @@ public:
     btnResume.text = "Solve-ware";
     em.addEntity(&btnResume);
 
-    btnSettings.pos = Vec2i(20, 60 + _g.fontSize * 1.1f * 2);
+    btnSettings.pos = Vec2i(20, 60 + g_gm.fontSize * 1.1f * 2);
     btnSettings.text = "Pref-ware";
     em.addEntity(&btnSettings);
 
-    btnExit.pos = Vec2i(20, 60 + _g.fontSize * 1.1f * 3);
+    btnExit.pos = Vec2i(20, 60 + g_gm.fontSize * 1.1f * 3);
     btnExit.text = "Goodbye";
     em.addEntity(&btnExit);
 
@@ -96,32 +96,32 @@ public:
   }
   ~ScreenMainMenu() {}
   void process() override {
-    if (_g.getScreen() != SCN_MAIN_MENU) {
+    if (g_gm.getScreen() != SCN_MAIN_MENU) {
       return;
     }
     em.process();
     em.checkMouse();
     if (btnResume.isClicked()) {
-      _g.setScreen(SCN_PUZZLE);
+      g_gm.setScreen(SCN_PUZZLE);
     }
     if (btnExit.isClicked()) {
       // _g.setQuit(true);
-      _g.sendMessage("quit");
+      g_gm.sendMessage("quit");
     }
     if (btnSettings.isClicked()) {
-      _g.setScreen(SCN_SETTINGS);
+      g_gm.setScreen(SCN_SETTINGS);
     }
   }
   void render(Graphics *graph) override {
-    if (_g.getScreen() != SCN_MAIN_MENU)
+    if (g_gm.getScreen() != SCN_MAIN_MENU)
       return;
-    graph->setColor(_colors["WHITE"]);
+    graph->setColor(g_colors["WHITE"]);
     graph->text("ESO-OS", Vec2i(20, 20), &Fonts::medium);
     em.render(graph);
     sprBg.render(graph,
                  WINDOW_SIZE - Vec2i(WINDOW_SIZE.x / 2, WINDOW_SIZE.x / 2));
     sprTitle.render(graph, Vec2i((WINDOW_SIZE.x - 96 * 4) - 16, 16));
-    graph->setColor(_colors["WHITE"]);
+    graph->setColor(g_colors["WHITE"]);
     std::string text = "ESO-OS version "+ (std::string)VERSION_STRING +" #" + std::to_string(BUILD_TIME);
     graph->text(text, pos + Vec2i(0, WINDOW_SIZE.y - 32), &Fonts::small);
   }

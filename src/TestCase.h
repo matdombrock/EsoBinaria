@@ -26,11 +26,11 @@ public:
         data.lastCheck = false;
         isHovered = false;
         show = true;
-        ce = _g.cellSize / 2;
-        setCollider(Vec2i(_g.cellSize * 2, _g.cellSize / 2));
+        ce = g_gm.cellSize / 2;
+        setCollider(Vec2i(g_gm.cellSize * 2, g_gm.cellSize / 2));
         s7 = s7_init();
 
-        sprTrue = Sprite(Vec2i(0, 80), Vec2i(16, 16), Vec2i(_g.cellSize/2, _g.cellSize/2));
+        sprTrue = Sprite(Vec2i(0, 80), Vec2i(16, 16), Vec2i(g_gm.cellSize/2, g_gm.cellSize/2));
         std::vector<Vec2i> trueFrames = {
             Vec2i(0, 80), 
             Vec2i(16, 80), 
@@ -39,7 +39,7 @@ public:
             Vec2i(64, 80), 
         };
         sprTrue.setAnimation(trueFrames, 4, true);
-        sprFalse = Sprite(Vec2i(0, 96), Vec2i(16, 16), Vec2i(_g.cellSize/2, _g.cellSize/2));
+        sprFalse = Sprite(Vec2i(0, 96), Vec2i(16, 16), Vec2i(g_gm.cellSize/2, g_gm.cellSize/2));
         std::vector<Vec2i> falseFrames = {
             Vec2i(0, 96), 
             Vec2i(16, 96), 
@@ -48,8 +48,8 @@ public:
             Vec2i(64, 96), 
         };
         sprFalse.setAnimation(falseFrames, 4, true);
-        sprPass = Sprite(Vec2i(0, 112), Vec2i(16, 16), Vec2i(_g.cellSize/2, _g.cellSize/2));
-        sprFail = Sprite(Vec2i(16, 112), Vec2i(16, 16), Vec2i(_g.cellSize/2, _g.cellSize/2));
+        sprPass = Sprite(Vec2i(0, 112), Vec2i(16, 16), Vec2i(g_gm.cellSize/2, g_gm.cellSize/2));
+        sprFail = Sprite(Vec2i(16, 112), Vec2i(16, 16), Vec2i(g_gm.cellSize/2, g_gm.cellSize/2));
     }
     ~TestCase() {}
     void set(int index, int bits, int puzzleNum) {
@@ -118,12 +118,12 @@ public:
     }
     void render(Graphics* graph) override {
         if (!show) return;
-        int hoverMod = isHovered ? _g.vu(0.1f) : 0;
+        int hoverMod = isHovered ? g_gm.vu(0.1f) : 0;
         if (data.lastCheck) sprPass.render(graph, pos + Vec2i(hoverMod, 0));
-        else sprFail.render(graph, Vec2i(pos.x - _g.vu(0.1f) - (_g.getTick()/8 % 6) + hoverMod, pos.y));
+        else sprFail.render(graph, Vec2i(pos.x - g_gm.vu(0.1f) - (g_gm.getTick()/8 % 6) + hoverMod, pos.y));
         int x = ce;
         // Only display up to the actual number of inputs needed for the puzzle
-        int bitsToShow = std::min(static_cast<size_t>(_g.getPuzzleBits()), data.inputs.size());
+        int bitsToShow = std::min(static_cast<size_t>(g_gm.getPuzzleBits()), data.inputs.size());
         for (int i = 0; i < bitsToShow; i++) {
             if (data.inputs[i]) sprTrue.render(graph, Vec2i(pos.x + x, pos.y));
             else sprFalse.render(graph, Vec2i(pos.x + x, pos.y));
@@ -142,11 +142,11 @@ public:
         if (over) {
             DBG("Over test case " + std::to_string(data.index));
             isHovered = true;
-            _g.setActiveTestData(&data);
+            g_gm.setActiveTestData(&data);
             return;
         }
-        if (_g.getActiveTestData() == &data) {
-            _g.setActiveTestData(nullptr);
+        if (g_gm.getActiveTestData() == &data) {
+            g_gm.setActiveTestData(nullptr);
         }
         isHovered = false;
     }
@@ -156,13 +156,13 @@ private:
         s7_pointer error_message = s7_car(args);
         std::string errStr = s7_object_to_c_string(sc, error_message);
         DBG("Error Handler: " + errStr);
-        if (StringTools::contains(errStr, "missing close paren")) _g.setCodeErr("Missing close paren");
-        else if (StringTools::contains(errStr, "not: not enough arguments")) _g.setCodeErr("Not missing input");
-        else if (StringTools::contains(errStr, "xor: not enough arguments")) _g.setCodeErr("XOR missing input(s)");
-        else if (StringTools::contains(errStr, "nand: not enough arguments")) _g.setCodeErr("NAND missing input(s)");
-        else if (StringTools::contains(errStr, "nor: not enough arguments")) _g.setCodeErr("NOR missing input(s)");
-        else if (StringTools::contains(errStr, "xnor: not enough arguments")) _g.setCodeErr("XNOR missing input(s)");
-        else _g.setCodeErr("Unknown error");
+        if (StringTools::contains(errStr, "missing close paren")) g_gm.setCodeErr("Missing close paren");
+        else if (StringTools::contains(errStr, "not: not enough arguments")) g_gm.setCodeErr("Not missing input");
+        else if (StringTools::contains(errStr, "xor: not enough arguments")) g_gm.setCodeErr("XOR missing input(s)");
+        else if (StringTools::contains(errStr, "nand: not enough arguments")) g_gm.setCodeErr("NAND missing input(s)");
+        else if (StringTools::contains(errStr, "nor: not enough arguments")) g_gm.setCodeErr("NOR missing input(s)");
+        else if (StringTools::contains(errStr, "xnor: not enough arguments")) g_gm.setCodeErr("XNOR missing input(s)");
+        else g_gm.setCodeErr("Unknown error");
         return s7_nil(sc);
     }
     std::string evalScheme(const std::string& expr) {

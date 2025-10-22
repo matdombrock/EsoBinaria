@@ -27,8 +27,8 @@ public:
     Grid() : Entity() {
         DBG("Starting grid");
         tag = "grid";
-        Vec2i gridBounds = Vec2i(WINDOW_SIZE.x, WINDOW_SIZE.y - _g.bottomBarSize.y);
-        gridSize = gridBounds / _g.cellSize;
+        Vec2i gridBounds = Vec2i(WINDOW_SIZE.x, WINDOW_SIZE.y - g_gm.bottomBarSize.y);
+        gridSize = gridBounds / g_gm.cellSize;
         // Resize the 2d array to the grid size
         cells.resize(gridSize.x);
         // Fill cells with 0
@@ -86,11 +86,11 @@ public:
         // Fill tutorial puzzles
         // 0 place B
         // 1 place NOT
-        if (_g.getPuzzleNum() == 1 && _g.getPuzzleChallenge() == 'e') {
+        if (g_gm.getPuzzleNum() == 1 && g_gm.getPuzzleChallenge() == 'e') {
             cells[6][4].set(CT_INA);
         }
         // 2 remove tiles
-        if (_g.getPuzzleNum() == 2 && _g.getPuzzleChallenge() == 'e') {
+        if (g_gm.getPuzzleNum() == 2 && g_gm.getPuzzleChallenge() == 'e') {
             cells[6][4].set(CT_NOT);
             cells[2][2].set(CT_INC);
             cells[3][4].set(CT_INB);
@@ -100,16 +100,16 @@ public:
 
         //
         DBG("Sending load msg");
-        _g.sendMessage("load");
+        g_gm.sendMessage("load");
     }
     void process() override {
-        if (_g.getScreen() != SCN_PUZZLE) return;
-        if (_g.getHukActive()) return;
-        if (_g.getModalActive()) return;
+        if (g_gm.getScreen() != SCN_PUZZLE) return;
+        if (g_gm.getHukActive()) return;
+        if (g_gm.getModalActive()) return;
         mousePos = GInput.mousePos();
-        mousePosCell = mousePos / _g.cellSize;
+        mousePosCell = mousePos / g_gm.cellSize;
         // Update lastMouse array with the most recent mousePosCell value
-        if (_g.getTick() % 2 == 0) {
+        if (g_gm.getTick() % 2 == 0) {
             for (int i = 7; i > 0; i--) {
                 lastMouse[i] = lastMouse[i - 1];
             }
@@ -124,25 +124,25 @@ public:
         bool isTile = cellType != CT_VOID && cellType != CT_CLEAR;
         highlightCellTypeStr = Cell::typeToString(cellType);
         
-        if (GInput.keyOnce(SDLK_q)) _g.setActiveTile(CT_CLEAR);
-        if (GInput.keyOnce(SDLK_BACKSPACE)) _g.setActiveTile(CT_CLEAR);
-        if (GInput.keyOnce(SDLK_w)) _g.setActiveTile(CT_BLANK);
-        if (GInput.keyOnce(SDLK_e)) _g.setActiveTile(CT_AND);
-        if (GInput.keyOnce(SDLK_r)) _g.setActiveTile(CT_OR);
-        if (GInput.keyOnce(SDLK_t)) _g.setActiveTile(CT_NOT);
-        if (GInput.keyOnce(SDLK_a)) _g.setActiveTile(CT_INA);
-        if (GInput.keyOnce(SDLK_s)) _g.setActiveTile(CT_INB);
-        if (GInput.keyOnce(SDLK_d)) _g.setActiveTile(CT_INC);
-        if (GInput.keyOnce(SDLK_f)) _g.setActiveTile(CT_IND);
-        if (GInput.keyOnce(SDLK_y)) _g.setActiveTile(CT_XOR);
-        if (GInput.keyOnce(SDLK_u)) _g.setActiveTile(CT_NAND);
-        if (GInput.keyOnce(SDLK_i)) _g.setActiveTile(CT_NOR);
-        if (GInput.keyOnce(SDLK_o)) _g.setActiveTile(CT_XNOR);
+        if (GInput.keyOnce(SDLK_q)) g_gm.setActiveTile(CT_CLEAR);
+        if (GInput.keyOnce(SDLK_BACKSPACE)) g_gm.setActiveTile(CT_CLEAR);
+        if (GInput.keyOnce(SDLK_w)) g_gm.setActiveTile(CT_BLANK);
+        if (GInput.keyOnce(SDLK_e)) g_gm.setActiveTile(CT_AND);
+        if (GInput.keyOnce(SDLK_r)) g_gm.setActiveTile(CT_OR);
+        if (GInput.keyOnce(SDLK_t)) g_gm.setActiveTile(CT_NOT);
+        if (GInput.keyOnce(SDLK_a)) g_gm.setActiveTile(CT_INA);
+        if (GInput.keyOnce(SDLK_s)) g_gm.setActiveTile(CT_INB);
+        if (GInput.keyOnce(SDLK_d)) g_gm.setActiveTile(CT_INC);
+        if (GInput.keyOnce(SDLK_f)) g_gm.setActiveTile(CT_IND);
+        if (GInput.keyOnce(SDLK_y)) g_gm.setActiveTile(CT_XOR);
+        if (GInput.keyOnce(SDLK_u)) g_gm.setActiveTile(CT_NAND);
+        if (GInput.keyOnce(SDLK_i)) g_gm.setActiveTile(CT_NOR);
+        if (GInput.keyOnce(SDLK_o)) g_gm.setActiveTile(CT_XNOR);
 
-        if (GInput.mousePos().y < _g.bottomBarPos.y) {
+        if (GInput.mousePos().y < g_gm.bottomBarPos.y) {
             if (lastMouse[0] != lastMouse[1]) {
                 int relMouse = ((float)mousePosCell.x / gridSize.x) * 255;
-                if(_g.getActiveTestData() == nullptr) {
+                if(g_gm.getActiveTestData() == nullptr) {
                     sndTick.setPan(255 - relMouse, relMouse);
                     sndTick.play();
                 }
@@ -150,11 +150,11 @@ public:
 
             CellType newCell = CT_VOID;
             if (GInput.mouseKeyOnce(SDL_BUTTON_LEFT)) {
-                CellType active = _g.getActiveTile();
+                CellType active = g_gm.getActiveTile();
                 // Grab tile if nothing is active
                 if (active == CT_VOID && cellType != CT_VOID) {
                     DBG("Grabbed cell type: " + Cell::typeToString(cellType));
-                    _g.setActiveTile(cellType, true);
+                    g_gm.setActiveTile(cellType, true);
                     newCell = CT_CLEAR;
                 }
                 else {
@@ -175,13 +175,13 @@ public:
                 }
                 // clear active Tile
                 if (newCell != CT_CLEAR && !GInput.key(SDLK_LCTRL)) {
-                    _g.setActiveTile(CT_VOID, false);
+                    g_gm.setActiveTile(CT_VOID, false);
                 }
             }
             // Remove held tile or right click
             if (GInput.mouseKeyOnce(SDL_BUTTON_RIGHT) || GInput.mouseKeyOnce(4)) {
-                if (_g.getActiveTile() != CT_VOID) {
-                    _g.setActiveTile(CT_VOID);
+                if (g_gm.getActiveTile() != CT_VOID) {
+                    g_gm.setActiveTile(CT_VOID);
                     return;
                 }
             }
@@ -232,9 +232,9 @@ public:
         }
 
         // Generate code string
-        std::string codeStringOld = _g.getCodeString();
+        std::string codeStringOld = g_gm.getCodeString();
         std::string codeStringNew = "";
-        _g.setCodeString("");
+        g_gm.setCodeString("");
         for (int y = 0; y < gridSize.y; y++) {
             for (int x = 0; x < gridSize.x; x++) {
                 if (cells[x][y].isComment) continue;
@@ -250,33 +250,33 @@ public:
                 }
             }
         }
-        _g.setCodeString(codeStringNew);
+        g_gm.setCodeString(codeStringNew);
     }
     void render(Graphics* graph) override {
-        if (_g.getScreen() != SCN_PUZZLE) return;
+        if (g_gm.getScreen() != SCN_PUZZLE) return;
         // Drag grid bg
-        graph->setColor(_colors["BG2"]);
+        graph->setColor(g_colors["BG2"]);
         for (int x = 0; x < gridSize.x; x++) {
-            graph->line(Vec2i(x * _g.cellSize, 0), Vec2i(x * _g.cellSize, gridSize.y * _g.cellSize));
+            graph->line(Vec2i(x * g_gm.cellSize, 0), Vec2i(x * g_gm.cellSize, gridSize.y * g_gm.cellSize));
         }
         for (int y = 0; y < gridSize.y; y++) {
-            graph->line(Vec2i(0, y * _g.cellSize), Vec2i(gridSize.x * _g.cellSize, y * _g.cellSize));
+            graph->line(Vec2i(0, y * g_gm.cellSize), Vec2i(gridSize.x * g_gm.cellSize, y * g_gm.cellSize));
         }
         // Draw border
-        int borderWidth = _g.hasCodeErr() ? _g.cellSize/16 : _g.cellSize/4;
-        graph->setColor(_g.hasCodeErr() ? _colors["YELLOW"] : _colors["BG2"], _g.hasCodeErr() ? 128 : 255);
+        int borderWidth = g_gm.hasCodeErr() ? g_gm.cellSize/16 : g_gm.cellSize/4;
+        graph->setColor(g_gm.hasCodeErr() ? g_colors["YELLOW"] : g_colors["BG2"], g_gm.hasCodeErr() ? 128 : 255);
         graph->rect(Vec2i(0, 0), Vec2i(WINDOW_SIZE.x, borderWidth));
-        graph->rect(Vec2i(0, _g.bottomBarPos.y - borderWidth), Vec2i(WINDOW_SIZE.x, borderWidth));
+        graph->rect(Vec2i(0, g_gm.bottomBarPos.y - borderWidth), Vec2i(WINDOW_SIZE.x, borderWidth));
         graph->rect(Vec2i(0, 0), Vec2i(borderWidth, WINDOW_SIZE.y));
         graph->rect(Vec2i(WINDOW_SIZE.x - borderWidth, pos.y), Vec2i(borderWidth, WINDOW_SIZE.y));
         
         // Draw mouse trail
         for (int i = 0; i < 8; i++) {
             Vec2i pos = lastMouse[i];
-            Vec2i cellPos = pos * _g.cellSize;
-            Color c = _colors["GREEN"];
+            Vec2i cellPos = pos * g_gm.cellSize;
+            Color c = g_colors["GREEN"];
             graph->setColor(c.r, c.g - (i * 8), c.b);
-            graph->rect(cellPos, Vec2i(_g.cellSize, _g.cellSize), false);
+            graph->rect(cellPos, Vec2i(g_gm.cellSize, g_gm.cellSize), false);
         }
 
         // Draw cells
@@ -284,53 +284,53 @@ public:
             for (int y = 0; y < gridSize.y; y++) {
                 CellType cellType = cells[x][y].get();
                 if (cellType != CT_VOID && cellType != CT_CLEAR) {
-                    CellSprites::baseTile.render(graph, Vec2i(_g.cellSize * x, _g.cellSize * y));
+                    CellSprites::baseTile.render(graph, Vec2i(g_gm.cellSize * x, g_gm.cellSize * y));
                     Sprite* spr = CellSprites::cellMap[cellType];
                     // Draw test highlights
-                    if (_g.getActiveTestData() != nullptr) {
+                    if (g_gm.getActiveTestData() != nullptr) {
                         if (cellType == CT_INA) {
-                            spr = _g.getActiveTestData()->inputs[0] ? &CellSprites::inATrueTile : &CellSprites::inAFalseTile;
+                            spr = g_gm.getActiveTestData()->inputs[0] ? &CellSprites::inATrueTile : &CellSprites::inAFalseTile;
                         }
                         if (cellType == CT_INB) {
-                            spr = _g.getActiveTestData()->inputs[1] ? &CellSprites::inBTrueTile : &CellSprites::inBFalseTile;
+                            spr = g_gm.getActiveTestData()->inputs[1] ? &CellSprites::inBTrueTile : &CellSprites::inBFalseTile;
                         }
                         if (cellType == CT_INC) {
-                            spr = _g.getActiveTestData()->inputs[2] ? &CellSprites::inCTrueTile : &CellSprites::inCFalseTile;
+                            spr = g_gm.getActiveTestData()->inputs[2] ? &CellSprites::inCTrueTile : &CellSprites::inCFalseTile;
                         }
                         if (cellType == CT_IND) {
-                            spr = _g.getActiveTestData()->inputs[3] ? &CellSprites::inDTrueTile : &CellSprites::inDFalseTile;
+                            spr = g_gm.getActiveTestData()->inputs[3] ? &CellSprites::inDTrueTile : &CellSprites::inDFalseTile;
                         }
                     }
                     if (spr != nullptr) {
-                        spr->render(graph, Vec2i(_g.cellSize * x, _g.cellSize * y));
+                        spr->render(graph, Vec2i(g_gm.cellSize * x, g_gm.cellSize * y));
                     }
                     else {
                         DBG("Unknown cell type: " + std::to_string(cellType));
                     }
                     // Draw parenthesis
                     if (cells[x][y].parenLeft) {
-                        CellSprites::parenR.render(graph, Vec2i(_g.cellSize * x, _g.cellSize * y), true);
+                        CellSprites::parenR.render(graph, Vec2i(g_gm.cellSize * x, g_gm.cellSize * y), true);
                     }
                     if (cells[x][y].parenRight) {
-                        CellSprites::parenR.render(graph, Vec2i(_g.cellSize * x, _g.cellSize * y));
+                        CellSprites::parenR.render(graph, Vec2i(g_gm.cellSize * x, g_gm.cellSize * y));
                     }
                     // Comment
                     if (cells[x][y].isComment) {
-                        graph->setColor(_colors["GRAY"], 128 + (std::sin(_g.getTick()/32.0f) * 16));
-                        graph->rect(Vec2i(_g.cellSize * x, _g.cellSize * y), Vec2i(_g.cellSize, _g.cellSize));
+                        graph->setColor(g_colors["GRAY"], 128 + (std::sin(g_gm.getTick()/32.0f) * 16));
+                        graph->rect(Vec2i(g_gm.cellSize * x, g_gm.cellSize * y), Vec2i(g_gm.cellSize, g_gm.cellSize));
                     }
                 }
             }
         }
 
         // Highlight cell on mouse hover
-        if (_g.getActiveTestData() == nullptr && mousePos.y < _g.bottomBarPos.y) {
-            Vec2i cell = mousePos / _g.cellSize * _g.cellSize;
-            graph->setColor(_colors["WHITE"]);
-            graph->rect(cell, Vec2i(_g.cellSize, _g.cellSize), false); 
-            if (_g.getActiveTile() != CT_VOID) {
-                CellSprites::baseTile.render(graph, cell - Vec2i(0, _g.vu(0.25f)));
-                CellSprites::cellMap[_g.getActiveTile()]->render(graph, cell - Vec2i(0, _g.vu(0.25f)));
+        if (g_gm.getActiveTestData() == nullptr && mousePos.y < g_gm.bottomBarPos.y) {
+            Vec2i cell = mousePos / g_gm.cellSize * g_gm.cellSize;
+            graph->setColor(g_colors["WHITE"]);
+            graph->rect(cell, Vec2i(g_gm.cellSize, g_gm.cellSize), false); 
+            if (g_gm.getActiveTile() != CT_VOID) {
+                CellSprites::baseTile.render(graph, cell - Vec2i(0, g_gm.vu(0.25f)));
+                CellSprites::cellMap[g_gm.getActiveTile()]->render(graph, cell - Vec2i(0, g_gm.vu(0.25f)));
             }
         }
 

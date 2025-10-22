@@ -18,14 +18,14 @@ public:
   FX() : Entity() { tag = "bumper"; }
   ~FX() {}
   void process() override {
-    if (!_g.store.getBool("settings_enable_screen_fx")) {
+    if (!g_gm.store.getBool("settings_enable_screen_fx")) {
       return;
     }
     // posY = sin(_g.getTick() * 0.001f) * 8;
-    posY = (_g.getTick() / (WINDOW_FPS / 10)) % scanSize;
+    posY = (g_gm.getTick() / (WINDOW_FPS / 10)) % scanSize;
   }
   void render(Graphics *graph) override {
-    if (!_g.store.getBool("settings_enable_screen_fx")) {
+    if (!g_gm.store.getBool("settings_enable_screen_fx")) {
       return;
     }
     graph->setColor(255, 255, 255, 16);

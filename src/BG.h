@@ -19,8 +19,8 @@ public:
   BG() : Entity() { tag = "bumper"; }
   ~BG() {}
   void process() override {
-    posA.x = (sin(_g.getTick() / 512.0f) + 1.0f) * (WINDOW_SIZE.x * 4);
-    posA.y = (cos(_g.getTick() / 512.0f) + 1.0f) * (WINDOW_SIZE.y * 4);
+    posA.x = (sin(g_gm.getTick() / 512.0f) + 1.0f) * (WINDOW_SIZE.x * 4);
+    posA.y = (cos(g_gm.getTick() / 512.0f) + 1.0f) * (WINDOW_SIZE.y * 4);
     posB.x = WINDOW_SIZE.x - posA.x;
     posB.y = posA.y;
     posC.x = posA.x;
@@ -31,17 +31,17 @@ public:
     alpha = 8;
   }
   void render(Graphics *graph) override {
-    graph->setColor(_colors["BG"]);
+    graph->setColor(g_colors["BG"]);
     graph->rect(Vec2i(0, 0), WINDOW_SIZE);
     //
     int lineWidth = 512;
-    graph->setColor(_colors["RED"], alpha);
+    graph->setColor(g_colors["RED"], alpha);
     graph->line(Vec2i(0, 0), posA, lineWidth);
-    graph->setColor(_colors["BLUE"], alpha);
+    graph->setColor(g_colors["BLUE"], alpha);
     graph->line(Vec2i(WINDOW_SIZE.x, 0), posB, lineWidth);
-    graph->setColor(_colors["GREEN"], alpha);
+    graph->setColor(g_colors["GREEN"], alpha);
     graph->line(Vec2i(0, WINDOW_SIZE.y), posC, lineWidth);
-    graph->setColor(_colors["YELLOW"], alpha);
+    graph->setColor(g_colors["YELLOW"], alpha);
     graph->line(Vec2i(WINDOW_SIZE.x, WINDOW_SIZE.y), posD, lineWidth);
     //
   }

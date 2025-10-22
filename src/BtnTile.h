@@ -22,34 +22,34 @@ public:
     oldState = 99;
     tag = "tileBtn";
     type = CT_CLEAR;
-    setCollider(Vec2i(_g.cellSize, _g.cellSize));
+    setCollider(Vec2i(g_gm.cellSize, g_gm.cellSize));
     sndTick.set("tick.wav");
   }
   ~BtnTile() {}
   void render(Graphics *graph) override {
     // Ignore input D and C if puzzle bits are less than 4
-    if (type == CT_IND && _g.getPuzzleBits() < 4) {
+    if (type == CT_IND && g_gm.getPuzzleBits() < 4) {
       return;
     }
     Vec2i post = pos.copy();
 
-    if (_g.getActiveTile() == type) { // is active
-      post += Vec2i(0, -_g.cellSize / 4);
+    if (g_gm.getActiveTile() == type) { // is active
+      post += Vec2i(0, -g_gm.cellSize / 4);
       // Draw line to mouse
-      graph->setColor(_colors["YELLOW"], 64);
-      graph->line(post + Vec2i(_g.vu(0.5f), _g.vu(0.5f)),
-                  GInput.mousePos() - Vec2i(0, _g.vu(0.5f)), 3);
-      graph->line(post + Vec2i(_g.vu(0.5f), _g.vu(0.5f)),
-                  GInput.mousePos() - Vec2i(_g.vu(0.5f), -_g.vu(0.25f)), 6);
-      graph->line(post + Vec2i(_g.vu(0.5f), _g.vu(0.5f)),
-                  GInput.mousePos() + Vec2i(_g.vu(0.5f), _g.vu(0.25f)), 3);
+      graph->setColor(g_colors["YELLOW"], 64);
+      graph->line(post + Vec2i(g_gm.vu(0.5f), g_gm.vu(0.5f)),
+                  GInput.mousePos() - Vec2i(0, g_gm.vu(0.5f)), 3);
+      graph->line(post + Vec2i(g_gm.vu(0.5f), g_gm.vu(0.5f)),
+                  GInput.mousePos() - Vec2i(g_gm.vu(0.5f), -g_gm.vu(0.25f)), 6);
+      graph->line(post + Vec2i(g_gm.vu(0.5f), g_gm.vu(0.5f)),
+                  GInput.mousePos() + Vec2i(g_gm.vu(0.5f), g_gm.vu(0.25f)), 3);
     } else if (state > 0) {
-      post += Vec2i(0, -_g.cellSize / 8);
+      post += Vec2i(0, -g_gm.cellSize / 8);
     }
-    graph->setColor(_colors["GREEN"]);
+    graph->setColor(g_colors["GREEN"]);
     graph->rect(
-        pos + Vec2i(_g.cellSize / 4, _g.cellSize / 8),
-        Vec2i(_g.cellSize - (_g.cellSize / 2), _g.cellSize - _g.cellSize / 4));
+        pos + Vec2i(g_gm.cellSize / 4, g_gm.cellSize / 8),
+        Vec2i(g_gm.cellSize - (g_gm.cellSize / 2), g_gm.cellSize - g_gm.cellSize / 4));
     CellSprites::baseTile.render(graph, post);
     CellSprites::cellMap[type]->render(graph, post);
   }
@@ -59,7 +59,7 @@ public:
       state = 1;
       if (GInput.mouseKeyOnce(SDL_BUTTON_LEFT)) {
         state = 2;
-        _g.setActiveTile(type);
+        g_gm.setActiveTile(type);
       }
       if (state > 0) {
         if (onHover != nullptr)

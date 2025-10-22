@@ -17,21 +17,21 @@ public:
         state = 0;
         center = false;
         text = "Button";
-        size = Vec2i(80, _g.vu(0.45f));
+        size = Vec2i(80, g_gm.vu(0.45f));
         setCollider(size);
     }
     ~BtnTopBar() {}
     void render(Graphics* graph) override {
         if (!available) return;
-        Color* c = &_colors["GRAY"];
+        Color* c = &g_colors["GRAY"];
         switch (state) {
-            case 0: c = &_colors["GRAY"]; break;
-            case 1: c = &_colors["YELLOW"]; break;
-            case 2: c = &_colors["GREEN"]; break;
+            case 0: c = &g_colors["GRAY"]; break;
+            case 1: c = &g_colors["YELLOW"]; break;
+            case 2: c = &g_colors["GREEN"]; break;
         }
         graph->setColor(*c);
         if (isHomeBtn) {
-            int sz = _g.vu(0.25f);
+            int sz = g_gm.vu(0.25f);
             // draw a diamond with triangles
             graph->tri(pos + Vec2i(sz/2, 0), pos + Vec2i(sz, sz/2), pos + Vec2i(sz/2, sz));
             graph->tri(pos + Vec2i(sz/2, 0), pos + Vec2i(0, sz/2), pos + Vec2i(sz/2, sz));
@@ -40,7 +40,7 @@ public:
         }
         if (center) {
             int textWidth = graph->textWidth(text, &Fonts::small);
-            Vec2i textPos = pos + Vec2i((size.x - textWidth) / 2, (size.y - _g.vu(0.5f)) / 2);
+            Vec2i textPos = pos + Vec2i((size.x - textWidth) / 2, (size.y - g_gm.vu(0.5f)) / 2);
             graph->text(text, textPos, &Fonts::small);
         }
         else {
@@ -75,13 +75,13 @@ public:
     std::string activeTopBar;
     TopBar() : Entity() {
         tag = "TopBar";
-        height = _g.vu(0.5f);
+        height = g_gm.vu(0.5f);
 
         btnHome.isHomeBtn = true;
-        btnHome.onClick = []() { _g.setScreen(SCN_MAIN_MENU); };
+        btnHome.onClick = []() { g_gm.setScreen(SCN_MAIN_MENU); };
         btnHome.available = true;
-        btnHome.pos = Vec2i(_g.vu(0.25f), 4);
-        btnHome.setCollider(Vec2i(_g.vu(0.25f), height));
+        btnHome.pos = Vec2i(g_gm.vu(0.25f), 4);
+        btnHome.setCollider(Vec2i(g_gm.vu(0.25f), height));
         em.addEntity(&btnHome);
 
         btnFile.onClick = [this]() {
@@ -93,7 +93,7 @@ public:
         btnFile.tag = "btnFile";
         btnFile.available = true;
         btnFile.text = "FILE";
-        btnFile.pos = Vec2i(_g.vu(0.15f) + _g.vu(0.75f), 4);
+        btnFile.pos = Vec2i(g_gm.vu(0.15f) + g_gm.vu(0.75f), 4);
         em.addEntity(&btnFile);
 
         btnEdit.onClick = [this]() {
@@ -105,7 +105,7 @@ public:
         btnEdit.tag = "btnEdit";
         btnEdit.available = true;
         btnEdit.text = "EDIT";
-        btnEdit.pos = Vec2i(_g.vu(0.15f) + _g.vu(2.25f), 4);
+        btnEdit.pos = Vec2i(g_gm.vu(0.15f) + g_gm.vu(2.25f), 4);
         em.addEntity(&btnEdit);
 
         btnTools.onClick = [this]() {
@@ -119,7 +119,7 @@ public:
         btnTools.tag = "btnTools";
         btnTools.available = true;
         btnTools.text = "TOOL";
-        btnTools.pos = Vec2i(_g.vu(0.15f) + _g.vu(3.75f), 4);
+        btnTools.pos = Vec2i(g_gm.vu(0.15f) + g_gm.vu(3.75f), 4);
         em.addEntity(&btnTools);
 
 
@@ -127,77 +127,77 @@ public:
         btnNew.tag = "btnNew";
         btnNew.onClick = [this]() {
             modal.onOk = [&]() {
-                _g.setScreen(SCN_PUZZLE_SETUP);
+                g_gm.setScreen(SCN_PUZZLE_SETUP);
             };
             modal.title = "Change Enigma?";
             modal.show = true;
         };
         btnNew.available = false;
         btnNew.text = "OPEN";
-        btnNew.pos = Vec2i(btnFile.pos.x, btnFile.pos.y + _g.vu(0.5f));
+        btnNew.pos = Vec2i(btnFile.pos.x, btnFile.pos.y + g_gm.vu(0.5f));
         em.addEntity(&btnNew);
 
         btnSave.onClick = [this]() { 
             modal.onOk = [&]() {
-                _g.sendMessage("save");
+                g_gm.sendMessage("save");
             };
             modal.title = "Save?";
             modal.show = true; 
         };
         btnSave.available = false;
         btnSave.text = "SAVE";
-        btnSave.pos = Vec2i(btnFile.pos.x, btnFile.pos.y + _g.vu(1));
+        btnSave.pos = Vec2i(btnFile.pos.x, btnFile.pos.y + g_gm.vu(1));
         em.addEntity(&btnSave);
 
         btnLoad.onClick = [this]() { 
             modal.onOk = [&]() {
-                _g.sendMessage("load");
+                g_gm.sendMessage("load");
             };
             modal.title = "Load?";
             modal.show = true;
         };
         btnLoad.available = false;
         btnLoad.text = "LOAD";
-        btnLoad.pos = Vec2i(btnFile.pos.x, btnFile.pos.y + _g.vu(1.5f));
+        btnLoad.pos = Vec2i(btnFile.pos.x, btnFile.pos.y + g_gm.vu(1.5f));
         em.addEntity(&btnLoad);
 
         // Tools menu
-        btnTests.onClick = []() { DBG("TESTS"); _g.toggleTests(); };
+        btnTests.onClick = []() { DBG("TESTS"); g_gm.toggleTests(); };
         btnTests.available = false;
         btnTests.text = "SUBENIGMAS";
-        btnTests.pos = Vec2i(btnTools.pos.x, btnTools.pos.y + _g.vu(0.5f));
+        btnTests.pos = Vec2i(btnTools.pos.x, btnTools.pos.y + g_gm.vu(0.5f));
         em.addEntity(&btnTests);
 
         btnMVDown.onClick = [this]() { 
-            _g.sendMessage("mv_down");
+            g_gm.sendMessage("mv_down");
         };
         btnMVDown.available = false;
         btnMVDown.text = "DOWN";
-        btnMVDown.pos = Vec2i(btnTools.pos.x, btnTools.pos.y + _g.vu(1.0f));
+        btnMVDown.pos = Vec2i(btnTools.pos.x, btnTools.pos.y + g_gm.vu(1.0f));
         em.addEntity(&btnMVDown);
 
         btnMVUp.onClick = [this]() { 
-            _g.sendMessage("mv_up");
+            g_gm.sendMessage("mv_up");
         };
         btnMVUp.available = false;
         btnMVUp.text = "UP";
-        btnMVUp.pos = Vec2i(btnTools.pos.x, btnTools.pos.y + _g.vu(1.5f));
+        btnMVUp.pos = Vec2i(btnTools.pos.x, btnTools.pos.y + g_gm.vu(1.5f));
         em.addEntity(&btnMVUp);
 
         btnMVLeft.onClick = [this]() { 
-            _g.sendMessage("mv_left");
+            g_gm.sendMessage("mv_left");
         };
         btnMVLeft.available = false;
         btnMVLeft.text = "LEFT";
-        btnMVLeft.pos = Vec2i(btnTools.pos.x, btnTools.pos.y + _g.vu(2.0f));
+        btnMVLeft.pos = Vec2i(btnTools.pos.x, btnTools.pos.y + g_gm.vu(2.0f));
         em.addEntity(&btnMVLeft);
 
         btnMVRight.onClick = [this]() { 
-            _g.sendMessage("mv_right");
+            g_gm.sendMessage("mv_right");
         };
         btnMVRight.available = false;
         btnMVRight.text = "RIGHT";
-        btnMVRight.pos = Vec2i(btnTools.pos.x, btnTools.pos.y + _g.vu(2.5f));
+        btnMVRight.pos = Vec2i(btnTools.pos.x, btnTools.pos.y + g_gm.vu(2.5f));
         em.addEntity(&btnMVRight);
 
         // Edit menu
@@ -206,7 +206,7 @@ public:
         };
         btnUndo.available = false;
         btnUndo.text = "UNDO";
-        btnUndo.pos = Vec2i(btnEdit.pos.x, btnEdit.pos.y + _g.vu(0.5f));
+        btnUndo.pos = Vec2i(btnEdit.pos.x, btnEdit.pos.y + g_gm.vu(0.5f));
         em.addEntity(&btnUndo);
 
         btnRedo.onClick = [this]() { 
@@ -214,20 +214,20 @@ public:
         };
         btnRedo.available = false;
         btnRedo.text = "REDO";
-        btnRedo.pos = Vec2i(btnEdit.pos.x, btnEdit.pos.y + _g.vu(1.0f));
+        btnRedo.pos = Vec2i(btnEdit.pos.x, btnEdit.pos.y + g_gm.vu(1.0f));
         em.addEntity(&btnRedo);
         
         btnReset.onClick = [this]() { 
             modal.onOk = [&]() {
                 // _g.setReset(true); 
-                _g.sendMessage("reset");
+                g_gm.sendMessage("reset");
             };
             modal.title = "Reset?";
             modal.show = true;
         };
         btnReset.available = false;
         btnReset.text = "RESET";
-        btnReset.pos = Vec2i(btnEdit.pos.x, btnEdit.pos.y + _g.vu(1.5f));
+        btnReset.pos = Vec2i(btnEdit.pos.x, btnEdit.pos.y + g_gm.vu(1.5f));
         em.addEntity(&btnReset);
 
 
@@ -235,8 +235,8 @@ public:
     }
     ~TopBar() {}
     void process() override {
-        if (_g.getScreen() != SCN_PUZZLE) return;
-        if (_g.getHukActive()) return;
+        if (g_gm.getScreen() != SCN_PUZZLE) return;
+        if (g_gm.getHukActive()) return;
         // Clear if nothing is clicked
         if (GInput.mouseKeyOnce(SDL_BUTTON_LEFT)) {
             activeTopBar = "";
@@ -262,11 +262,11 @@ public:
         }
     }
     void render(Graphics* graph) override {
-        if (_g.getScreen() != SCN_PUZZLE) return;
-        graph->setColor(_colors["BG3"]);
+        if (g_gm.getScreen() != SCN_PUZZLE) return;
+        graph->setColor(g_colors["BG3"]);
         graph->rect(Vec2i(0, 0), Vec2i(WINDOW_SIZE.x, height));
         
-        graph->setColor(_colors["BG2"]);
+        graph->setColor(g_colors["BG2"]);
         if (activeTopBar == "btnFile") {
             graph->rect(Vec2i(btnFile.pos.x, height), Vec2i(129, 120));
         }

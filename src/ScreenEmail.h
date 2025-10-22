@@ -15,7 +15,7 @@ public:
   EntityManager em;
   std::string text;
   Sprite sprWiz =
-      Sprite(Vec2i(0, 224), Vec2i(32, 32), Vec2i(_g.vu(2), _g.vu(2)));
+      Sprite(Vec2i(0, 224), Vec2i(32, 32), Vec2i(g_gm.vu(2), g_gm.vu(2)));
   Sound sndType = Sound("tick.wav");
   Font font = Font("HomeVideo.ttf", 24);
   ScreenEmail() : Entity() {
@@ -25,37 +25,37 @@ public:
   }
   ~ScreenEmail() {}
   void process() override {
-    if (_g.getScreen() != SCN_HELP)
+    if (g_gm.getScreen() != SCN_HELP)
       return;
     if (init == false) {
       DBG("Starting Email Intro");
       init = true;
       pressed = 0;
-      startTicks = _g.getTick();
-      _g.store.setBool("completed_email_intro", true);
+      startTicks = g_gm.getTick();
+      g_gm.store.setBool("completed_email_intro", true);
     } else if (GInput.anyKeyOnce()) {
       pressed++;
       if (pressed > 1) {
-        _g.setScreen(SCN_PUZZLE);
+        g_gm.setScreen(SCN_PUZZLE);
       }
     }
   }
   void render(Graphics *graph) override {
-    if (_g.getScreen() != SCN_HELP)
+    if (g_gm.getScreen() != SCN_HELP)
       return;
-    graph->setColor(_colors["BG"], 128);
-    graph->rect(Vec2i(_g.vu(0.5f), _g.vu(0.5f)),
-                WINDOW_SIZE - Vec2i(_g.vu(1), _g.vu(1)), true);
-    graph->setColor(_colors["YELLOW"]);
-    int tick = (_g.getTick() - startTicks);
-    int rad = (tick / 16) % 2 == 0 ? _g.vu(0.7f) : _g.vu(0.75f);
-    graph->circle(Vec2i(WINDOW_SIZE.x - _g.vu(2) - _g.vu(0.25f) + _g.vu(0.75f),
-                        _g.vu(0.75f) + _g.vu(0.75f)),
+    graph->setColor(g_colors["BG"], 128);
+    graph->rect(Vec2i(g_gm.vu(0.5f), g_gm.vu(0.5f)),
+                WINDOW_SIZE - Vec2i(g_gm.vu(1), g_gm.vu(1)), true);
+    graph->setColor(g_colors["YELLOW"]);
+    int tick = (g_gm.getTick() - startTicks);
+    int rad = (tick / 16) % 2 == 0 ? g_gm.vu(0.7f) : g_gm.vu(0.75f);
+    graph->circle(Vec2i(WINDOW_SIZE.x - g_gm.vu(2) - g_gm.vu(0.25f) + g_gm.vu(0.75f),
+                        g_gm.vu(0.75f) + g_gm.vu(0.75f)),
                   rad, true);
     sprWiz.render(graph,
-                  Vec2i(WINDOW_SIZE.x - _g.vu(2) - _g.vu(0.5f), _g.vu(0.5f)));
+                  Vec2i(WINDOW_SIZE.x - g_gm.vu(2) - g_gm.vu(0.5f), g_gm.vu(0.5f)));
 
-    graph->setColor(_colors["GREEN"]);
+    graph->setColor(g_colors["GREEN"]);
     int pos = std::min((tick / 3) * 6, (int)text.length() - 1);
     if (pressed > 0)
       pos = text.length() - 1;
@@ -65,8 +65,8 @@ public:
       sndType.stop();
     }
     std::string textTrunc = text.substr(0, pos);
-    graph->textFmt(textTrunc, Vec2i(_g.vu(1), _g.vu(2)), &Fonts::small,
-                   WINDOW_SIZE.x - _g.vu(2));
+    graph->textFmt(textTrunc, Vec2i(g_gm.vu(1), g_gm.vu(2)), &Fonts::small,
+                   WINDOW_SIZE.x - g_gm.vu(2));
   }
 
 private:

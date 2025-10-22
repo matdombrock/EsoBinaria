@@ -26,7 +26,7 @@ public:
     showCancel = true;
 
     btnOk.text = "OK";
-    btnOk.pos = pos + Vec2i(_g.vu(0.5f), _g.vu(2));
+    btnOk.pos = pos + Vec2i(g_gm.vu(0.5f), g_gm.vu(2));
     btnOk.onClick = [this]() {
       if (onOk != nullptr)
         onOk();
@@ -34,7 +34,7 @@ public:
     };
 
     btnCancel.text = "CANCEL";
-    btnCancel.pos = pos + Vec2i(_g.vu(2.5f), _g.vu(2));
+    btnCancel.pos = pos + Vec2i(g_gm.vu(2.5f), g_gm.vu(2));
     btnCancel.onClick = [this]() {
       if (onCancel != nullptr)
         onCancel();
@@ -50,13 +50,13 @@ public:
     show = false;
     showCancel = true;
     title = "Modal";
-    _g.setModalActive(false);
+    g_gm.setModalActive(false);
   }
   void process() override {
     if (!show) {
       return;
     } 
-    _g.setModalActive(true);
+    g_gm.setModalActive(true);
     if (!showCancel) {
       btnCancel.available = false;
     } else {
@@ -68,10 +68,10 @@ public:
   void render(Graphics *graph) override {
     if (!show)
       return;
-    graph->setColor(_colors["BG3"]);
+    graph->setColor(g_colors["BG3"]);
     graph->rect(pos, Vec2i(WINDOW_SIZE.x / 2, WINDOW_SIZE.y / 4), true);
-    graph->setColor(_colors["WHITE"]);
-    graph->text(title, pos + Vec2i(_g.vu(0.5f), _g.vu(0.5f)), &Fonts::medium);
+    graph->setColor(g_colors["WHITE"]);
+    graph->text(title, pos + Vec2i(g_gm.vu(0.5f), g_gm.vu(0.5f)), &Fonts::medium);
     em.render(graph);
   }
 };

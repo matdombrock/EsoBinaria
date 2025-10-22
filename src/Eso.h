@@ -40,13 +40,13 @@ public:
   Sound mainMusic = Sound("main.ogg");
   int overlayColor[4] = {0, 0, 0, 0};
   // _g.store will not be initalized and will have no values on first run
-  App() : Imp::Main("EsoBinaria", WINDOW_SIZE, WINDOW_FPS, _g.store.getInt("settings_window_scale"), "tiles.png") {
+  App() : Imp::Main("EsoBinaria", WINDOW_SIZE, WINDOW_FPS, g_gm.store.getInt("settings_window_scale"), "tiles.png") {
 
-    _g.init();
+    g_gm.init();
     // Must reset after _g.init() so that puzzle is loaded
     testArea.reset();
 
-    clearColor = Color(_colors["BG"]);
+    clearColor = Color(g_colors["BG"]);
     entityMan.addEntity(&bg);
     entityMan.addEntity(&grid);
     entityMan.addEntity(&bottomBar);
@@ -61,9 +61,9 @@ public:
     entityMan.addEntity(&cursor);
     entityMan.addEntity(&fx);
 
-    _g.setScreen(SCN_BUMPER);
+    g_gm.setScreen(SCN_BUMPER);
 
-    Fonts::init(_g.fontSize);
+    Fonts::init(g_gm.fontSize);
 
     // Default Settings
     initDefaultSettings();
@@ -72,19 +72,19 @@ public:
   }
   ~App() {}
   void initDefaultSettings() {
-    _g.store.initBool("settings_enable_screen_fx", true);
-    _g.store.initBool("settings_enable_color_overlay", true);
-    _g.store.initBool("settings_enable_fps", false);
-    _g.store.initBool("settings_enable_audio", true);
-    _g.store.initBool("settings_enable_music", true);
-    _g.store.initBool("settings_enable_auto_save", true);
-    _g.store.initInt("settings_window_scale", 1);
-    _g.store.initInt("settings_color_overlay_num", 0);
+    g_gm.store.initBool("settings_enable_screen_fx", true);
+    g_gm.store.initBool("settings_enable_color_overlay", true);
+    g_gm.store.initBool("settings_enable_fps", false);
+    g_gm.store.initBool("settings_enable_audio", true);
+    g_gm.store.initBool("settings_enable_music", true);
+    g_gm.store.initBool("settings_enable_auto_save", true);
+    g_gm.store.initInt("settings_window_scale", 1);
+    g_gm.store.initInt("settings_color_overlay_num", 0);
     // There are more store keys which are not initialized here
     // These are really just the settings
   }
   void recolor() {
-    int num = _g.store.getInt("settings_color_overlay_num");
+    int num = g_gm.store.getInt("settings_color_overlay_num");
     int overlays[8][4] = {{96, 255, 128, 32}, {255, 128, 96, 32},
                           {128, 96, 255, 32}, {255, 255, 255, 32},
                           {128, 255, 96, 32}, {96, 128, 255, 32},
@@ -96,21 +96,21 @@ public:
   }
   void render(Graphics *graph) override {
     // Color overlay
-    if (_g.store.getBool("settings_enable_color_overlay")) {
+    if (g_gm.store.getBool("settings_enable_color_overlay")) {
       graph->setColor(overlayColor[0], overlayColor[1], overlayColor[2],
                       overlayColor[3]);
       graph->rect(Vec2i(0, 0), WINDOW_SIZE, true);
     }
     // FPS meter
-    if (_g.store.getBool("settings_enable_fps")) {
+    if (g_gm.store.getBool("settings_enable_fps")) {
       graph->setColor(0, 255, 0, 255);
       graph->text(std::to_string(realFPS), Vec2i(0, 0), &Fonts::small);
     }
   }
   void process() override {
     // Handle messages
-    std::vector<std::string> msgs = _g.getMessages();
-    _g.clearMessages();
+    std::vector<std::string> msgs = g_gm.getMessages();
+    g_gm.clearMessages();
     for (int i = 0; i < msgs.size(); i++) {
       std::string msg = msgs[i];
       if (msg == "mv_down") {
@@ -129,11 +129,11 @@ public:
         auto data = grid.cellsToString();
         DBG("save");
         DBG(data);
-        _g.store.setString("save_" + _g.getPuzzleString(), data);
+        g_gm.store.setString("save_" + g_gm.getPuzzleString(), data);
       }
       if (msg == "load") {
-        if (_g.store.hasKey("save_" + _g.getPuzzleString())) {
-          auto data = _g.store.getString("save_" + _g.getPuzzleString());
+        if (g_gm.store.hasKey("save_" + g_gm.getPuzzleString())) {
+          auto data = g_gm.store.getString("save_" + g_gm.getPuzzleString());
           DBG("load");
           DBG(data);
           grid.setCellsFromString(data);
@@ -150,11 +150,11 @@ public:
         recolor();
       }
       if (msg == "resize") {
-        int scale = _g.store.getInt("settings_window_scale");
+        int scale = g_gm.store.getInt("settings_window_scale");
         scale = scale + 1;
         if (scale > 2)
           scale = 1;
-        _g.store.setInt("settings_window_scale", scale);
+        g_gm.store.setInt("settings_window_scale", scale);
         init("tiles.png", scale);
       }
       if (msg == "init_default_settings") {
@@ -165,12 +165,12 @@ public:
       }
     }
 
-    _g.incTick();
+    g_gm.incTick();
 
     mainMusic.play(0, true);
 
     // Enable / disable audio
-    if (!_g.store.getBool("settings_enable_audio")) {
+    if (!g_gm.store.getBool("settings_enable_audio")) {
 #if defined(__APPLE__)
       Mix_MasterVolume(0); // breaks linux
 #endif
@@ -180,14 +180,14 @@ public:
 #endif
     }
     // Enable music
-    if (!_g.store.getBool("settings_enable_music")) {
+    if (!g_gm.store.getBool("settings_enable_music")) {
       mainMusic.mute();
     } else {
       mainMusic.unmute();
     }
 
     // FPS meter
-    if (_g.getTick() % 60 == 0) {
+    if (g_gm.getTick() % 60 == 0) {
       realFPS = getRealFPS();
     }
   }
