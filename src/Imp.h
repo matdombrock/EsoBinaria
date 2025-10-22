@@ -317,7 +317,7 @@ public:
   void setFloat(std::string key, float value) {
     setString(key, std::to_string(value));
   }
-  initFloat(std::string key, float value) {
+  void initFloat(std::string key, float value) {
     if (!hasKey(key)) {
       setFloat(key, value);
     }
@@ -325,7 +325,7 @@ public:
   void setBool(std::string key, bool value) {
     setString(key, value ? "true" : "false");
   }
-  initBool(std::string key, bool value) {
+  void initBool(std::string key, bool value) {
     if (!hasKey(key)) {
       setBool(key, value);
     }
@@ -336,7 +336,7 @@ public:
     char *value = (char *)EM_ASM_INT(
         {
           var value = localStorage.getItem(UTF8ToString($0));
-          if (value == = null)
+          if (value === null)
             return 0;
           var lengthBytes = lengthBytesUTF8(value) + 1;
           var stringOnWasmHeap = _malloc(lengthBytes);
@@ -365,7 +365,7 @@ public:
   }
   bool hasKey(std::string key) {
     return static_cast<bool>(EM_ASM_INT(
-        { return localStorage.getItem(UTF8ToString($0)) != = null; },
+        { return localStorage.getItem(UTF8ToString($0)) !== null; },
         key.c_str()));
   }
   void clear() { EM_ASM(localStorage.clear();); }
