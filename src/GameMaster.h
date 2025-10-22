@@ -36,14 +36,14 @@ public:
   GameMaster() {}
   ~GameMaster() {}
   void init() {
-
+    // The sound system is not initialized in the constructor
+    // so we have to do it here
     sndToggleTests.set("toggle.wav");
     sndChangeTile.set("chtile.wav");
 
     std::string puzzleChallengeString = store.getString("puzzle_challenge");
-    puzzleChallengeString.length() > 0
-        ? puzzleChallenge = puzzleChallengeString[0]
-        : puzzleChallenge = 'e';
+    puzzleChallenge =
+        puzzleChallengeString.length() > 0 ? puzzleChallengeString[0] : 'e';
     puzzleNum = store.getInt("puzzle_num");
     DBG("Loaded Current Puzzle: " + getPuzzleString());
   }
@@ -110,10 +110,8 @@ public:
   }
   void setHukActive(bool active) { hukActive = active; }
   bool getHukActive() { return hukActive; }
-  void setModalActive(bool active) { 
-    modalActive = active; }
-  bool getModalActive() { 
-    return modalActive; }
+  void setModalActive(bool active) { modalActive = active; }
+  bool getModalActive() { return modalActive; }
   void sendMessage(std::string message) { messages.push_back(message); }
   std::vector<std::string> getMessages() { return messages; }
   void clearMessages() { messages.clear(); }

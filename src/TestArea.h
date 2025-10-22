@@ -25,9 +25,6 @@ public:
     DBG("Max unsigned int: " +
         std::to_string(Util::maxUnsignedInt(_g.getPuzzleBits())));
     tests.resize(256);
-    DBG("ok1");
-    reset();
-    DBG("ok2");
     testWinWidth = _g.fontSize * 8;
     pos.y = _g.cellSize;
     for (int i = 0; i < tests.size(); i++) {
@@ -47,6 +44,7 @@ public:
     return testFails;
   }
   void reset() {
+    DBG("Resetting tests");
     switch (_g.getPuzzleChallenge()) {
     case 'e':
       testCount = Util::maxUnsignedInt(_g.getPuzzleBits()) / 4;
@@ -148,7 +146,6 @@ public:
             return;
           }
           _g.setPuzzleData(bits, challenge, num);
-          // _g.setReset(true);
           _g.sendMessage("reset");
           _g.setScreen(SCN_PUZZLE);
         };

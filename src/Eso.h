@@ -41,6 +41,8 @@ public:
   App() : Imp::Main("EsoBinaria", WINDOW_SIZE, WINDOW_FPS, _g.store.getInt("settings_window_scale"), "tiles.png") {
 
     _g.init();
+    // Must reset after _g.init() so that puzzle is loaded
+    testArea.reset();
 
     clearColor = Color(_colors["BG"]);
     entityMan.addEntity(&screenBG);
