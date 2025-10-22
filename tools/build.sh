@@ -5,16 +5,12 @@ set -e
 mkdir -p build
 
 # Build s7
-if [ ! -f ./build/s7.o ]; then
-  echo "Compiling s7 for native..."
-  gcc -c ./lib/s7/s7.c -o ./build/s7.o -std=c11
-else
-  echo "s7.o already exists, skipping compilation."
-fi
+./tools/build.s7.sh
 
 # Build the project
 cd build
-cmake ..
+# cmake ..
+cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON ..
 make
 
 # Packaging step
@@ -30,3 +26,6 @@ cp /usr/lib/x86_64-linux-gnu/libFLAC.so.12 $sdl_dir/
 
 # Copy the launch script
 cp ../build_res/launch.EsoBinaria.sh ./out/launch.EsoBinaria.sh
+
+# Copy the compile commands
+cp compile_commands.json ../compile_commands.json

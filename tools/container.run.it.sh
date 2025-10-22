@@ -1,2 +1,2 @@
 #!/bin/bash
-podman run --rm -v "$(pwd)":/workspace -w /workspace -it esobinaria
+podman run --rm -v "$(pwd)":/$(pwd) -w /$(pwd) -it esobinaria

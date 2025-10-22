@@ -1,5 +1,6 @@
+.cache
 build
 buildwasm
 *.zip
 .DS_Store
-
+compile_commands.json
