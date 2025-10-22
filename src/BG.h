@@ -10,10 +10,10 @@ using namespace Imp;
 #define BUILD_TIME 1234
 #endif
 
-class ScreenBG : public Entity {
+class BG : public Entity {
 public:
-  ScreenBG() : Entity() { tag = "bumper"; }
-  ~ScreenBG() {}
+  BG() : Entity() { tag = "bumper"; }
+  ~BG() {}
   void process() override {
     posA.x = (sin(_g.getTick() / 512.0f) + 1.0f) * (WINDOW_SIZE.x * 4);
     posA.y = (cos(_g.getTick() / 512.0f) + 1.0f) * (WINDOW_SIZE.y * 4);

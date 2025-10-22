@@ -9,10 +9,10 @@ using namespace Imp;
 #include "Cursor.h"
 #include "Grid.h"
 #include "Huk.h"
-#include "ScreenBG.h"
+#include "BG.h"
+#include "FX.h"
 #include "ScreenBumper.h"
 #include "ScreenEmail.h"
-#include "ScreenFx.h"
 #include "ScreenMainMenu.h"
 #include "ScreenSettings.h"
 #include "ScreenSetup.h"
@@ -29,8 +29,8 @@ public:
   TopBar topBar;
   BottomBar bottomBar;
   Huk huk;
-  ScreenBG screenBG;
-  ScreenFx screenFx;
+  BG bg;
+  FX fx;
   ScreenBumper screenBumper;
   ScreenMainMenu screenMainMenu;
   ScreenSetup screenSetup;
@@ -45,7 +45,7 @@ public:
     testArea.reset();
 
     clearColor = Color(_colors["BG"]);
-    entityMan.addEntity(&screenBG);
+    entityMan.addEntity(&bg);
     entityMan.addEntity(&grid);
     entityMan.addEntity(&bottomBar);
     entityMan.addEntity(&testArea);
@@ -57,7 +57,7 @@ public:
     entityMan.addEntity(&screenMainMenu);
     entityMan.addEntity(&screenSettings);
     entityMan.addEntity(&cursor);
-    entityMan.addEntity(&screenFx);
+    entityMan.addEntity(&fx);
 
     _g.setScreen(SCN_BUMPER);
 

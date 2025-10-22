@@ -10,10 +10,10 @@ using namespace Imp;
 #define BUILD_TIME 1234
 #endif
 
-class ScreenFx : public Entity {
+class FX : public Entity {
 public:
-  ScreenFx() : Entity() { tag = "bumper"; }
-  ~ScreenFx() {}
+  FX() : Entity() { tag = "bumper"; }
+  ~FX() {}
   void process() override {
     if (!_g.store.getBool("settings_enable_screen_fx")) {
       return;
