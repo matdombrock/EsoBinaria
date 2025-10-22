@@ -85,7 +85,6 @@ public:
             DBG("Ignoring empty code");
             return data.lastCheck;
         }
-        // code = "(display \"hello\"  )";
         std::string pre = "";
         pre += "(define (xor a b) (or (and a (not b)) (and (not a) b)))";
         pre += "(define (nand a b) (not (and a b)))";
@@ -95,7 +94,6 @@ public:
         pre += "(define b " + boolScheme(data.inputs[1]) + ")";
         pre += "(define c " + boolScheme(data.inputs[2]) + ")";
         pre += "(define d " + boolScheme(data.inputs[3]) + ")";
-        // pre += "(define output " + boolScheme(output) + ")";
         code = "(begin " + pre + code + ")";
         std::string eval = evalScheme(code);
         if (eval != "#t" && eval != "#f") {
