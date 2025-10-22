@@ -110,6 +110,10 @@ public:
   }
   void setHukActive(bool active) { hukActive = active; }
   bool getHukActive() { return hukActive; }
+  void setModalActive(bool active) { 
+    modalActive = active; }
+  bool getModalActive() { 
+    return modalActive; }
   void sendMessage(std::string message) { messages.push_back(message); }
   std::vector<std::string> getMessages() { return messages; }
   void clearMessages() { messages.clear(); }
@@ -126,6 +130,7 @@ private:
   // bool reset = false;
   // bool quit = false;
   bool hukActive = false;
+  bool modalActive = false;
   std::string codeErr = "";
   std::string codeString = "";
   HelpItem *helpItem = nullptr;

@@ -100,6 +100,7 @@ public:
     void process() override {
         if (_g.getScreen() != SCN_PUZZLE) return;
         if (_g.getHukActive()) return;
+        if (_g.getModalActive()) return;
         mousePos = GInput.mousePos();
         mousePosCell = mousePos / _g.cellSize;
         // Update lastMouse array with the most recent mousePosCell value

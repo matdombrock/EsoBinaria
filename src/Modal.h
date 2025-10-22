@@ -47,10 +47,13 @@ public:
     show = false;
     showCancel = true;
     title = "Modal";
+    _g.setModalActive(false);
   }
   void process() override {
-    if (!show)
+    if (!show) {
       return;
+    } 
+    _g.setModalActive(true);
     if (!showCancel) {
       btnCancel.available = false;
     } else {
