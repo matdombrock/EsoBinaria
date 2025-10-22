@@ -4,7 +4,6 @@
 #include "../lib/s7/s7.h"
 
 #include "Imp.h"
-using namespace Imp;
 #include "BottomBar.h"
 #include "Cursor.h"
 #include "Grid.h"
@@ -20,6 +19,8 @@ using namespace Imp;
 #include "TopBar.h"
 #include "_fonts.h"
 #include "_gameMaster.h"
+
+using namespace Imp;
 
 class App : public Imp::Main {
 public:
@@ -63,18 +64,8 @@ public:
 
     Fonts::init(_g.fontSize);
 
-    // DBG Clear settings
-    // _g.store.clear();
-
     // Default Settings
     initDefaultSettings();
-
-    // Set some DBG flags
-    // _g.store.setBool("completed_email_intro", true);
-    // _g.store.setBool("unlocked_medium", true);
-    // _g.store.setBool("unlocked_hard", true);
-    // _g.store.setBool("completed_lvl_3.e0", true);
-    // _g.store.setBool("completed_lvl_3.e1", true);
 
     recolor();
   }
@@ -88,6 +79,8 @@ public:
     _g.store.initBool("settings_enable_auto_save", true);
     _g.store.initInt("settings_window_scale", 1);
     _g.store.initInt("settings_color_overlay_num", 0);
+    // There are more store keys which are not initialized here
+    // These are really just the settings
   }
   void recolor() {
     int num = _g.store.getInt("settings_color_overlay_num");
@@ -101,12 +94,6 @@ public:
     overlayColor[3] = overlays[num][3];
   }
   void render(Graphics *graph) override {
-    // WARN: THIS IS A BAD IDEA
-    if (_g.store.getBool("settings_enable_screen_fx")) {
-      // float amt = std::sin(_g.getTick() / 128.0f) * 0.5f + 0.5f;
-      // amt *= 0.75f;
-      // graph->fxApply(FX_SCANLINES2, _g.getTick(), amt);
-    }
     // Color overlay
     if (_g.store.getBool("settings_enable_color_overlay")) {
       graph->setColor(overlayColor[0], overlayColor[1], overlayColor[2],
@@ -142,7 +129,6 @@ public:
         DBG("save");
         DBG(data);
         _g.store.setString("save_" + _g.getPuzzleString(), data);
-        // grid.setCellsFromString(data);
       }
       if (msg == "load") {
         if (_g.store.hasKey("save_" + _g.getPuzzleString())) {
@@ -177,16 +163,6 @@ public:
         exit(0);
       }
     }
-
-    // if (_g.getReset()) {
-    //     _g.setReset(false);
-    //     grid.reset();
-    //     testArea.reset();
-    //     huk.reset();
-    // }
-    // if (_g.getQuit()) {
-    //     exit(0);
-    // }
 
     _g.incTick();
 
