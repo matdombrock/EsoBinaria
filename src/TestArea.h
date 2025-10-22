@@ -53,7 +53,7 @@ public:
             case 'h': testCount = Util::maxUnsignedInt(_g.getPuzzleBits()); break;
             default: testCount = Util::maxUnsignedInt(_g.getPuzzleBits()); break;
         }
-        for (int i = 0; i < 7; i++) { // TODO: WTF used to be tests.size()
+        for (int i = 0; i < tests.size(); i++) { // TODO: WTF used to be tests.size()
            tests[i].set(i, _g.getPuzzleBits(), _g.getPuzzleNum()); 
         }
         check();
