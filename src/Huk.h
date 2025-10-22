@@ -3,10 +3,10 @@
 */
 #pragma once
 #include "Imp.h"
-#include "_gameMaster.h"
-#include "_colors.h"
-#include "_fonts.h"
-#include "_text.h"
+#include "g_gameMaster.h"
+#include "g_colors.h"
+#include "g_fonts.h"
+#include "g_text.h"
 using namespace Imp;
 
 class Huk : public Entity {

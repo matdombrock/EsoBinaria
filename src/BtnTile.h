@@ -6,8 +6,8 @@
 using namespace Imp;
 #include "Cell.h"
 #include "CellSprites.h"
-#include "_colors.h"
-#include "_gameMaster.h"
+#include "g_colors.h"
+#include "g_gameMaster.h"
 
 class BtnTile : public Entity {
 public:

@@ -6,9 +6,9 @@
 #include "GameMaster.h"
 #include "Imp.h"
 using namespace Imp;
-#include "_colors.h"
-#include "_fonts.h"
-#include "_gameMaster.h"
+#include "g_colors.h"
+#include "g_fonts.h"
+#include "g_gameMaster.h"
 
 #ifndef BUILD_TIME
 #define BUILD_TIME 1234

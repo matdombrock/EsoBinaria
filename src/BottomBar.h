@@ -7,10 +7,10 @@
 #include "Imp.h"
 using namespace Imp;
 #include "BtnTile.h"
-#include "_helpItems.h"
-#include "_colors.h"
-#include "_gameMaster.h"
-#include "_fonts.h"
+#include "g_helpItems.h"
+#include "g_colors.h"
+#include "g_gameMaster.h"
+#include "g_fonts.h"
 
 class BottomBar : public Entity {
 public:

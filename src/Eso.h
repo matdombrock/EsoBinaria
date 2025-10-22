@@ -17,8 +17,8 @@
 #include "ScreenSetup.h"
 #include "TestArea.h"
 #include "TopBar.h"
-#include "_fonts.h"
-#include "_gameMaster.h"
+#include "g_fonts.h"
+#include "g_gameMaster.h"
 
 using namespace Imp;
 

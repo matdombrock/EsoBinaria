@@ -13,7 +13,7 @@ using namespace Imp;
 
 #include "Cell.h"
 #include "TestData.h"
-#include "_helpItems.h"
+#include "g_helpItems.h"
 
 #define WINDOW_SIZE Vec2i(1024, 768)
 #define WINDOW_FPS 60

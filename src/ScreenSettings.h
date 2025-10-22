@@ -5,9 +5,9 @@
 #include "Imp.h"
 using namespace Imp;
 #include "Modal.h"
-#include "_colors.h"
-#include "_gameMaster.h"
-#include "_fonts.h"
+#include "g_colors.h"
+#include "g_gameMaster.h"
+#include "g_fonts.h"
 
 class BtnSettings : public Btn {
 public:

@@ -9,9 +9,9 @@
 using namespace Imp;
 #include "Modal.h"
 #include "TestCase.h"
-#include "_colors.h"
-#include "_fonts.h"
-#include "_gameMaster.h"
+#include "g_colors.h"
+#include "g_fonts.h"
+#include "g_gameMaster.h"
 
 class TestArea : public Entity {
 public:

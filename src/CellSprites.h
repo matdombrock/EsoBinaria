@@ -5,7 +5,7 @@
 #include "Imp.h"
 #include <map>
 #include "Cell.h"
-#include "_gameMaster.h"
+#include "g_gameMaster.h"
 
 using namespace Imp;
 

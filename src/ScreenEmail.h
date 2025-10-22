@@ -5,10 +5,10 @@
 #pragma once
 #include "Imp.h"
 using namespace Imp;
-#include "_colors.h"
-#include "_fonts.h"
-#include "_gameMaster.h"
-#include "_text.h"
+#include "g_colors.h"
+#include "g_fonts.h"
+#include "g_gameMaster.h"
+#include "g_text.h"
 
 class ScreenEmail : public Entity {
 public:
