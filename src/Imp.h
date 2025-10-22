@@ -36,9 +36,9 @@ struct ImpState {
 
 namespace Imp {
 
-const std::string basePath = SDL_GetBasePath();
+static const std::string basePath = SDL_GetBasePath();
 
-inline ImpState state = {1};
+static inline ImpState state = {1};
 
 //
 // DEBUG
