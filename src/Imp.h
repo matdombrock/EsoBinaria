@@ -221,8 +221,7 @@ public:
   }
   void initInt(std::string key, int value) {
     if (!hasKey(key)) {
-      data[key] = std::to_string(value);
-      write();
+      setInt(key, value);
     }
   }
   void setFloat(std::string key, float value) {
@@ -231,8 +230,7 @@ public:
   }
   void initFloat(std::string key, float value) {
     if (!hasKey(key)) {
-      data[key] = std::to_string(value);
-      write();
+      setFloat(key, value);
     }
   }
   void setBool(std::string key, bool value) {
@@ -241,8 +239,7 @@ public:
   }
   void initBool(std::string key, bool value) {
     if (!hasKey(key)) {
-      data[key] = value ? "true" : "false";
-      write();
+      setBool(key, value);
     }
   }
   std::string getString(std::string key) {
@@ -312,11 +309,26 @@ public:
   void setInt(std::string key, int value) {
     setString(key, std::to_string(value));
   }
+  void initInt(std::string key, int value) {
+    if (!hasKey(key)) {
+      setInt(key, value);
+    }
+  }
   void setFloat(std::string key, float value) {
     setString(key, std::to_string(value));
   }
+  initFloat(std::string key, float value) {
+    if (!hasKey(key)) {
+      setFloat(key, value);
+    }
+  }
   void setBool(std::string key, bool value) {
     setString(key, value ? "true" : "false");
+  }
+  initBool(std::string key, bool value) {
+    if (!hasKey(key)) {
+      setBool(key, value);
+    }
   }
   std::string getString(std::string key) {
     if (!hasKey(key))
