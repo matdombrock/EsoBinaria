@@ -204,6 +204,8 @@ public:
 //
 // Storage
 //
+// If a key has not been set it will return a default value
+// It is possible to initialize a key with a default value using init*
 #ifndef __EMSCRIPTEN__
 class Store {
 public:
@@ -217,13 +219,31 @@ public:
     data[key] = std::to_string(value);
     write();
   }
+  void initInt(std::string key, int value) {
+    if (!hasKey(key)) {
+      data[key] = std::to_string(value);
+      write();
+    }
+  }
   void setFloat(std::string key, float value) {
     data[key] = std::to_string(value);
     write();
   }
+  void initFloat(std::string key, float value) {
+    if (!hasKey(key)) {
+      data[key] = std::to_string(value);
+      write();
+    }
+  }
   void setBool(std::string key, bool value) {
     data[key] = value ? "true" : "false";
     write();
+  }
+  void initBool(std::string key, bool value) {
+    if (!hasKey(key)) {
+      data[key] = value ? "true" : "false";
+      write();
+    }
   }
   std::string getString(std::string key) {
     if (data.find(key) == data.end())

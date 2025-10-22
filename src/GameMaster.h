@@ -40,11 +40,11 @@ public:
     sndToggleTests.set("toggle.wav");
     sndChangeTile.set("chtile.wav");
 
-    std::string puzzleChallengeString = store.getString("puzzleChallenge");
+    std::string puzzleChallengeString = store.getString("puzzle_challenge");
     puzzleChallengeString.length() > 0
         ? puzzleChallenge = puzzleChallengeString[0]
         : puzzleChallenge = 'e';
-    puzzleNum = store.getInt("puzzleNum");
+    puzzleNum = store.getInt("puzzle_num");
     DBG("Loaded Current Puzzle: " + getPuzzleString());
   }
   int vu(float val) { return (int)(val * cellSize); }
@@ -71,12 +71,12 @@ public:
   int getShowTests() { return showTests; }
   void setPuzzleNum(int num) {
     puzzleNum = num;
-    store.setInt("puzzleNum", num);
+    store.setInt("puzzle_num", num);
   }
   int getPuzzleNum() { return puzzleNum; }
   void setPuzzleChallenge(char challenge) {
     puzzleChallenge = challenge;
-    store.setString("puzzleChallenge", std::string(1, challenge));
+    store.setString("puzzle_challenge", std::string(1, challenge));
   }
   char getPuzzleChallenge() { return puzzleChallenge; }
   void setPuzzleData(int bits, char challenge, int num) {

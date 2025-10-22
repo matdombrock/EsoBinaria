@@ -78,22 +78,14 @@ public:
   }
   ~App() {}
   void initDefaultSettings() {
-    if (!_g.store.hasKey("settings_enable_screen_fx"))
-      _g.store.setBool("settings_enable_screen_fx", true);
-    if (!_g.store.hasKey("settings_enable_color_overlay"))
-      _g.store.setBool("settings_enable_color_overlay", true);
-    if (!_g.store.hasKey("settings_enable_fps"))
-      _g.store.setBool("settings_enable_fps", false);
-    if (!_g.store.hasKey("settings_enable_fps"))
-      _g.store.setBool("settings_enable_fps", true);
-    if (!_g.store.hasKey("settings_enable_audio"))
-      _g.store.setBool("settings_enable_audio", true);
-    if (!_g.store.hasKey("settings_enable_music"))
-      _g.store.setBool("settings_enable_music", true);
-    if (!_g.store.hasKey("settings_enable_auto_save"))
-      _g.store.setBool("settings_enable_auto_save", true);
-    if (!_g.store.hasKey("settings_window_scale"))
-      _g.store.setInt("settings_window_scale", 1);
+    _g.store.initBool("settings_enable_screen_fx", true);
+    _g.store.initBool("settings_enable_color_overlay", true);
+    _g.store.initBool("settings_enable_fps", false);
+    _g.store.initBool("settings_enable_audio", true);
+    _g.store.initBool("settings_enable_music", true);
+    _g.store.initBool("settings_enable_auto_save", true);
+    _g.store.initInt("settings_window_scale", 1);
+    _g.store.initInt("settings_color_overlay_num", 0);
   }
   void recolor() {
     int num = _g.store.getInt("settings_color_overlay_num");
