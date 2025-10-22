@@ -1,3 +1,6 @@
+/*
+* The TestCase class represents a single test case for validating puzzle solutions.
+*/
 #pragma once
 
 #include "Imp.h"

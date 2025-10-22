@@ -1,3 +1,6 @@
+/*
+* The ScreenSettings class provides a settings menu with various toggleable options.
+*/
 #pragma once
 #include "Imp.h"
 using namespace Imp;

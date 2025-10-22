@@ -1,3 +1,8 @@
+/*
+* Grid class for the logic gate puzzle game
+* Manages the grid of cells, user interactions, and rendering
+* on the grid
+*/
 #pragma once
 #include "Imp.h"
 using namespace Imp;

@@ -1,3 +1,6 @@
+/*
+* Screen FX Entity
+*/
 #pragma once
 #include "GameMaster.h"
 #include "Imp.h"

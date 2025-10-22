@@ -1,3 +1,6 @@
+/*
+* Strings used in the game
+*/
 #pragma once
 #include <string>
 

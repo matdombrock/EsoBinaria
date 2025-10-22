@@ -1,3 +1,6 @@
+/*
+* Button tile for selecting cell types in the game UI
+*/
 #pragma once
 #include "Imp.h"
 using namespace Imp;

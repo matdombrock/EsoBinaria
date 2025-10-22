@@ -1,3 +1,6 @@
+/*
+* The Fonts namespace initializes and holds different font sizes used in the game.
+*/
 #pragma once
 #include "Imp.h"
 using namespace Imp;

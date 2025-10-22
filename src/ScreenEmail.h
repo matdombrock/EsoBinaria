@@ -1,3 +1,7 @@
+/*
+ * The ScreenEmail class displays an introductory email screen with animated
+ * text and a wizard sprite.
+ */
 #pragma once
 #include "Imp.h"
 using namespace Imp;
@@ -29,8 +33,7 @@ public:
       pressed = 0;
       startTicks = _g.getTick();
       _g.store.setBool("completed_email_intro", true);
-    }
-    else if (GInput.anyKeyOnce()) {
+    } else if (GInput.anyKeyOnce()) {
       pressed++;
       if (pressed > 1) {
         _g.setScreen(SCN_PUZZLE);

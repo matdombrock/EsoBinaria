@@ -1,3 +1,6 @@
+/*
+* The TopBar class implements a top navigation bar with buttons for file, edit, and tools menus.
+*/
 #pragma once
 #include "Imp.h"
 using namespace Imp;

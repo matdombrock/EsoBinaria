@@ -1,3 +1,7 @@
+/*
+* A simple class for rendering the bumper screen
+* This shows before the main menu
+*/
 #pragma once
 #include "GameMaster.h"
 #include "Imp.h"

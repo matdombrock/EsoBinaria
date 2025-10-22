@@ -39,6 +39,7 @@ public:
   ScreenSettings screenSettings;
   Sound mainMusic = Sound("main.ogg");
   int overlayColor[4] = {0, 0, 0, 0};
+  // _g.store will not be initalized and will have no values on first run
   App() : Imp::Main("EsoBinaria", WINDOW_SIZE, WINDOW_FPS, _g.store.getInt("settings_window_scale"), "tiles.png") {
 
     _g.init();

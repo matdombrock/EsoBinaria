@@ -1,3 +1,8 @@
+/*
+ * The BottomBar class represents the bottom bar UI component in the application.
+ * It contains buttons for various tile types and displays help information
+ * based on user interaction.
+*/
 #pragma once
 #include "Imp.h"
 using namespace Imp;

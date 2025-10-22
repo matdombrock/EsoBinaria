@@ -1,3 +1,6 @@
+/*
+* The ScreenSetup class provides a level selection screen for the EsoBinaria game.
+*/
 #pragma once
 #include "Imp.h"
 using namespace Imp;

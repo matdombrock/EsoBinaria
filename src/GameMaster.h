@@ -1,3 +1,8 @@
+/*
+* The GameMaster class manages the overall state and settings of the game.
+* It handles puzzle data, active screen, input, sounds, and various game settings.
+* This is available globally as _g.
+*/
 #pragma once
 
 #include <map>

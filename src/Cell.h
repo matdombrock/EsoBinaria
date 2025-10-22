@@ -1,3 +1,7 @@
+/*
+* This class represents a cell on the grid in the game.
+* It holds information about the cell type, parentheses, and comments.
+*/
 #pragma once
 #include "Imp.h"
 using namespace Imp;

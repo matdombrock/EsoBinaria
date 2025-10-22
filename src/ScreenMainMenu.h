@@ -1,3 +1,6 @@
+/*
+* The ScreenMainMenu class displays the main menu
+*/
 #pragma once
 #include "Imp.h"
 #include "GameMaster.h"

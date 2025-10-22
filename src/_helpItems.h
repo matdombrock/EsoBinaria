@@ -1,3 +1,6 @@
+/*
+* Help items for the logic gate simulator
+*/
 #pragma once
 #include <string>
 #include <map>

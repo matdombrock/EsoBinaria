@@ -1,3 +1,6 @@
+/*
+* A simple class for rendering a custom cursor
+*/
 #pragma once
 #include "Imp.h"
 using namespace Imp;

@@ -1,3 +1,6 @@
+/*
+* A namespace containing all cell sprites
+*/
 #pragma once
 #include "Imp.h"
 #include <map>

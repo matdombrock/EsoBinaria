@@ -1,3 +1,7 @@
+/*
+* Predefined colors for Imp applications
+* Available globally via _colors
+*/
 #pragma once
 #include <string>
 #include <map>

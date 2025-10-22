@@ -1,3 +1,6 @@
+/*
+* Draws a modal dialog with OK and CANCEL buttons
+*/
 #pragma once
 #include "Imp.h"
 using namespace Imp;

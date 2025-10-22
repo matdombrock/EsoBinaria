@@ -1,3 +1,6 @@
+/*
+* Huk - An NPC that gives hints to the player during puzzles
+*/
 #pragma once
 #include "Imp.h"
 #include "_gameMaster.h"

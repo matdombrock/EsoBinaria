@@ -1,3 +1,7 @@
+/* 
+ * Renders the background art
+*/
+
 #pragma once
 #include "GameMaster.h"
 #include "Imp.h"

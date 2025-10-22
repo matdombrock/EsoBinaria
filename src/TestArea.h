@@ -1,3 +1,8 @@
+/*
+* The TestArea class manages and displays test cases for puzzle validation.
+* It checks the user's code against predefined test cases and shows pass/fail status.
+* This holds all of the test cases for the current puzzle.
+*/
 #pragma once
 
 #include "Imp.h"

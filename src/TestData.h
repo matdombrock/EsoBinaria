@@ -1,3 +1,6 @@
+/*
+* Definition of the TestData class to hold test case information
+*/
 #pragma once
 #include <string>
 #include <vector>

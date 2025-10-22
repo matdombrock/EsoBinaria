@@ -1394,7 +1394,7 @@ public:
       graph->tickUp();
     }
     // Handle focus
-    if ((SDL_GetWindowFlags(window) & SDL_WINDOW_INPUT_FOCUS) == 0) {
+    if ((SDL_GetWindowFlags(SDL_window) & SDL_WINDOW_INPUT_FOCUS) == 0) {
       if (focused) {
         DBG("Focus Lost");
         focused = false;
@@ -1435,32 +1435,38 @@ protected:
   SDL_Event event;
   bool pauseRenderer;
   int scale = 1;
+  // Init can be called again to re-init the window
   void init(std::string spriteSheetFile = "", int scale = 1) {
     DBG("Imp starting");
     if (basePath.empty()) {
       DBG("Base path not set");
       exit(1);
     }
-    if (window != nullptr) {
-      SDL_DestroyWindow(window);
+    if (SDL_window != nullptr) {
+      SDL_DestroyWindow(SDL_window);
     }
+    // Scale comes from the store value "setting_window_scale"
+    // On first run it will not be initialized, which means its 0
+    // We must ensure its at least 1
     scale = scale < 1 ? 1 : scale;
+    
+    // TODO: The window creation logic should be moved to IMP
     Imp::state.windowScale = scale;
-    window = SDL_CreateWindow(windowTitle, SDL_WINDOWPOS_UNDEFINED,
+    SDL_window = SDL_CreateWindow(windowTitle, SDL_WINDOWPOS_UNDEFINED,
                               SDL_WINDOWPOS_UNDEFINED, windowSize.x * scale,
                               windowSize.y * scale, SDL_WINDOW_SHOWN);
-    if (window == nullptr) {
+    if (SDL_window == nullptr) {
       std::cerr << "Window could not be created! SDL_Error: " << SDL_GetError()
                 << std::endl;
       SDL_Quit();
       exit(1);
     }
-    SDL_renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+    SDL_renderer = SDL_CreateRenderer(SDL_window, -1, SDL_RENDERER_ACCELERATED);
     SDL_RenderSetLogicalSize(SDL_renderer, windowSize.x, windowSize.y);
     if (SDL_renderer == nullptr) {
       std::cerr << "Renderer could not be created! SDL_Error: "
                 << SDL_GetError() << std::endl;
-      SDL_DestroyWindow(window);
+      SDL_DestroyWindow(SDL_window);
       SDL_Quit();
       exit(1);
     }
@@ -1499,12 +1505,12 @@ protected:
     // Clean up and quit SDL
     DBG("Imp quitting");
     SDL_DestroyRenderer(SDL_renderer);
-    SDL_DestroyWindow(window);
+    SDL_DestroyWindow(SDL_window);
     SDL_Quit();
   }
 
 private:
-  SDL_Window *window;
+  SDL_Window *SDL_window;
   SDL_Renderer *SDL_renderer;
   Graphics *graph;
   int frameDelay;
